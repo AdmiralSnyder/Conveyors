@@ -15,9 +15,19 @@ namespace WpfApp1
 {
     public class Conveyor
     {
-        public Conveyor()
+        private bool _IsRunning;
+        public bool IsRunning
         {
-            Dispatcher.Start(this);
+            get => _IsRunning;
+            set => Func.Setter(ref _IsRunning, value, StartIfRunning);
+        }
+
+        private void StartIfRunning()
+        {
+            if (IsRunning)
+            {
+                (Dispatcher = new(new ParameterizedThreadStart(ItemDispatcherThreadAction))).Start(this);
+            }
         }
 
         public LinkedList<ConveyorSegment> Segments = new();
@@ -54,26 +64,28 @@ namespace WpfApp1
             Items.Enqueue(item);
         }
 
-        ConcurrentQueue<Item> Items = new();
-        Thread Dispatcher = new(new ParameterizedThreadStart(ItemDispatcherThreadAction));
+        private readonly ConcurrentQueue<Item> Items = new();
+        private Thread Dispatcher = new(new ParameterizedThreadStart(ItemDispatcherThreadAction));
 
-        static void ItemDispatcherThreadAction(object? obj)
+        private static void ItemDispatcherThreadAction(object? obj)
         {
-            var conveyor = (Conveyor)obj;
-            DateTime time = DateTime.Now;
-            while(true)
+            if (obj is Conveyor conveyor)
             {
-                var now = DateTime.Now;
-                var diff = (now - time).TotalMilliseconds;
-                time = now;
-                foreach (var item in conveyor.Items.ToList()) // TODO hier muss das tolist weg - anderen datentypen wählen.
+                DateTime time = DateTime.Now;
+                while (conveyor.IsRunning)
                 {
-                    if (!item.Done)
+                    var now = DateTime.Now;
+                    var diff = (now - time).TotalMilliseconds;
+                    time = now;
+                    foreach (var item in conveyor.Items.ToList()) // TODO hier muss das tolist weg - anderen datentypen wählen.
                     {
-                        item.Age += diff;
+                        if (!item.Done)
+                        {
+                            item.Age += diff;
+                        }
                     }
+                    Thread.Sleep(10);
                 }
-                Thread.Sleep(100);
             }
         }
 
@@ -83,7 +95,7 @@ namespace WpfApp1
             done = false;
             segment = item.Segment ?? Segments.First;
 
-            while(segment is not null && segment.Value.EndLength < length)
+            while (segment is not null && segment.Value.EndLength < length)
             {
                 segment = segment!.Next;
             }
@@ -114,7 +126,7 @@ namespace WpfApp1
         }
         public Shape Shape { get; }
         private double _Age;
-        public double Age 
+        public double Age
         {
             get => _Age;
             set
@@ -132,10 +144,10 @@ namespace WpfApp1
         public bool Done { get; set; }
         public Conveyor Conveyor { get; set; }
 
-        public LinkedListNode <ConveyorSegment> Segment { get; set; }
+        public LinkedListNode<ConveyorSegment> Segment { get; set; }
 
         private Point _Location;
-        public Point Location 
+        public Point Location
         {
             get => _Location;
             set
@@ -143,8 +155,8 @@ namespace WpfApp1
                 _Location = value;
                 Shape.Dispatcher.BeginInvoke(() =>
                 {
-                    Canvas.SetLeft(Shape, value.X);
-                    Canvas.SetTop(Shape, value.Y);
+                    Canvas.SetLeft(Shape, value.X - Shape.Width / 2);
+                    Canvas.SetTop(Shape, value.Y - Shape.Height / 2);
                 });
             }
         }
@@ -158,9 +170,9 @@ namespace WpfApp1
             Line = line;
         }
         private Line? _Line;
-        public Line? Line 
+        public Line? Line
         {
-            get => _Line; 
+            get => _Line;
             set
             {
                 _Line = value;
@@ -175,7 +187,7 @@ namespace WpfApp1
         public Point StartPoint { get; set; }
         public double EndLength { get; set; }
         public double BeginLength { get; set; }
-            
+
 
         public double Length { get; private set; }
         public Point UnitVector { get; internal set; }

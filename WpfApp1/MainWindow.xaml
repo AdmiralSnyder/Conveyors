@@ -5,11 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800"
+        Closing="Window_Closing">
     <DockPanel LastChildFill="True">
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
             <Button x:Name="AddConveyorB" Click="AddConveyorB_Click">Add</Button>
-            <Button Name="PutItemB" Click="PutItemB_Click" >Put</Button>
+            <Button Name="PutItemB" Click="PutItemB_Click" Margin="20,0" >Put</Button>
+            <CheckBox Name="RunningCB" Click="RunningCB_Click" >Running</CheckBox>
         </StackPanel>
         <TextBlock DockPanel.Dock="Bottom" Name="NotesLabel"></TextBlock>
         <Canvas Background="Green" Name ="TheCanvas" MouseDown="TheCanvas_MouseDown" MouseMove="TheCanvas_MouseMove" MouseWheel="TheCanvas_MouseWheel" MouseUp="TheCanvas_MouseUp">

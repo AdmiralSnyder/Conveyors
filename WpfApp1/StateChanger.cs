@@ -24,8 +24,8 @@ namespace WpfApp1
             SetNewValueAction(newValue);
         }
 
-        private Action<T> SetNewValueAction;
-        private T OldValue;
+        private readonly Action<T> SetNewValueAction;
+        private readonly T OldValue;
 
         protected override void Reverse() => SetNewValueAction(OldValue);
     }

@@ -56,9 +56,9 @@ public partial class MainWindow : Window
         }
     }
 
-    Stack<Line> TempLines = new();
-    Point? PanPoint;
-    Point PanValue = new();
+    private readonly Stack<Line> TempLines = new();
+    private Point? PanPoint;
+    private Point PanValue = new();
     private void TheCanvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton == MouseButton.Middle && PanPoint is null)
@@ -240,6 +240,17 @@ public partial class MainWindow : Window
             conveyor.SpawnItem();
         }
     }
+
+    private bool _IsRunning;
+    public bool IsRunning
+    {
+        get => _IsRunning;
+        set => Func.Setter(ref _IsRunning, value, isRunning => Conveyors.ForEach(c => c.IsRunning = isRunning));
+    }
+
+    private void RunningCB_Click(object sender, RoutedEventArgs e) => IsRunning = RunningCB.IsChecked ?? false;
+
+    private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) => IsRunning = false;
 }
 
 public enum InputState
