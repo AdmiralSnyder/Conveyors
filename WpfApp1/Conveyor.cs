@@ -100,18 +100,13 @@ namespace WpfApp1
                 segment = segment!.Next;
             }
 
-            if (segment is not null)
-            {
-                var seg = segment.Value;
-                var mult = length - seg.BeginLength;// TODO hier ggf. auf spline umstellen
-                return new(seg.UnitVector.X * mult + segment.Value.StartPoint.X, seg.UnitVector.Y * mult + segment.Value.StartPoint.Y);
-            }
-            else
+            if (segment is null)
             {
                 done = true;
-                return item.Location;
+                segment = Segments.Last;
             }
 
+            return segment.Value.GetPointAbsolute(length);
         }
     }
 
@@ -181,16 +176,32 @@ namespace WpfApp1
                 EndLength = BeginLength + Length;
                 UnitVector = new((_Line.X2 - _Line.X1) / Length, (_Line.Y2 - _Line.Y1) / Length);
                 StartPoint = new(_Line.X1, _Line.Y1);
+                EndPoint = new(_Line.X2, _Line.Y2);
             }
         }
 
         public Point StartPoint { get; set; }
+        public Point EndPoint { get; set; }
         public double EndLength { get; set; }
         public double BeginLength { get; set; }
 
 
         public double Length { get; private set; }
         public Point UnitVector { get; internal set; }
+
+        internal Point GetPointAbsolute(double length, bool overshoot = false)
+        {
+            length -= BeginLength;
+            if (length < Length || overshoot)
+            {
+                var mult = length;// TODO hier ggf. auf spline umstellen
+                return new(UnitVector.X * mult + StartPoint.X, UnitVector.Y * mult + StartPoint.Y);
+            }
+            else
+            {
+                return EndPoint;
+            }
+        }
     }
 
     public static class Maths

@@ -213,6 +213,9 @@ public partial class MainWindow : Window
     // TODO put the zoom functionality into a behaviour
     private void TheCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
     {
+        var pos = e.GetPosition(TheCanvas);
+        CanvasScaler.CenterX = pos.X;
+        CanvasScaler.CenterY = pos.Y;
         if (e.Delta > 0)
         {
             CanvasScaler.ScaleX *= 2;
