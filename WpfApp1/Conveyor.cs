@@ -291,15 +291,6 @@ class TextAdorner : Adorner
     { }
 
     public static Typeface Tf = new Typeface("Arial");
-    public static string SomeProp { get; set; }
-
-    private static string _SomeProp2; // this is the backing field of the SomeProp2 - Property
-    public static string SomeProp2 
-    {
-        get => _SomeProp2;
-        set => _SomeProp2 = value; 
-    }
-
     protected override void OnRender(DrawingContext drawingContext)
     {
         if (AdornedElement is Shape shape /*&& shape.IsLabelUsed*/)
