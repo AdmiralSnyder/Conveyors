@@ -64,7 +64,7 @@ public partial class MainWindow : Window
         if (e.ChangedButton == MouseButton.Middle && PanPoint is null)
         {
             PanPoint = GetWindowPoint(e);
-            PanValue = new(CanvasPanner.X, CanvasPanner.Y);
+            PanValue = new(CanvasTranslateTransform.X, CanvasTranslateTransform.Y);
             return;
         }
 
@@ -197,8 +197,8 @@ public partial class MainWindow : Window
         {
             var diff = GetWindowPoint(e) - PanPoint.Value;
 
-            CanvasPanner.X = PanValue.X + diff.X;
-            CanvasPanner.Y = PanValue.Y + diff.Y;
+            CanvasTranslateTransform.X = PanValue.X + diff.X;
+            CanvasTranslateTransform.Y = PanValue.Y + diff.Y;
         }
 
         if (InputState != InputState.None)
@@ -214,17 +214,17 @@ public partial class MainWindow : Window
     private void TheCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
     {
         var pos = e.GetPosition(TheCanvas);
-        CanvasScaler.CenterX = pos.X;
-        CanvasScaler.CenterY = pos.Y;
+        CanvasScaleTransform.CenterX = pos.X;
+        CanvasScaleTransform.CenterY = pos.Y;
         if (e.Delta > 0)
         {
-            CanvasScaler.ScaleX *= 2;
-            CanvasScaler.ScaleY *= 2;
+            CanvasScaleTransform.ScaleX *= 2;
+            CanvasScaleTransform.ScaleY *= 2;
         }
         else
         {
-            CanvasScaler.ScaleX /= 2;
-            CanvasScaler.ScaleY /= 2;
+            CanvasScaleTransform.ScaleX /= 2;
+            CanvasScaleTransform.ScaleY /= 2;
         }
     }
 

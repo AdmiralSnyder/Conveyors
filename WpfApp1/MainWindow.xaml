@@ -1,26 +1,26 @@
-﻿<Window x:Class="WpfApp1.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<Window x:Class="WpfApp1.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WpfApp1"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
-        Closing="Window_Closing">
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:WpfApp1"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" Title="MainWindow"
+        Width="614" Height="352" Closing="Window_Closing" mc:Ignorable="d">
     <DockPanel LastChildFill="True">
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-            <Button x:Name="AddConveyorB" Click="AddConveyorB_Click">Add</Button>
-            <Button Name="PutItemB" Click="PutItemB_Click" Margin="20,0" >Put</Button>
-            <CheckBox Name="RunningCB" Click="RunningCB_Click" >Running</CheckBox>
+            <Button Name="AddConveyorB" Content="Add" Click="AddConveyorB_Click" />
+            <Button Name="PutItemB" Content="Put" Margin="20,0" Click="PutItemB_Click" />
+            <CheckBox Name="RunningCB" Click="RunningCB_Click">Running</CheckBox>
         </StackPanel>
-        <TextBlock DockPanel.Dock="Bottom" Name="NotesLabel"></TextBlock>
-        <Canvas Background="Green" Name ="TheCanvas" MouseDown="TheCanvas_MouseDown" MouseMove="TheCanvas_MouseMove" MouseWheel="TheCanvas_MouseWheel" MouseUp="TheCanvas_MouseUp">
-            <Canvas.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform x:Name="CanvasScaler"></ScaleTransform>
-                    <TranslateTransform x:Name="CanvasPanner"></TranslateTransform>
-                </TransformGroup>
-            </Canvas.RenderTransform>
-        </Canvas>
+        <TextBlock Name="NotesLabel" DockPanel.Dock="Bottom" />
+        <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+            <Canvas Name="TheCanvas" Background="Green" MouseDown="TheCanvas_MouseDown" MouseMove="TheCanvas_MouseMove"
+                    MouseUp="TheCanvas_MouseUp" MouseWheel="TheCanvas_MouseWheel">
+                <Canvas.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform x:Name="CanvasScaleTransform" />
+                        <TranslateTransform x:Name="CanvasTranslateTransform" />
+                        <!--  X="10" Y="-10"  -->
+                    </TransformGroup>
+                </Canvas.RenderTransform>
+            </Canvas>
+        </ScrollViewer>
     </DockPanel>
 </Window>
