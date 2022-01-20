@@ -8,6 +8,7 @@
             <Button Name="AddConveyorB" Content="Add" Click="AddConveyorB_Click" />
             <Button Name="PutItemB" Content="Put" Margin="20,0" Click="PutItemB_Click" />
             <CheckBox Name="RunningCB" Click="RunningCB_Click">Running</CheckBox>
+            <TextBox Name="LanesTB" Margin="20,0">2</TextBox>
         </StackPanel>
         <TextBlock Name="NotesLabel" DockPanel.Dock="Bottom" />
         <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">

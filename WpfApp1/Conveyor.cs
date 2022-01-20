@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
@@ -23,6 +22,9 @@ public class Conveyor
         set => Func.Setter(ref _IsRunning, value, StartIfRunning);
     }
 
+    public int LanesCount { get; init; } = 1;
+    public IEnumerable<int> LaneIndexes;
+
     private void StartIfRunning()
     {
         if (IsRunning)
@@ -32,42 +34,101 @@ public class Conveyor
     }
 
     public LinkedList<ConveyorSegment> Segments = new();
+    public LinkedList<ConveyorSegmentLane>[] SegmentLanes;
 
-    public static Conveyor Create(IEnumerable<Line> lines)
+    public LinkedList<ConveyorPoint> Points = new();
+    public LinkedList<IPathPart> PointsAndSegments = new();
+    public LinkedList<ConveyorPointLane>[] PointLanes;
+    public LinkedList<ILanePart>[] PointAndSegmentLanes;
+    public static Conveyor Create(IEnumerable<Line> lines, int lanesCount = 1)
     {
-        var conv = new Conveyor();
+        var conv = new Conveyor(lanesCount);
         double length = 0d;
-        foreach (var line in lines)
+        bool first = true;
         {
-            var segment = new ConveyorSegment(length, line);
-            conv.Segments.AddLast(segment);
-            length += segment.Length;
+            ConveyorPoint? point = null;
+            foreach (var line in lines)
+            {
+                if (first)
+                {
+                    first = false;
+                    point = AddPoint(line.X1, line.Y1);
+                    point.IsFirst = true;
+                }
+                var segment = new ConveyorSegment(conv, length, line);
+                segment.Node = conv.Segments.AddLast(segment);
+                segment.ElementsNode = conv.PointsAndSegments.AddLast(segment);
+
+                length += segment.DefinitionLength;
+
+                point = AddPoint(line.X2, line.Y2);
+            }
+            if (point is not null)
+            {
+                point.IsLast = true;
+            }
+        }
+        foreach (var segment in conv.Segments)
+        {
+            segment.BuildLanes();
+        }
+
+        foreach (var point in conv.Points)
+        {
+            point.BuildLanes();
+        }
+
+        foreach (var part in conv.PointsAndSegments)
+        {
+            part.RegisterLanes();
+        }
+
+        foreach (var point in conv.Points)
+        {
+            point.PrepareLanes();
         }
 
         return conv;
+
+        ConveyorPoint AddPoint(double x, double y)
+        {
+            ConveyorPoint point = new(conv) { X = x, Y = y };
+            point.Node = conv.Points.AddLast(point);
+            point.ElementsNode = conv.PointsAndSegments.AddLast(point);
+            return point;
+        }
     }
 
     public static void AddToCanvas(Conveyor conveyor, Canvas canvas)
     {
         conveyor.Canvas = canvas;
-        foreach (var sement in conveyor.Segments)
+        foreach (var segment in conveyor.Segments)
         {
-            canvas.Children.Add(sement.Line);
+            segment.AddToCanvas(canvas);
+        }
+
+        foreach (var point in conveyor.Points)
+        {
+            point.AddToCanvas(canvas);
         }
     }
 
-    public Canvas Canvas;
+    public Canvas? Canvas;
     public double Speed = 60;
 
     internal void SpawnItem()
     {
-        var item = new Item(this);
-        Items.Enqueue(item);
+        for (int i = 0; i < LanesCount; i++)
+        {
+            var item = new Item(this) { Lane = i };
+            Items[i].Enqueue(item);
+        }
     }
 
     public Item? GetNextItem(Item currentItem)
     {
-        var itemList = Items.Reverse().ToList(); // TODO OPTIMIZE!!!   !!!!
+        var queue = Items[currentItem.Lane];
+        var itemList = queue.Reverse().ToList(); // TODO OPTIMIZE!!!   !!!!
         var idx = itemList.IndexOf(currentItem);
         if (idx < itemList.Count - 1)
         {
@@ -76,8 +137,28 @@ public class Conveyor
         return null;
     }
 
-    private readonly ConcurrentQueue<Item> Items = new();
-    private Thread Dispatcher;
+    private readonly ConcurrentQueue<Item>[] Items;
+    private Thread? Dispatcher;
+
+    public Conveyor(int lanesCount)
+    {
+        LanesCount = lanesCount;
+        LaneIndexes = Enumerable.Range(0, lanesCount).ToArray();
+
+        SegmentLanes = new LinkedList<ConveyorSegmentLane>[lanesCount];
+        PointLanes = new LinkedList<ConveyorPointLane>[lanesCount];
+        PointAndSegmentLanes = new LinkedList<ILanePart>[lanesCount];
+
+        Items = new ConcurrentQueue<Item>[lanesCount];
+        
+        foreach (int i in LaneIndexes)
+        {
+            SegmentLanes[i] = new();
+            PointLanes[i] = new();
+            PointAndSegmentLanes[i] = new();
+            Items[i] = new();
+        }
+    }
 
     private static void ItemDispatcherThreadAction(object? obj)
     {
@@ -89,11 +170,14 @@ public class Conveyor
                 var now = DateTime.Now;
                 var diff = (now - time).TotalMilliseconds;
                 time = now;
-                foreach (var item in conveyor.Items.ToList()) // TODO hier muss das tolist weg - anderen datentypen wählen.
+                foreach (int i in conveyor.LaneIndexes)
                 {
-                    if (!item.Done)
+                    foreach (var item in conveyor.Items[i].ToList()) // TODO hier muss das tolist weg - anderen datentypen wählen.
                     {
-                        item.AddAge(diff);
+                        if (!item.Done)
+                        {
+                            item.AddAge(diff);
+                        }
                     }
                 }
                 Thread.Sleep(10);
@@ -102,7 +186,7 @@ public class Conveyor
     }
 
     // TODO add an out parameter for stalling
-    internal Point GetItemLocation(Item item, out bool done, out LinkedListNode<ConveyorSegment> segment)
+    internal Point GetItemLocation(Item item, out bool done, out LinkedListNode<ConveyorSegment> segmentNode, out LinkedListNode<ConveyorSegmentLane> segmentLane)
     {
         var actualAge = item.Age - item.StaleAge;
         var nextItem = GetNextItem(item);
@@ -112,7 +196,8 @@ public class Conveyor
             if (actualAge + Speed * 2.8 > nextAge) // this needs to be something depending on the speed and size of the items.
             {
                 // collision -> avoid
-                segment = item.Segment ?? Segments.First;
+                segmentLane = item.SegmentLane ?? Segments.First.Value.Lanes[item.Lane].Node;
+                segmentNode = item.Segment ?? Segments.First;
                 done = false;
                 return item.Location;
             }
@@ -120,189 +205,132 @@ public class Conveyor
 
         double length = actualAge / 1000 * Speed;
         done = false;
-        segment = item.Segment ?? Segments.First;
+        segmentNode = item.Segment ?? Segments.First;
+        segmentLane = item.SegmentLane ?? Segments.First.Value.Lanes[item.Lane].Node;
 
-        while (segment is not null && segment.Value.EndLength < length)
+        while (segmentLane is not null && segmentLane.Value.EndLength < length)
         {
-            segment = segment!.Next;
+            segmentNode = segmentNode!.Next;
+            segmentLane = segmentLane!.Next;
         }
 
-        if (segment is null)
+        if (segmentLane is null)
         {
             done = true;
-            segment = Segments.Last;
+            segmentLane = Segments.Last.Value.Lanes[item.Lane].Node;
         }
         if (length < 0)
         {
             length = 0;
         }
-        return segment.Value.GetPointAbsolute(length);
+        return segmentLane.Value.GetPointAbsolute(length);
     }
 }
 
-public class Item
+public interface IPathPart
 {
-    [ThreadStatic]
-    public static int Num = 0;
+    void RegisterLanes();
+}
 
-    public Item(Conveyor conveyor)
+public class ConveyorPoint : ICanvasable, IPathPart
+{
+    public ConveyorPoint(Conveyor conveyor)
     {
         Conveyor = conveyor;
-        Shape = new Ellipse() { Width = 10, Height = 10, Fill = Brushes.Blue, Tag = this };
-        Conveyor.Canvas.Children.Add(Shape);
-        var layer = AdornerLayer.GetAdornerLayer(Shape);
-        layer.Add(new TextAdorner(Shape));
-        _Age = 0;
-        Number = Num++;
+        Lanes = new ConveyorPointLane[conveyor.LanesCount];
     }
 
-    public int Number { get; }
-    public Shape Shape { get; }
+    public bool IsLast { get; internal set; }
+    public bool IsFirst { get; internal set; }
+    public double Y { get; internal set; }
+    public double X { get; internal set; }
 
-    private double _Age;
-    public double Age => _Age;
+    public ConveyorPointLane[] Lanes;
 
-    public void AddAge(double offset)
+    public Ellipse PointCircle { get; internal set; }
+    public Conveyor Conveyor { get; }
+    public LinkedListNode<ConveyorPoint> Node { get; internal set; }
+    public LinkedListNode<IPathPart> ElementsNode { get; internal set; }
+
+    private const double Size = 4d;
+
+    public void AddToCanvas(Canvas canvas)
     {
-        var oldlocation = Location;
-        _Age += offset;
-        var newLocation = Conveyor.GetItemLocation(this, out var done, out var segment);
-        if (oldlocation == newLocation)
-        {
-            _Age -= offset;
-            StaleAge += offset;
-            Location = oldlocation;
-        }
-        else
-        {
-            Segment = segment;
-            Location = newLocation;
-        }
+        PointCircle = new() { Width = Size, Height = Size, Fill = IsLast ? Brushes.Red : IsFirst ? Brushes.Cyan : Brushes.Blue };
+        canvas.Children.Add(PointCircle);
+        Canvas.SetLeft(PointCircle, X - Size / 2.0);
+        Canvas.SetTop(PointCircle, Y - Size / 2.0);
 
-        if (done)
+        if (IsFirst || IsLast) return;
+        foreach (var lane in Lanes)
         {
-            Done = true;
+            lane.AddToCanvas(canvas);
         }
     }
 
-    //public double Age
-    //{
-    //    get => _Age;
-    //    set
-    //    {
-    //        _Age = value;
-    //        Location = Conveyor.GetItemLocation(this, out var done, out var segment);
-    //        Segment = segment;
-    //        if (done)
-    //        {
-    //            Done = true;
-    //        }
-    //    }
-    //}
-
-    public double StaleAge = 0;
-
-    public bool Moving { get; set; }
-    public bool Done { get; set; }
-    public Conveyor Conveyor { get; set; }
-
-    public LinkedListNode<ConveyorSegment> Segment { get; set; }
-
-    private Point _Location;
-    public Point Location
+    internal void BuildLanes()
     {
-        get => _Location;
-        set
+        if (IsFirst || IsLast) return;
+        
+        foreach (var i in Conveyor.LaneIndexes)
         {
-            _Location = value;
-            Shape.Dispatcher.BeginInvoke(() =>
-            {
-                Canvas.SetLeft(Shape, value.X - Shape.Width / 2);
-                Canvas.SetTop(Shape, value.Y - Shape.Height / 2);
-            });
+            var lane = Lanes[i] = new(this);
+            lane.Lane = i;
+        }
+    }
+
+    public void RegisterLanes()
+    {
+        if (IsFirst || IsLast) return;
+
+        foreach (var lane in Lanes)
+        {
+            lane.ElementNode = Conveyor.PointAndSegmentLanes[lane.Lane].AddLast(lane);
+        }
+    }
+
+    internal void PrepareLanes()
+    {
+        if (IsFirst || IsLast) return;
+
+        foreach (var lane in Lanes)
+        {
+            lane.Prepare();
         }
     }
 }
 
-public class ConveyorSegment
+public class ConveyorPointLane : ICanvasable, ILanePart
 {
-    public ConveyorSegment(double beginLength, Line line)
+    public ConveyorPointLane(ConveyorPoint point) => Point = point;
+    public Path Arc { get; set; }
+    public int Lane { get; internal set; }
+    public LinkedListNode<ILanePart> ElementNode { get; internal set; }
+    public ConveyorPoint Point { get; }
+
+    public void AddToCanvas(Canvas canvas)
     {
-        BeginLength = beginLength;
-        Line = line;
-    }
-    private Line? _Line;
-    public Line? Line
-    {
-        get => _Line;
-        set
-        {
-            _Line = value;
-            _Line!.Tag = this;
-            Length = _Line.Length();
-            EndLength = BeginLength + Length;
-            UnitVector = new((_Line.X2 - _Line.X1) / Length, (_Line.Y2 - _Line.Y1) / Length);
-            StartPoint = new(_Line.X1, _Line.Y1);
-            EndPoint = new(_Line.X2, _Line.Y2);
-        }
+        canvas.Children.Add(Arc);
     }
 
-    public Point StartPoint { get; set; }
-    public Point EndPoint { get; set; }
-    public double EndLength { get; set; }
-    public double BeginLength { get; set; }
-
-
-    public double Length { get; private set; }
-    public Point UnitVector { get; internal set; }
-
-    internal Point GetPointAbsolute(double length, bool overshoot = false)
+    internal void Prepare()
     {
-        length -= BeginLength;
-        if (length < Length || overshoot)
+        if (Point.IsFirst || Point.IsLast) return;
+        var prevLine = ((ConveyorSegmentLane)ElementNode.Previous.Value).Line;
+        var nextLine = ((ConveyorSegmentLane)ElementNode.Next.Value).Line;
+        var pg = new PathGeometry()
+        { };
+
+        Arc = new()
         {
-            var mult = length;// TODO hier ggf. auf spline umstellen
-            return new(UnitVector.X * mult + StartPoint.X, UnitVector.Y * mult + StartPoint.Y);
-        }
-        else
+            Stroke = Brushes.Plum,
+        };
+        Arc.Data = pg;
+        pg.Figures.Add(new()
         {
-            return EndPoint;
-        }
-    }
-}
+            StartPoint = new(prevLine.X2, prevLine.Y2),
+            Segments = { new LineSegment(new(nextLine.X1, nextLine.Y1), true)}
+        });
 
-public static class Maths
-{
-    public static double Distance(Point p1, Point p2)
-    {
-        p1.X = p2.X - p1.X;
-        p1.X = p1.X * p1.X;
-        p1.Y = p2.Y - p1.Y;
-        p1.Y = p1.Y * p1.Y;
-        return Math.Sqrt(p1.X + p1.Y);
-    }
-
-    public static double Length(this Line line) => Distance(new(line.X1, line.Y1), new(line.X2, line.Y2));
-}
-
-class TextAdorner : Adorner
-{
-    public TextAdorner(UIElement adornedElement) : base(adornedElement)
-    { }
-
-    public static Typeface Tf = new Typeface("Arial");
-    protected override void OnRender(DrawingContext drawingContext)
-    {
-        if (AdornedElement is Shape shape /*&& shape.IsLabelUsed*/)
-        {
-            Rect segmentBounds = new Rect(shape.DesiredSize);
-            if (shape.Tag is Item item)
-            {
-                FormattedText ft = new FormattedText(item.Number.ToString(), Thread.CurrentThread.CurrentCulture, 
-                    FlowDirection.LeftToRight, Tf, 10, Brushes.White);
-                segmentBounds.Offset(segmentBounds.Width / 2 - ft.Width / 2, 0);
-                drawingContext.DrawText(ft, segmentBounds.TopLeft);
-            }
-        }
     }
 }

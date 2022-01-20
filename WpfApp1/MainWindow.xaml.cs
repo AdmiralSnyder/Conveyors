@@ -147,14 +147,17 @@ public partial class MainWindow : Window
 
         void Finish()
         {
+            Stack<Line>? items = new();
             foreach (var line in TempLines)
             {
                 TheCanvas.Children.Remove(line);
                 line.Stroke = Brushes.Red;
+                if (line.X1 != line.X2 || line.Y1 != line.Y2)
+                {
+                    items.Push(line);
+                }
             }
-            TempLines.Pop();
-            var items = new Stack<Line>(TempLines);
-            var conv = Conveyor.Create(items);
+            var conv = Conveyor.Create(items, int.TryParse(LanesTB.Text, out var lanesCnt) ? Math.Max(lanesCnt, 1) : 1);
             Conveyor.AddToCanvas(conv, TheCanvas);
             Conveyors.Add(conv);
 
