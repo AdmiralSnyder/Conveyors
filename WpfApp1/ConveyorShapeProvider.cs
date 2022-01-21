@@ -4,14 +4,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Shapes;
+using WpfLib;
+using System.Windows.Media;
 
 namespace WpfApp1
 {
-    public class ConveyorShapeProvider
+  
+
+    public class ConveyorShapeProvider : ShapeProvider
     {
-        public Line CreateConveyorPositioningLine()
+        public Line CreateConveyorPositioningLine(TwoPoints points)
         {
-            return null;
+            var line = CreateLine(points);
+            line.Stroke = Brushes.Black;
+            line.StrokeThickness = 2;
+            return line;
         }
 
         public Line CreateConveyorSegmentLine()

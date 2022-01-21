@@ -5,7 +5,12 @@ VisualStudioVersion = 17.1.32104.313
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WpfApp1", "WpfApp1\WpfApp1.csproj", "{BA987476-B5BB-4509-8684-62E951C168C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfLib", "WpfLib\WpfLib.csproj", "{F0DD53E4-8971-4E7C-AC6C-B0B869937D00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WpfLib", "WpfLib\WpfLib.csproj", "{F0DD53E4-8971-4E7C-AC6C-B0B869937D00}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{600AE424-D6C4-4269-8F5E-D2289A6560D5}"
+	ProjectSection(SolutionItems) = preProject
+		GlobalUsings.cs = GlobalUsings.cs
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

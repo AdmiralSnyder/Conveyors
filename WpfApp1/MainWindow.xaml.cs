@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PointDef;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -169,19 +170,12 @@ public partial class MainWindow : Window
 
     public List<Conveyor> Conveyors = new();
 
+    private ConveyorShapeProvider ShapeProvider = new();
     public Line AddLine(Point from, Point to)
     {
-        var line = new Line() { X1 = from.X, X2 = to.X, Y1 = from.Y, Y2 = to.Y, Stroke = Brushes.Black, StrokeThickness = 2 };
+        var line = ShapeProvider.CreateConveyorPositioningLine(((V2d)from, (V2d)to));
         TheCanvas.Children.Add(line);
         return line;
-    }
-
-    public void AddBlock(Point point)
-    {
-        var block = new Rectangle() { Width = 100, Height = 100, Fill = Brushes.Black };
-        Canvas.SetLeft(block, point.X);
-        Canvas.SetTop(block, point.Y);
-        TheCanvas.Children.Add(block);
     }
 
     private void SetLineEnd(Line line, Point point)

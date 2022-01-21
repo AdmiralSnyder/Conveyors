@@ -1,0 +1,1 @@
+﻿global using TwoPoints = PointDef.twopoints.TwoPoints<PointDef.V2d>;
