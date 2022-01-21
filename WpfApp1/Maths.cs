@@ -16,4 +16,5 @@ public static class Maths
     }
 
     public static double Length(this Line line) => Distance(new(line.X1, line.Y1), new(line.X2, line.Y2));
+    public static double Length(this (double x, double y) tuple) => Distance(new(0, 0), new(tuple.x, tuple.y));
 }

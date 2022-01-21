@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
@@ -224,113 +223,5 @@ public class Conveyor
             length = 0;
         }
         return segmentLane.Value.GetPointAbsolute(length);
-    }
-}
-
-public interface IPathPart
-{
-    void RegisterLanes();
-}
-
-public class ConveyorPoint : ICanvasable, IPathPart
-{
-    public ConveyorPoint(Conveyor conveyor)
-    {
-        Conveyor = conveyor;
-        Lanes = new ConveyorPointLane[conveyor.LanesCount];
-    }
-
-    public bool IsLast { get; internal set; }
-    public bool IsFirst { get; internal set; }
-    public double Y { get; internal set; }
-    public double X { get; internal set; }
-
-    public ConveyorPointLane[] Lanes;
-
-    public Ellipse PointCircle { get; internal set; }
-    public Conveyor Conveyor { get; }
-    public LinkedListNode<ConveyorPoint> Node { get; internal set; }
-    public LinkedListNode<IPathPart> ElementsNode { get; internal set; }
-
-    private const double Size = 4d;
-
-    public void AddToCanvas(Canvas canvas)
-    {
-        PointCircle = new() { Width = Size, Height = Size, Fill = IsLast ? Brushes.Red : IsFirst ? Brushes.Cyan : Brushes.Blue };
-        canvas.Children.Add(PointCircle);
-        Canvas.SetLeft(PointCircle, X - Size / 2.0);
-        Canvas.SetTop(PointCircle, Y - Size / 2.0);
-
-        if (IsFirst || IsLast) return;
-        foreach (var lane in Lanes)
-        {
-            lane.AddToCanvas(canvas);
-        }
-    }
-
-    internal void BuildLanes()
-    {
-        if (IsFirst || IsLast) return;
-        
-        foreach (var i in Conveyor.LaneIndexes)
-        {
-            var lane = Lanes[i] = new(this);
-            lane.Lane = i;
-        }
-    }
-
-    public void RegisterLanes()
-    {
-        if (IsFirst || IsLast) return;
-
-        foreach (var lane in Lanes)
-        {
-            lane.ElementNode = Conveyor.PointAndSegmentLanes[lane.Lane].AddLast(lane);
-        }
-    }
-
-    internal void PrepareLanes()
-    {
-        if (IsFirst || IsLast) return;
-
-        foreach (var lane in Lanes)
-        {
-            lane.Prepare();
-        }
-    }
-}
-
-public class ConveyorPointLane : ICanvasable, ILanePart
-{
-    public ConveyorPointLane(ConveyorPoint point) => Point = point;
-    public Path Arc { get; set; }
-    public int Lane { get; internal set; }
-    public LinkedListNode<ILanePart> ElementNode { get; internal set; }
-    public ConveyorPoint Point { get; }
-
-    public void AddToCanvas(Canvas canvas)
-    {
-        canvas.Children.Add(Arc);
-    }
-
-    internal void Prepare()
-    {
-        if (Point.IsFirst || Point.IsLast) return;
-        var prevLine = ((ConveyorSegmentLane)ElementNode.Previous.Value).Line;
-        var nextLine = ((ConveyorSegmentLane)ElementNode.Next.Value).Line;
-        var pg = new PathGeometry()
-        { };
-
-        Arc = new()
-        {
-            Stroke = Brushes.Plum,
-        };
-        Arc.Data = pg;
-        pg.Figures.Add(new()
-        {
-            StartPoint = new(prevLine.X2, prevLine.Y2),
-            Segments = { new LineSegment(new(nextLine.X1, nextLine.Y1), true)}
-        });
-
     }
 }
