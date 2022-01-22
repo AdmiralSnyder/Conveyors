@@ -39,32 +39,36 @@ public class Conveyor
     public LinkedList<IPathPart> PointsAndSegments = new();
     public LinkedList<ConveyorPointLane>[] PointLanes;
     public LinkedList<ILanePart>[] PointAndSegmentLanes;
-    public static Conveyor Create(IEnumerable<Line> lines, int lanesCount = 1)
+    public static Conveyor Create(IEnumerable<Point> points, int lanesCount = 1)
     {
         var conv = new Conveyor(lanesCount);
         double length = 0d;
         bool first = true;
         {
-            ConveyorPoint? point = null;
-            foreach (var line in lines)
+            Point oldPoint = default;
+            ConveyorPoint? convPoint = null;
+            foreach (var point in points)
             {
                 if (first)
                 {
+                    oldPoint = point;
                     first = false;
-                    point = AddPoint(line.X1, line.Y1);
-                    point.IsFirst = true;
+                    convPoint = AddPoint(point);
+                    convPoint.IsFirst = true;
+                    continue;
                 }
-                var segment = new ConveyorSegment(conv, length, line);
+                var segment = new ConveyorSegment(conv, length, (oldPoint, point));
+                oldPoint = point;
                 segment.Node = conv.Segments.AddLast(segment);
                 segment.ElementsNode = conv.PointsAndSegments.AddLast(segment);
 
                 length += segment.DefinitionLength;
 
-                point = AddPoint(line.X2, line.Y2);
+                convPoint = AddPoint(point);
             }
-            if (point is not null)
+            if (convPoint is not null)
             {
-                point.IsLast = true;
+                convPoint.IsLast = true;
             }
         }
         foreach (var segment in conv.Segments)
@@ -89,26 +93,26 @@ public class Conveyor
 
         return conv;
 
-        ConveyorPoint AddPoint(double x, double y)
+        ConveyorPoint AddPoint(Point point)
         {
-            ConveyorPoint point = new(conv) { X = x, Y = y };
-            point.Node = conv.Points.AddLast(point);
-            point.ElementsNode = conv.PointsAndSegments.AddLast(point);
-            return point;
+            ConveyorPoint cPoint = new(conv) { X = point.X, Y = point.Y };
+            cPoint.Node = conv.Points.AddLast(cPoint);
+            cPoint.ElementsNode = conv.PointsAndSegments.AddLast(cPoint);
+            return cPoint;
         }
     }
 
-    public static void AddToCanvas(Conveyor conveyor, Canvas canvas)
+    public static void AddToCanvas(Conveyor conveyor, CanvasInfo canvasInfo)
     {
-        conveyor.Canvas = canvas;
+        conveyor.Canvas = canvasInfo.Canvas;
         foreach (var segment in conveyor.Segments)
         {
-            segment.AddToCanvas(canvas);
+            segment.AddToCanvas(canvasInfo);
         }
 
         foreach (var point in conveyor.Points)
         {
-            point.AddToCanvas(canvas);
+            point.AddToCanvas(canvasInfo);
         }
     }
 

@@ -14,9 +14,9 @@ public class ConveyorPointLane : ICanvasable, ILanePart
     public LinkedListNode<ILanePart> ElementNode { get; internal set; }
     public ConveyorPoint Point { get; }
 
-    public void AddToCanvas(Canvas canvas)
+    public void AddToCanvas(CanvasInfo canvasInfo)
     {
-        canvas.Children.Add(Arc);
+        canvasInfo.Canvas.Children.Add(Arc);
     }
 
     internal void Prepare()

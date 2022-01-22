@@ -29,17 +29,17 @@ public class ConveyorPoint : ICanvasable, IPathPart
 
     private const double Size = 4d;
 
-    public void AddToCanvas(Canvas canvas)
+    public void AddToCanvas(CanvasInfo canvasInfo)
     {
         PointCircle = new() { Width = Size, Height = Size, Fill = IsLast ? Brushes.Red : IsFirst ? Brushes.Cyan : Brushes.Blue };
-        canvas.Children.Add(PointCircle);
+        canvasInfo.Canvas.Children.Add(PointCircle);
         Canvas.SetLeft(PointCircle, X - Size / 2.0);
         Canvas.SetTop(PointCircle, Y - Size / 2.0);
 
         if (IsFirst || IsLast) return;
         foreach (var lane in Lanes)
         {
-            lane.AddToCanvas(canvas);
+            lane.AddToCanvas(canvasInfo);
         }
     }
 

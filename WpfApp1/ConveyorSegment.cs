@@ -6,22 +6,29 @@ using System.Windows.Shapes;
 
 namespace WpfApp1;
 
+public class CanvasInfo
+{
+    public Canvas Canvas { get; set; }
+    public ConveyorShapeProvider ShapeProvider { get; set; }
+}
+
 public interface ICanvasable
 {
-    void AddToCanvas(Canvas canvas);
+    void AddToCanvas(CanvasInfo canvasInfo);
 }
 
 public class ConveyorSegment : ICanvasable, IPathPart
 {
-    public ConveyorSegment(Conveyor conv, double length, Line line)
+    public ConveyorSegment(Conveyor conv, double length, TwoPoints startEnd)
     {
         DefinitionLength = length;
-        DefinitionLine = line;
+        StartEnd = startEnd;
         Conveyor = conv;
         Lanes = new ConveyorSegmentLane[conv.LanesCount];
     }
 
-    public Line DefinitionLine { get; set; }
+    public Line? DefinitionLine { get; set; }
+    public TwoPoints StartEnd { get; set; }
     public ConveyorSegmentLane[] Lanes { get; }
     public Conveyor Conveyor { get; }
 
@@ -29,12 +36,13 @@ public class ConveyorSegment : ICanvasable, IPathPart
     public LinkedListNode<ConveyorSegment> Node { get; internal set; }
     public LinkedListNode<IPathPart> ElementsNode { get; internal set; }
 
-    public void AddToCanvas(Canvas canvas)
+    public void AddToCanvas(CanvasInfo canvasInfo)
     {
-        canvas.Children.Add(DefinitionLine);
+        DefinitionLine = canvasInfo.ShapeProvider.CreateConveyorSegmentLine(StartEnd);
+        canvasInfo.Canvas.Children.Add(DefinitionLine);
         foreach(var lane in Lanes)
         {
-            lane.AddToCanvas(canvas);
+            lane.AddToCanvas(canvasInfo);
         }
     }
 
@@ -44,7 +52,7 @@ public class ConveyorSegment : ICanvasable, IPathPart
         {
             var laneList = Conveyor.SegmentLanes[i];
             var prevSegment = laneList.Last;
-            var line = CreateLine(DefinitionLine, i);
+            var line = CreateLine(StartEnd, i);
             ConveyorSegmentLane lane = new(prevSegment?.Value.EndLength ?? 0, line);
             Lanes[i] = lane;
             lane.Lane = i;
@@ -53,7 +61,7 @@ public class ConveyorSegment : ICanvasable, IPathPart
     }
     
 
-    private Line CreateLine(Line original, int idx)
+    private Line CreateLine(TwoPoints original, int idx)
     {
             //1    0
             //2   -0.5  0.5
@@ -78,19 +86,19 @@ public class ConveyorSegment : ICanvasable, IPathPart
 
     private double Length((double x, double y) vect) => Math.Sqrt(vect.x * vect.x + vect.y * vect.y);
 
-    private Line OffsettedLine(Line original, double offset)
+    private Line OffsettedLine(TwoPoints original, double offset)
     {
-        var origVect = (original.X2 - original.X1, original.Y2 - original.Y1);
+        var origVect = (original.P2.X - original.P1.X, original.P2.Y - original.P1.Y);
         var origNormalVect = Normalize(origVect);
         var offsetNormalVect = (x: -origNormalVect.y, y: origNormalVect.x);
         var offsetVect = (x: offsetNormalVect.x * offset, y: offsetNormalVect.y * offset);
 
         return new Line()
         {
-            X1 = original.X1 + offsetVect.x,
-            X2 = original.X2 + offsetVect.x,
-            Y1 = original.Y1 + offsetVect.y,
-            Y2 = original.Y2 + offsetVect.y,
+            X1 = original.P1.X + offsetVect.x,
+            X2 = original.P2.X + offsetVect.x,
+            Y1 = original.P1.Y + offsetVect.y,
+            Y2 = original.P2.Y + offsetVect.y,
             Stroke = Brushes.White,
         };
     }

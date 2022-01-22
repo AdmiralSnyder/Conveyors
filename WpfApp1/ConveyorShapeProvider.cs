@@ -9,8 +9,6 @@ using System.Windows.Media;
 
 namespace WpfApp1
 {
-  
-
     public class ConveyorShapeProvider : ShapeProvider
     {
         public Line CreateConveyorPositioningLine(TwoPoints points)
@@ -21,9 +19,12 @@ namespace WpfApp1
             return line;
         }
 
-        public Line CreateConveyorSegmentLine()
+        public Line CreateConveyorSegmentLine(TwoPoints points)
         {
-            return null;
+            var line = CreateLine(points);
+            line.Stroke = Brushes.Red;
+            line.StrokeThickness = 2;
+            return line;
         }
 
         public Line CreateConveyorSegmentLaneLine()

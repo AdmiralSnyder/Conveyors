@@ -38,7 +38,7 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart
     public double EndLength { get; set; }
     public double BeginLength { get; set; }
 
-    public void AddToCanvas(Canvas canvas) => canvas.Children.Add(Line);
+    public void AddToCanvas(CanvasInfo canvasInfo) => canvasInfo.Canvas.Children.Add(Line);
 
     public double Length { get; private set; }
     public Point UnitVector { get; internal set; }
