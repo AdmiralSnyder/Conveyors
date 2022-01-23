@@ -119,7 +119,7 @@ public class Conveyor
     public Canvas? Canvas;
     public double Speed = 60;
 
-    internal void SpawnItem()
+    internal void SpawnItems()
     {
         for (int i = 0; i < LanesCount; i++)
         {
@@ -189,20 +189,23 @@ public class Conveyor
     }
 
     // TODO add an out parameter for stalling
-    internal Point GetItemLocation(Item item, out bool done, out LinkedListNode<ConveyorSegment> segmentNode, out LinkedListNode<ConveyorSegmentLane> segmentLane)
+    internal Point GetItemLocation(Item item, out bool done, out LinkedListNode<ConveyorSegment> segmentNode, out LinkedListNode<ConveyorSegmentLane> segmentLane, out double staleAge)
     {
         var actualAge = item.Age - item.StaleAge;
         var nextItem = GetNextItem(item);
         if (nextItem is not null)
         {
             var nextAge = nextItem.Age - nextItem.StaleAge;
-            if (actualAge + Speed * 2.8 > nextAge) // this needs to be something depending on the speed and size of the items.
+            if (actualAge + Speed * 0.2 > nextAge) // this needs to be something depending on the speed and size of the items.
             {
                 // collision -> avoid
-                segmentLane = item.SegmentLane ?? Segments.First.Value.Lanes[item.Lane].Node;
-                segmentNode = item.Segment ?? Segments.First;
+                segmentLane = nextItem.SegmentLane;
+                segmentNode = nextItem.Segment;
+                var targetAge = nextAge - Speed * 2.8;
+                var targetlength = targetAge / 1000 * Speed;
+                staleAge = actualAge - targetAge;
                 done = false;
-                return item.Location;
+                return segmentLane.Value.GetPointAbsolute(targetlength);
             }
         }
 
@@ -226,6 +229,7 @@ public class Conveyor
         {
             length = 0;
         }
+        staleAge = 0;
         return segmentLane.Value.GetPointAbsolute(length);
     }
 }

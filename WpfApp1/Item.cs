@@ -21,7 +21,7 @@ public class Item
         Conveyor.Canvas.Children.Add(Shape);
         var layer = AdornerLayer.GetAdornerLayer(Shape);
         layer.Add(new TextAdorner(Shape));
-        _Age = 0;
+        AddAge(0);
         Number = Num++;
     }
 
@@ -35,7 +35,9 @@ public class Item
     {
         var oldlocation = Location;
         _Age += offset;
-        var newLocation = Conveyor.GetItemLocation(this, out var done, out var segment, out var segmentLane);
+        var newLocation = Conveyor.GetItemLocation(this, out var done, out var segment, out var segmentLane, out var staleAge);
+        _Age -= staleAge;
+        StaleAge -= staleAge;
         if (oldlocation == newLocation)
         {
             _Age -= offset;

@@ -253,7 +253,7 @@ public partial class MainWindow : Window
     {
         foreach (var conveyor in Conveyors)
         {
-            conveyor.SpawnItem();
+            conveyor.SpawnItems();
         }
     }
 
