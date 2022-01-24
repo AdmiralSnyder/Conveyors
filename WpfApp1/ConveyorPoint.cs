@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-
+using WpfLib;
 namespace WpfApp1;
 
 public class ConveyorPoint : ICanvasable, IPathPart
@@ -16,8 +16,20 @@ public class ConveyorPoint : ICanvasable, IPathPart
 
     public bool IsLast { get; internal set; }
     public bool IsFirst { get; internal set; }
-    public double Y { get; internal set; }
-    public double X { get; internal set; }
+    //public double Y { get; internal set; }
+    //public double X { get; internal set; }
+    private Point _Location;
+    public Point Location 
+    {
+        get => _Location;
+        set => Func.Setter(ref _Location, value, () =>
+        {
+            if (PointCircle is not null)
+            {
+                PointCircle.SetCenterLocation(Location);
+            }
+        });
+    }
 
     public ConveyorPointLane[] Lanes;
 
@@ -27,14 +39,10 @@ public class ConveyorPoint : ICanvasable, IPathPart
     public LinkedListNode<ConveyorPoint> Node { get; internal set; }
     public LinkedListNode<IPathPart> ElementsNode { get; internal set; }
 
-    private const double Size = 4d;
-
     public void AddToCanvas(CanvasInfo canvasInfo)
     {
-        PointCircle = new() { Width = Size, Height = Size, Fill = IsLast ? Brushes.Red : IsFirst ? Brushes.Cyan : Brushes.Blue };
+        PointCircle = canvasInfo.ShapeProvider.CreateConveyorPointEllipse(Location, IsFirst, IsLast);
         canvasInfo.Canvas.Children.Add(PointCircle);
-        Canvas.SetLeft(PointCircle, X - Size / 2.0);
-        Canvas.SetTop(PointCircle, Y - Size / 2.0);
 
         if (IsFirst || IsLast) return;
         foreach (var lane in Lanes)

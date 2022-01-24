@@ -7,7 +7,10 @@
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
             <Button Name="AddConveyorB" Content="Add" Click="AddConveyorB_Click" />
             <Button Name="PutItemB" Content="Put" Margin="20,0" Click="PutItemB_Click" />
-            <CheckBox Name="RunningCB" Click="RunningCB_Click">Running</CheckBox>
+            <Button Name="MovePointB" Content="Move" Margin="20,0" Click="MovePointB_Click" />
+            <CheckBox Name="RunningCB" Checked="RunningCB_Click" Unchecked="RunningCB_Click">
+                Running
+            </CheckBox>
             <TextBox Name="LanesTB" Margin="20,0" Text="2" />
             <TextBlock Name="SelectionInfoT" Text="Please select something" />
         </StackPanel>

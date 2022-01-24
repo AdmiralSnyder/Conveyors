@@ -14,6 +14,8 @@ namespace WpfApp1;
 
 public class Conveyor
 {
+    private static int NextConveyorNumber = 0;
+
     private bool _IsRunning;
     public bool IsRunning
     {
@@ -95,7 +97,7 @@ public class Conveyor
 
         ConveyorPoint AddPoint(Point point)
         {
-            ConveyorPoint cPoint = new(conv) { X = point.X, Y = point.Y };
+            ConveyorPoint cPoint = new(conv) { Location = point };
             cPoint.Node = conv.Points.AddLast(cPoint);
             cPoint.ElementsNode = conv.PointsAndSegments.AddLast(cPoint);
             return cPoint;
@@ -123,7 +125,7 @@ public class Conveyor
     {
         for (int i = 0; i < LanesCount; i++)
         {
-            var item = new Item(this) { Lane = i };
+            var item = new Item(this, i);
             Items[i].Enqueue(item);
         }
     }
@@ -141,6 +143,9 @@ public class Conveyor
     }
 
     private readonly ConcurrentQueue<Item>[] Items;
+
+    public int Number { get; }
+
     private Thread? Dispatcher;
 
     public Conveyor(int lanesCount)
@@ -153,7 +158,9 @@ public class Conveyor
         PointAndSegmentLanes = new LinkedList<ILanePart>[lanesCount];
 
         Items = new ConcurrentQueue<Item>[lanesCount];
-        
+
+        Number = NextConveyorNumber++;
+
         foreach (int i in LaneIndexes)
         {
             SegmentLanes[i] = new();
@@ -196,7 +203,7 @@ public class Conveyor
         if (nextItem is not null)
         {
             var nextAge = nextItem.Age - nextItem.StaleAge;
-            if (actualAge + Speed * 0.2 > nextAge) // this needs to be something depending on the speed and size of the items.
+            if (actualAge + Speed * 2.8 > nextAge) // this needs to be something depending on the speed and size of the items.
             {
                 // collision -> avoid
                 segmentLane = nextItem.SegmentLane;

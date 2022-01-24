@@ -13,9 +13,10 @@ public class Item
     [ThreadStatic]
     public static int Num = 0;
 
-    public int Lane { get; set; }
-    public Item(Conveyor conveyor)
+    public int Lane { get; }
+    public Item(Conveyor conveyor, int lane)
     {
+        Lane = lane;
         Conveyor = conveyor;
         Shape = new Ellipse() { Width = 10, Height = 10, Fill = Brushes.Blue, Tag = this };
         Conveyor.Canvas.Children.Add(Shape);
@@ -37,11 +38,9 @@ public class Item
         _Age += offset;
         var newLocation = Conveyor.GetItemLocation(this, out var done, out var segment, out var segmentLane, out var staleAge);
         _Age -= staleAge;
-        StaleAge -= staleAge;
+        StaleAge += staleAge;
         if (oldlocation == newLocation)
         {
-            _Age -= offset;
-            StaleAge += offset;
             Location = oldlocation;
         }
         else
@@ -87,11 +86,13 @@ public class Item
         get => _Location;
         set
         {
-            _Location = value;
-            Shape.Dispatcher.BeginInvoke(() =>
+            Func.Setter(ref _Location, value, () =>
             {
-                Canvas.SetLeft(Shape, value.X - Shape.Width / 2);
-                Canvas.SetTop(Shape, value.Y - Shape.Height / 2);
+                Shape.Dispatcher.BeginInvoke(() =>
+                {
+                    Canvas.SetLeft(Shape, value.X - Shape.Width / 2);
+                    Canvas.SetTop(Shape, value.Y - Shape.Height / 2);
+                });
             });
         }
     }

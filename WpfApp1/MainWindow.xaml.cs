@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WpfLib;
 
 namespace WpfApp1;
 
@@ -103,6 +104,20 @@ public partial class MainWindow : Window
                         break;
                 }
                 break;
+            case InputState.MovePoint:
+                {
+                    if (MoveShapes.FirstOrDefault() is { Tag : ConveyorPoint point })
+                    {
+                        point.Location = GetCanvasPoint(e);
+                    }
+                    InputState = InputState.None;
+                    foreach (var shape in MoveShapes)
+                    {
+                        TheCanvas.Children.Remove(shape);
+                    }
+                    MoveShapes.Clear();
+                    break;
+                }
         }
 
         void Abort(bool abortAllIfEmpty = false)
@@ -150,7 +165,6 @@ public partial class MainWindow : Window
         {
             Point lastPoint = (double.NaN, double.NaN);
             List<Point> points = new();
-            Stack<Line>? items = new();
             foreach (var line in TempLines.Reverse())
             {
                 TheCanvas.Children.Remove(line);
@@ -214,7 +228,22 @@ public partial class MainWindow : Window
             CanvasTranslateTransform.Y = PanValue.Y + diff.Y;
         }
 
-        if (InputState != InputState.None)
+        if (InputState == InputState.MovePoint && MoveShapes.Any())
+        {
+            var point = GetCanvasPoint(e);
+            foreach (var shape in MoveShapes)
+            {
+                if (shape is Ellipse ellipse)
+                {
+                    ellipse.SetCenterLocation(point);
+                }
+                if (shape is Line line)
+                {
+                    SetLineEnd(line, point);
+                }
+            }
+        }
+        else if (InputState != InputState.None)
         {
             if (TempLines.TryPeek(out var tl))
             {
@@ -257,6 +286,10 @@ public partial class MainWindow : Window
         }
     }
 
+    private List<Ellipse> MoveCircles = new();
+
+    private List<Shape> MoveShapes = new();
+
     private bool _IsRunning;
     public bool IsRunning
     {
@@ -267,6 +300,78 @@ public partial class MainWindow : Window
     private void RunningCB_Click(object sender, RoutedEventArgs e) => IsRunning = RunningCB.IsChecked ?? false;
 
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) => IsRunning = false;
+
+    private void MovePointB_Click(object sender, RoutedEventArgs e)
+    {
+        RunningCB.IsChecked = false;
+
+        foreach (var conveyor in Conveyors)
+        {
+            foreach (var point in conveyor.Points)
+            {
+                var circle = ShapeProvider.CreatePointMoveCircle(point.Location, MoveCircleClicked);
+                circle.Tag = point;
+                TheCanvas.Children.Add(circle);
+                MoveCircles.Add(circle);
+            }
+        }
+    }
+
+    private void MoveCircleClicked(Shape shape)
+    {
+        if (shape is Ellipse moveCircle)
+        {
+            var point = (ConveyorPoint)moveCircle.Tag;
+            const double size = 5d;
+            var newCircle = new Ellipse()
+            {
+                Width = size,
+                Height = size,
+                Fill = Brushes.Yellow,
+                Tag = point,
+            };
+            newCircle.SetCenterLocation(point.Location);
+            TheCanvas.Children.Add(newCircle);
+
+            MoveShapes.Add(newCircle);
+            if (point.ElementsNode.Previous is { Value: ConveyorSegment prevSegment})
+            {
+                var prevLine = new Line()
+                {
+                    X1 = prevSegment.StartEnd.P1.X,
+                    Y1 = prevSegment.StartEnd.P1.Y,
+                    X2 = prevSegment.StartEnd.P2.X,
+                    Y2 = prevSegment.StartEnd.P2.Y,
+                    Stroke = Brushes.Yellow,
+                    Tag = point,
+                };
+                TheCanvas.Children.Add(prevLine);
+                MoveShapes.Add(prevLine);
+            }
+            if (point.ElementsNode.Next is { Value: ConveyorSegment nextSegment })
+            {
+                var nextLine = new Line()
+                {
+                    X1 = nextSegment.StartEnd.P2.X,
+                    Y1 = nextSegment.StartEnd.P2.Y,
+                    X2 = nextSegment.StartEnd.P1.X,
+                    Y2 = nextSegment.StartEnd.P1.Y,
+                    Stroke = Brushes.Yellow,
+                    Tag = point,
+                };
+                TheCanvas.Children.Add(nextLine);
+                MoveShapes.Add(nextLine);
+            }
+        }
+
+        foreach (var circle in MoveCircles)
+        {
+            TheCanvas.Children.Remove(circle);
+        }
+        MoveCircles.Clear();
+
+        InputState = InputState.MovePoint;
+    }
 }
 
 public enum InputState
@@ -274,6 +379,7 @@ public enum InputState
     None,
     SelectFirstPoint,
     SelectLastPoint,
+    MovePoint,
 }
 
 public enum ActionResults

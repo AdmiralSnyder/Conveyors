@@ -1,49 +1,74 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
+using WpfLib;
 
 namespace WpfApp1;
 
 public interface ILanePart
 { }
 
-public class ConveyorSegmentLane : ICanvasable, ILanePart
+public interface IDebugText
 {
-    public ConveyorSegmentLane(double beginLength, Line line)
+    string DebugText { get; }
+}
+
+[DebuggerDisplay($"{"SegLane"} ({{{nameof(ConveyorSegmentLane.DebugText)}}})")]
+public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText
+{
+    public ConveyorSegmentLane(double beginLength, TwoPoints startEnd, int lane, ConveyorSegment segment)
     {
         BeginLength = beginLength;
-        Line = line;
+        StartEnd = startEnd;
+        Lane = lane;
+        Segment = segment;
     }
 
     public LinkedListNode<ConveyorSegmentLane> Node { get; set; }
-    private Line? _Line;
-    public Line? Line
+    private TwoPoints _StartEnd;
+    private TwoPoints StartEnd 
     {
-        get => _Line;
-        set
+        get => _StartEnd;
+        set => Func.Setter(ref _StartEnd, value, () =>
         {
-            _Line = value;
-            _Line!.Tag = this;
-            Length = _Line.Length();
+            Length = StartEnd.Length();
             EndLength = BeginLength + Length;
-            UnitVector = new((_Line.X2 - _Line.X1) / Length, (_Line.Y2 - _Line.Y1) / Length);
-            StartPoint = new(_Line.X1, _Line.Y1);
-            EndPoint = new(_Line.X2, _Line.Y2);
-        }
+            UnitVector = StartEnd.Vector().Normalize(Length);
+            StartPoint = StartEnd.P1;
+            EndPoint = StartEnd.P2;
+            if (Line is not null)
+            {
+                Line.X1 = StartEnd.P1.X;
+                Line.Y1 = StartEnd.P1.Y;
+                Line.X2 = StartEnd.P2.X;
+                Line.Y2 = StartEnd.P2.Y;
+            }
+        });
     }
+    public Line? Line { get; private set; }
 
     public Point StartPoint { get; set; }
     public Point EndPoint { get; set; }
     public double EndLength { get; set; }
     public double BeginLength { get; set; }
 
-    public void AddToCanvas(CanvasInfo canvasInfo) => canvasInfo.Canvas.Children.Add(Line);
+    public void AddToCanvas(CanvasInfo canvasInfo)
+    {
+        Line = canvasInfo.ShapeProvider.CreateConveyorSegmentLaneLine(StartEnd);
+        Line.Tag = this;
+        
+        canvasInfo.Canvas.Children.Add(Line);
+    }
 
     public double Length { get; private set; }
     public Point UnitVector { get; internal set; }
     public LinkedListNode<ILanePart> ElementNode { get; internal set; }
     public int Lane { get; internal set; }
+    public ConveyorSegment Segment { get; }
+
+    public string DebugText => $"{Segment.Conveyor.Number}.{Segment.Number}.{Lane}";
 
     internal Point GetPointAbsolute(double length, bool overshoot = false)
     {
