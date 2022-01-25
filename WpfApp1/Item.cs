@@ -8,8 +8,12 @@ using System.Windows.Shapes;
 
 namespace WpfApp1;
 
-public class Item
+public class Item : ISelectObject
 {
+    public string DebugText => $"Item {Number}";
+
+    public string Text => $"Item {Number}";
+
     [ThreadStatic]
     public static int Num = 0;
 

@@ -47,6 +47,7 @@ namespace WpfApp1
                 Height = Size,
                 Fill = isLast ? Brushes.Red : isFirst ? Brushes.Cyan : Brushes.Blue,
             };
+            result.ApplyMouseBehaviour(this.SelectBehaviour);
             result.SetCenterLocation(point);
             return result;
         }

@@ -53,10 +53,13 @@ namespace WpfLib
 {
     public class ShapeProvider
     {
+        public Action<Shape> SelectBehaviour { get; set; }
+
         protected Line CreateLine(TwoPoints points)
         {
             var line = new Line();
             line.SetLocation(points);
+            line.ApplyMouseBehaviour(SelectBehaviour);
             return line;
         }
     }

@@ -5,13 +5,16 @@ using System.Windows.Shapes;
 using WpfLib;
 namespace WpfApp1;
 
-public class ConveyorPoint : ICanvasable, IPathPart
+public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject
 {
+    public string Text => $"Point {Conveyor.Number}.{Number} ({Location})";
+
     public ConveyorPoint(Conveyor conveyor)
     {
         Conveyor = conveyor;
         Lanes = new ConveyorPointLane[conveyor.LanesCount];
         LaneStrategy = PointLaneStrategies.Curve;
+        Number = Conveyor.Points.Count;
     }
 
     public bool IsLast { get; internal set; }
@@ -74,6 +77,7 @@ public class ConveyorPoint : ICanvasable, IPathPart
     public ConveyorPointLane[] Lanes;
 
     public PointLaneStrategies LaneStrategy { get; }
+    public int Number { get; }
     public Ellipse PointCircle { get; internal set; }
     public Conveyor Conveyor { get; }
     public LinkedListNode<ConveyorPoint> Node { get; internal set; }
@@ -82,6 +86,7 @@ public class ConveyorPoint : ICanvasable, IPathPart
     public void AddToCanvas(CanvasInfo canvasInfo)
     {
         PointCircle = canvasInfo.ShapeProvider.CreateConveyorPointEllipse(Location, IsFirst, IsLast);
+        PointCircle.Tag = this;
         canvasInfo.Canvas.Children.Add(PointCircle);
 
         if (IsFirst || IsLast) return;

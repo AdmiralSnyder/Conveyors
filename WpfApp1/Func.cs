@@ -17,6 +17,16 @@ namespace WpfApp1
             }
         }
 
+        public static void Setter<T>(ref T backingField, T value, Action<T, T> onChangeAction)
+        {
+            var oldValue = backingField;
+            if (!object.Equals(backingField, value))
+            {
+                backingField = value;
+                onChangeAction(oldValue, value);
+            }
+        }
+
         public static void Setter<T>(ref T backingField, T value, Action onChangeAction)
         {
             if (!object.Equals(backingField, value))

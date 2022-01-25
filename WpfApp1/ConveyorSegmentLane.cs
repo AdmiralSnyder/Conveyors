@@ -19,8 +19,9 @@ public interface IDebugText
 }
 
 [DebuggerDisplay($"{"SegLane"} ({{{nameof(ConveyorSegmentLane.DebugText)}}})")]
-public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText
+public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectObject
 {
+    public string Text => "KEkse";
     public ConveyorSegmentLane(double beginLength, int lane, ConveyorSegment segment)
     {
         BeginLength = beginLength;

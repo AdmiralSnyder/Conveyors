@@ -1,25 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using WpfLib;
 
 namespace WpfApp1;
 
-public class CanvasInfo
+public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject
 {
-    public Canvas Canvas { get; set; }
-    public ConveyorShapeProvider ShapeProvider { get; set; }
-}
+    public string Text => $"Segment {Conveyor.Number}.{Number} ({StartEnd})";
 
-public interface ICanvasable
-{
-    void AddToCanvas(CanvasInfo canvasInfo);
-}
-
-public class ConveyorSegment : ICanvasable, IPathPart
-{
     public ConveyorSegment(Conveyor conv, double length, TwoPoints startEnd)
     {
         Conveyor = conv;
@@ -64,6 +54,8 @@ public class ConveyorSegment : ICanvasable, IPathPart
     public void AddToCanvas(CanvasInfo canvasInfo)
     {
         DefinitionLine = canvasInfo.ShapeProvider.CreateConveyorSegmentLine(StartEnd);
+        DefinitionLine.Tag = this;
+
         canvasInfo.Canvas.Children.Add(DefinitionLine);
         foreach(var lane in Lanes)
         {

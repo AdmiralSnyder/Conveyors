@@ -20,11 +20,43 @@ namespace WpfApp1;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window
+public partial class MainWindow
 {
     public MainWindow()
     {
+        ShapeProvider = new() { SelectBehaviour = SelectShapeAction };
+        //this.DataContext = this;
         InitializeComponent();
+        SnapGridWidth = 20;
+    }
+
+    public List<Conveyor> Conveyors = new();
+
+    public static readonly DependencyProperty SnapGridWidthProperty =
+       DependencyProperty.Register(nameof(SnapGridWidth), typeof(int), typeof(MainWindow), new UIPropertyMetadata(10));
+
+    public int SnapGridWidth
+    {
+        get => (int)GetValue(SnapGridWidthProperty);
+        set => SetValue(SnapGridWidthProperty, value);
+    }
+
+    public static readonly DependencyProperty SelectedObjectProperty =
+       DependencyProperty.Register(nameof(SelectedObject), typeof(ISelectObject), typeof(MainWindow), new UIPropertyMetadata(null));
+
+    public bool SelectMode { get; set; }
+    public ISelectObject SelectedObject
+    {
+        get => (ISelectObject)GetValue(SelectedObjectProperty);
+        set => SetValue(SelectedObjectProperty, value);
+    }
+
+    private void SelectShapeAction(Shape shape)
+    {
+        if (SelectMode && shape.Tag is ISelectObject selectObject)
+        {
+            SelectedObject = selectObject;
+        }
     }
 
     private void AddConveyorB_Click(object sender, RoutedEventArgs e)
@@ -156,6 +188,7 @@ public partial class MainWindow : Window
                 : ActionResults.Abort;
 
             var point = GetCanvasPoint(e);
+            point = SnapPoint(point);
             TempLines.Push(AddLine(point, point)); // das ist geschummelt, damit ich nicht umständlich Zustände speichern muss
 
             return isShiftPressed ? ActionResults.Continue : ActionResults.Finish;
@@ -199,9 +232,16 @@ public partial class MainWindow : Window
         }
     }
 
-    public List<Conveyor> Conveyors = new();
+    //private void OnPropertyChanged(string propertyName)
+    //{
+    //    if (this.PropertyChanged != null)
+    //    {
+    //        this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+    //    }
+    //}
 
-    private ConveyorShapeProvider ShapeProvider = new();
+
+    private ConveyorShapeProvider ShapeProvider;
     public Line AddLine(Point from, Point to)
     {
         var line = ShapeProvider.CreateConveyorPositioningLine(((V2d)from, (V2d)to));
@@ -216,8 +256,9 @@ public partial class MainWindow : Window
     }
 
     private Point GetWindowPoint(MouseEventArgs e) => e.GetPosition(this);
-
     private Point GetCanvasPoint(MouseEventArgs e) => e.GetPosition(TheCanvas);
+
+    public bool SnapToGrid { get; set; } = true;
 
     private void TheCanvas_MouseMove(object sender, MouseEventArgs e)
     {
@@ -232,6 +273,8 @@ public partial class MainWindow : Window
         if (InputState == InputState.MovePoint && MoveShapes.Any())
         {
             var point = GetCanvasPoint(e);
+
+            point = SnapPoint(point);
             foreach (var shape in MoveShapes)
             {
                 if (shape is Ellipse ellipse)
@@ -248,10 +291,16 @@ public partial class MainWindow : Window
         {
             if (TempLines.TryPeek(out var tl))
             {
-                SetLineEnd(tl, GetCanvasPoint(e));
+                var point = GetCanvasPoint(e);
+
+                SetLineEnd(tl, SnapPoint(point));
             }
         }
     }
+
+    private Point SnapPoint(Point point) => SnapPoint(point, SnapToGrid && !Keyboard.IsKeyDown(Key.LeftAlt));
+    private Point SnapPoint(Point point, bool snap) => snap ? SnapPoint(point, snap, SnapGridWidth) : point;
+    private Point SnapPoint(Point point, bool snap, int snapGridWidth) => snap? ((int)((point.X + snapGridWidth / 2) / snapGridWidth) * snapGridWidth, (int) ((point.Y + snapGridWidth / 2) / snapGridWidth) * snapGridWidth) : point;
 
     // TODO put the zoom functionality into a behaviour
     private void TheCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -374,6 +423,11 @@ public partial class MainWindow : Window
         MoveCircles.Clear();
 
         InputState = InputState.MovePoint;
+    }
+
+    private void SelectB_Click(object sender, RoutedEventArgs e)
+    {
+        SelectMode = !SelectMode;
     }
 }
 

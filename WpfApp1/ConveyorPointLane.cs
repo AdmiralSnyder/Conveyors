@@ -7,8 +7,9 @@ using WpfLib;
 
 namespace WpfApp1;
 
-public class ConveyorPointLane : ICanvasable, ILanePart
+public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
 {
+    public string Text => $"PointLane {Point.Conveyor.Number}.{Point.Number}.{Lane} (TODO ARC PROPERTIES)";
     public ConveyorPointLane(ConveyorPoint point) => Point = point;
     public Path Arc { get; set; }
     public int Lane { get; internal set; }
@@ -18,6 +19,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart
     public void AddToCanvas(CanvasInfo canvasInfo)
     {
         canvasInfo.Canvas.Children.Add(Arc);
+        Arc.Tag = this;
     }
 
     internal void Prepare()
@@ -48,9 +50,9 @@ public class ConveyorPointLane : ICanvasable, ILanePart
             Vector oStart = prevEnd.Subtract(Point.Location);
             var oStartLen = oStart.Length();
             Vector oEnd = nextStart.Subtract(Point.Location);
-            var oStartNorm = Divide(oStart, oStartLen);
-            var oEndNorm = Normalize(oEnd);
-            var dotProd = DotProduct(oStartNorm, oEndNorm);
+            var oStartNorm = oStart.Divide(oStartLen);
+            var oEndNorm = oEnd.Normalize();
+            var dotProd = oStartNorm.DotProduct(oEndNorm);
             var angleRad = Math.Acos(dotProd);
 
             Arc.Stroke = IsLeft ? Brushes.Plum : Brushes.Tomato;
@@ -70,7 +72,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart
             pg.Figures.Add(new()
             {
                 StartPoint = prevEnd,
-                Segments = { new ArcSegment(nextStart, new(oStartLen, oStartLen), RadToDeg(angleRad), config.largeArg, config.swDir, true) }
+                Segments = { new ArcSegment(nextStart, new(oStartLen, oStartLen), MathsFunc.RadToDeg(angleRad), config.largeArg, config.swDir, true) }
             });
         }
     }
@@ -86,10 +88,4 @@ public class ConveyorPointLane : ICanvasable, ILanePart
     public double BeginLength { get; set; }
 
     public double EndLength => BeginLength;
-
-    private static (double x, double y) Divide((double x, double y) vect, double divisor) => Multiply(vect, 1 / divisor);
-    private static (double x, double y) Multiply((double x, double y) vect, double factor) => (x: vect.x * factor, y: vect.y * factor);
-    private static (double x, double y) Normalize((double x, double y) vect) => Divide(vect, vect.Length());
-    private static double DotProduct((double x, double y) a, (double x, double y) b) => a.x * b.x + a.y * b.y;
-    private static double RadToDeg(double rad) => Math.PI / rad; 
 }

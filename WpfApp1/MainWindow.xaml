@@ -1,30 +1,65 @@
 ﻿<Window x:Class="WpfApp1.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:WpfApp1"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" Title="MainWindow"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mx="clr-namespace:WpfLib.MarkupExtensions;assembly=WpfLib" Name="TheWindow" Title="MainWindow"
         Width="614" Height="352" Closing="Window_Closing" mc:Ignorable="d">
+    <Window.Resources>
+        <local:SnapGridConverter x:Key="SnapGridConverter" />
+    </Window.Resources>
     <DockPanel LastChildFill="True">
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
             <Button Name="AddConveyorB" Content="Add" Click="AddConveyorB_Click" />
             <Button Name="PutItemB" Content="Put" Margin="20,0" Click="PutItemB_Click" />
             <Button Name="MovePointB" Content="Move" Margin="20,0" Click="MovePointB_Click" />
+            <Button Name="SelectB" Content="Select" Margin="20,0" Click="SelectB_Click" />
             <CheckBox Name="RunningCB" Checked="RunningCB_Click" Unchecked="RunningCB_Click">
                 Running
             </CheckBox>
             <TextBox Name="LanesTB" Margin="20,0" Text="2" />
+            <TextBox Name="GridWidth" Width="30" Margin="20,0"
+                     Text="{Binding Path=SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
             <TextBlock Name="SelectionInfoT" Text="Please select something" />
         </StackPanel>
         <TextBlock Name="NotesLabel" DockPanel.Dock="Bottom" />
+        <StackPanel Width="100" DockPanel.Dock="Right">
+            <TextBlock Text="Eins"/>
+            <TextBlock Text="{Binding Path=SelectedObject.Text, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
+            <TextBlock Text="Zwei"/>
+        </StackPanel>
         <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
             <Canvas Name="TheCanvas" Background="Green" MouseDown="TheCanvas_MouseDown" MouseMove="TheCanvas_MouseMove"
                     MouseUp="TheCanvas_MouseUp" MouseWheel="TheCanvas_MouseWheel">
+                <ItemsControl Name="SnapGridIC"
+                              ItemsSource="{mx:MultiBinding {Binding ElementName=TheCanvas, Path=ActualWidth},
+                                                            {Binding ElementName=TheCanvas, Path=ActualHeight},
+                                                            {Binding Path=SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}},
+                                                            Converter={StaticResource SnapGridConverter}}"
+                              Visibility="Visible">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Canvas.Left" Value="{Binding Path=X}" />
+                            <Setter Property="Canvas.Top" Value="{Binding Path=Y}" />
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Ellipse Width="1" Height="1" Fill="WhiteSmoke" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
                 <Canvas.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform x:Name="CanvasScaleTransform" />
                         <TranslateTransform x:Name="CanvasTranslateTransform" />
-                        <!--  X="10" Y="-10"  -->
                     </TransformGroup>
                 </Canvas.RenderTransform>
+
             </Canvas>
         </ScrollViewer>
     </DockPanel>
