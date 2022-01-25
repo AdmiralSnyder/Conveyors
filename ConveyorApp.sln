@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{600AE424-D6C4-4269-8F5E-D2289A6560D5}"
 	ProjectSection(SolutionItems) = preProject
 		GlobalUsings.cs = GlobalUsings.cs
+		GlobalUsings.WPF.cs = GlobalUsings.WPF.cs
 	EndProjectSection
 EndProject
 Global

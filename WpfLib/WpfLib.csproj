@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Compile Include="..\GlobalUsings.cs" Link="GlobalUsings.cs" />
+    <Compile Include="..\GlobalUsings.WPF.cs" Link="GlobalUsings.WPF.cs" />
   </ItemGroup>
 
 </Project>
