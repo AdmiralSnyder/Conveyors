@@ -53,12 +53,11 @@ namespace WpfLib
 {
     public class ShapeProvider
     {
-        protected Line CreateLine(TwoPoints points) => new Line()
+        protected Line CreateLine(TwoPoints points)
         {
-            X1 = points.P1.X,
-            Y1 = points.P1.Y,
-            X2 = points.P2.X,
-            Y2 = points.P2.Y,
-        };
+            var line = new Line();
+            line.SetLocation(points);
+            return line;
+        }
     }
 }

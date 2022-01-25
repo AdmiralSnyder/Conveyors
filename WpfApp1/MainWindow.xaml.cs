@@ -189,12 +189,13 @@ public partial class MainWindow : Window
 
             var conv = Conveyor.Create(points, int.TryParse(LanesTB.Text, out var lanesCnt) ? Math.Max(lanesCnt, 1) : 1);
             CanvasInfo canvasInfo = new() { Canvas = TheCanvas, ShapeProvider = ShapeProvider };
-            Conveyor.AddToCanvas(conv, canvasInfo);
             Conveyors.Add(conv);
 
             TempLines.Clear();
 
             InputState = InputState.None;
+
+            Conveyor.AddToCanvas(conv, canvasInfo);
         }
     }
 
@@ -334,28 +335,30 @@ public partial class MainWindow : Window
             TheCanvas.Children.Add(newCircle);
 
             MoveShapes.Add(newCircle);
-            if (point.ElementsNode.Previous is { Value: ConveyorSegment prevSegment})
+            var (prev, last) = point.GetAdjacentSegments();
+                
+            if (prev is { })
             {
                 var prevLine = new Line()
                 {
-                    X1 = prevSegment.StartEnd.P1.X,
-                    Y1 = prevSegment.StartEnd.P1.Y,
-                    X2 = prevSegment.StartEnd.P2.X,
-                    Y2 = prevSegment.StartEnd.P2.Y,
+                    X1 = prev.StartEnd.P1.X,
+                    Y1 = prev.StartEnd.P1.Y,
+                    X2 = prev.StartEnd.P2.X,
+                    Y2 = prev.StartEnd.P2.Y,
                     Stroke = Brushes.Yellow,
                     Tag = point,
                 };
                 TheCanvas.Children.Add(prevLine);
                 MoveShapes.Add(prevLine);
             }
-            if (point.ElementsNode.Next is { Value: ConveyorSegment nextSegment })
+            if (last is { })
             {
                 var nextLine = new Line()
                 {
-                    X1 = nextSegment.StartEnd.P2.X,
-                    Y1 = nextSegment.StartEnd.P2.Y,
-                    X2 = nextSegment.StartEnd.P1.X,
-                    Y2 = nextSegment.StartEnd.P1.Y,
+                    X1 = last.StartEnd.P2.X,
+                    Y1 = last.StartEnd.P2.Y,
+                    X2 = last.StartEnd.P1.X,
+                    Y2 = last.StartEnd.P1.Y,
                     Stroke = Brushes.Yellow,
                     Tag = point,
                 };

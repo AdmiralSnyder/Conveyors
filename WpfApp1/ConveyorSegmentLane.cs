@@ -8,7 +8,10 @@ using WpfLib;
 namespace WpfApp1;
 
 public interface ILanePart
-{ }
+{
+    double BeginLength { set; }
+    double EndLength { get; }
+}
 
 public interface IDebugText
 {
@@ -18,12 +21,39 @@ public interface IDebugText
 [DebuggerDisplay($"{"SegLane"} ({{{nameof(ConveyorSegmentLane.DebugText)}}})")]
 public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText
 {
-    public ConveyorSegmentLane(double beginLength, TwoPoints startEnd, int lane, ConveyorSegment segment)
+    public ConveyorSegmentLane(double beginLength, int lane, ConveyorSegment segment)
     {
         BeginLength = beginLength;
-        StartEnd = startEnd;
         Lane = lane;
         Segment = segment;
+        Rebuild();
+    }
+
+    public void Rebuild() => StartEnd = GetLanePoints(Segment.StartEnd, Lane);
+
+    private TwoPoints GetLanePoints(TwoPoints original, int idx)
+    {
+        //1    0
+        //2   -0.5  0.5
+        //3   -1  0  1
+        //4   -1.5 -0.5  0.6  1.5
+        var laneCount = Segment.Conveyor.LanesCount;
+        var steps = laneCount - 1;
+        var leftmost = -steps / 2.0;
+        var offset = leftmost + idx;
+        var scaledOffset = offset * ConveyorSegment.LineDistance;
+
+        return OffsetLanePoints(original, scaledOffset);
+    }
+
+
+    private TwoPoints OffsetLanePoints(TwoPoints original, double offset)
+    {
+        var origVect = original.Vector();
+        var origNormalVect = origVect.Normalize();
+        Vector offsetNormalVect = (-origNormalVect.Y, origNormalVect.X);
+        var offsetVect = offsetNormalVect.Multiply(offset);
+        return original.Add(offsetVect);
     }
 
     public LinkedListNode<ConveyorSegmentLane> Node { get; set; }
@@ -52,7 +82,15 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText
     public Point StartPoint { get; set; }
     public Point EndPoint { get; set; }
     public double EndLength { get; set; }
-    public double BeginLength { get; set; }
+
+    private double _BeginLength;
+    public double BeginLength 
+    {
+        get => _BeginLength;
+        set => Func.Setter(ref _BeginLength, value, UpdateEndLength);
+    }
+
+    private void UpdateEndLength() => EndLength = BeginLength + Length;
 
     public void AddToCanvas(CanvasInfo canvasInfo)
     {
@@ -62,7 +100,12 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText
         canvasInfo.Canvas.Children.Add(Line);
     }
 
-    public double Length { get; private set; }
+    private double _Length;
+    public double Length 
+    {
+        get => _Length;
+        set => Func.Setter(ref _Length, value, UpdateEndLength);
+    }
     public Point UnitVector { get; internal set; }
     public LinkedListNode<ILanePart> ElementNode { get; internal set; }
     public int Lane { get; internal set; }

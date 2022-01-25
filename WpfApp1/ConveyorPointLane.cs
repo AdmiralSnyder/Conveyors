@@ -23,20 +23,18 @@ public class ConveyorPointLane : ICanvasable, ILanePart
     internal void Prepare()
     {
         if (Point.IsFirst || Point.IsLast) return;
-        Arc = PrepareArc();
+        PrepareArc();
     }
 
-    private Path PrepareArc()
+    public void RebuildArc()
     {
+        if (Point.IsFirst || Point.IsLast) return;
         var prevEnd = ((ConveyorSegmentLane)ElementNode.Previous.Value).EndPoint;
         var nextStart = ((ConveyorSegmentLane)ElementNode.Next.Value).StartPoint;
         var pg = new PathGeometry()
         { };
-        Path result = new()
-        {
-            //Stroke = Brushes.Plum,
-        };
-        result.Data = pg;
+
+        Arc.Data = pg;
         if (Point.LaneStrategy == PointLaneStrategies.StraightLineSegment)
         {
             pg.Figures.Add(new()
@@ -55,7 +53,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart
             var dotProd = DotProduct(oStartNorm, oEndNorm);
             var angleRad = Math.Acos(dotProd);
 
-            result.Stroke = IsLeft ? Brushes.Plum : Brushes.Tomato;
+            Arc.Stroke = IsLeft ? Brushes.Plum : Brushes.Tomato;
 
             bool inside = dotProd > 0.5;
 
@@ -75,11 +73,19 @@ public class ConveyorPointLane : ICanvasable, ILanePart
                 Segments = { new ArcSegment(nextStart, new(oStartLen, oStartLen), RadToDeg(angleRad), config.largeArg, config.swDir, true) }
             });
         }
+    }
 
-        return result;
+    private void PrepareArc()
+    {
+        Arc = new();
+        RebuildArc();
     }
 
     private bool IsLeft => Lane < Point.Conveyor.LanesCount / 2;
+
+    public double BeginLength { get; set; }
+
+    public double EndLength => BeginLength;
 
     private static (double x, double y) Divide((double x, double y) vect, double divisor) => Multiply(vect, 1 / divisor);
     private static (double x, double y) Multiply((double x, double y) vect, double factor) => (x: vect.x * factor, y: vect.y * factor);

@@ -22,15 +22,37 @@ public class ConveyorSegment : ICanvasable, IPathPart
 {
     public ConveyorSegment(Conveyor conv, double length, TwoPoints startEnd)
     {
-        DefinitionLength = length;
-        StartEnd = startEnd;
         Conveyor = conv;
         Lanes = new ConveyorSegmentLane[conv.LanesCount];
+        DefinitionLength = length;
         Number = conv.Segments.Count;
+        StartEnd = startEnd;
     }
 
     public Line? DefinitionLine { get; set; }
-    public TwoPoints StartEnd { get; set; }
+    private TwoPoints _StartEnd;
+    public TwoPoints StartEnd 
+    {
+        get => _StartEnd;
+        set => Func.Setter(ref _StartEnd, value, () =>
+        {
+            if (DefinitionLine is { })
+            {
+                DefinitionLine.SetLocation(StartEnd);
+            }
+
+            foreach (var i in Conveyor.LaneIndexes)
+            {
+                Lanes[i]?.Rebuild();
+            }        
+        });
+    }
+
+    internal (ConveyorPoint? prev, ConveyorPoint? next) GetAdjacentPoints() => (
+        ElementsNode.Previous?.Value as ConveyorPoint,
+        ElementsNode.Next?.Value as ConveyorPoint
+    );
+
     public ConveyorSegmentLane[] Lanes { get; }
     public int Number { get; }
     public Conveyor Conveyor { get; }
@@ -55,39 +77,13 @@ public class ConveyorSegment : ICanvasable, IPathPart
         {
             var laneList = Conveyor.SegmentLanes[i];
             var prevSegment = laneList.Last;
-            var line = GetLanePoints(StartEnd, i);
-            ConveyorSegmentLane lane = new(prevSegment?.Value.EndLength ?? 0, line, i, this);
+            ConveyorSegmentLane lane = new(prevSegment?.Value.EndLength ?? 0, i, this);
             Lanes[i] = lane;
             lane.Node = laneList.AddLast(lane);
         }
     }
     
-
-    private TwoPoints GetLanePoints(TwoPoints original, int idx)
-    {
-            //1    0
-            //2   -0.5  0.5
-            //3   -1  0  1
-            //4   -1.5 -0.5  0.6  1.5
-        var laneCount = Conveyor.LanesCount;
-        var steps = laneCount - 1;
-        var leftmost = -steps / 2.0;
-        var offset = leftmost + idx;
-        var scaledOffset = offset * LineDistance;
-
-        return OffsetLanePoints(original, scaledOffset);    
-    }
-
-    const int LineDistance = 10;
-
-    private TwoPoints OffsetLanePoints(TwoPoints original, double offset)
-    {
-        var origVect = original.Vector();
-        var origNormalVect = origVect.Normalize();
-        Vector offsetNormalVect = (-origNormalVect.Y, origNormalVect.X);
-        var offsetVect = offsetNormalVect.Multiply(offset);
-        return original.Add(offsetVect);
-    }
+    public const int LineDistance = 10;
 
     public void RegisterLanes()
     {

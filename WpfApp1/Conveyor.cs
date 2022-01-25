@@ -97,9 +97,10 @@ public class Conveyor
 
         ConveyorPoint AddPoint(Point point)
         {
-            ConveyorPoint cPoint = new(conv) { Location = point };
+            ConveyorPoint cPoint = new(conv);
             cPoint.Node = conv.Points.AddLast(cPoint);
             cPoint.ElementsNode = conv.PointsAndSegments.AddLast(cPoint);
+            cPoint.Location = point;
             return cPoint;
         }
     }
