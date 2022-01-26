@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using WpfLib;
 
 namespace WpfApp1;
 
@@ -17,10 +18,10 @@ public class Item : ISelectObject
     [ThreadStatic]
     public static int Num = 0;
 
-    public int Lane { get; }
+    public int LaneNumber { get; }
     public Item(Conveyor conveyor, int lane)
     {
-        Lane = lane;
+        LaneNumber = lane;
         Conveyor = conveyor;
         Shape = new Ellipse() { Width = 10, Height = 10, Fill = Brushes.Blue, Tag = this };
         Conveyor.Canvas.Children.Add(Shape);
@@ -40,7 +41,7 @@ public class Item : ISelectObject
     {
         var oldlocation = Location;
         _Age += offset;
-        var newLocation = Conveyor.GetItemLocation(this, out var done, out var segment, out var segmentLane, out var staleAge);
+        var newLocation = Conveyor.GetItemLocation(this, out var done, out var lane, out var staleAge);
         _Age -= staleAge;
         StaleAge += staleAge;
         if (oldlocation == newLocation)
@@ -49,8 +50,7 @@ public class Item : ISelectObject
         }
         else
         {
-            SegmentLane = segmentLane;
-            Segment = segment;
+            Lane = lane;
             Location = newLocation;
         }
 
@@ -81,23 +81,14 @@ public class Item : ISelectObject
     public bool Done { get; set; }
     public Conveyor Conveyor { get; set; }
 
-    public LinkedListNode<ConveyorSegmentLane> SegmentLane { get; set; }
-    public LinkedListNode<ConveyorSegment> Segment { get; set; }
+    public LinkedListNode<ILanePart> Lane { get; set; }
 
     private Point _Location;
     public Point Location
     {
         get => _Location;
-        set
-        {
-            Func.Setter(ref _Location, value, () =>
-            {
-                Shape.Dispatcher.BeginInvoke(() =>
-                {
-                    Canvas.SetLeft(Shape, value.X - Shape.Width / 2);
-                    Canvas.SetTop(Shape, value.Y - Shape.Height / 2);
-                });
-            });
-        }
+        set => Func.Setter(ref _Location, value, newValue => Shape.Dispatcher.BeginInvoke(SetLocation, newValue));
     }
+
+    private void SetLocation(Point point) => Shape.SetCenterLocation(point);
 }

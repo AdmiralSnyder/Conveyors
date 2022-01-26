@@ -20,6 +20,41 @@ public static class MathsFunc
     public static TwoPoints Add(this TwoPoints twoPoints, Vector vect) => (twoPoints.P1.Add(vect), twoPoints.P2.Add(vect));
     public static double DotProduct(this Vector a, Vector b) => a.X * b.X + a.Y * b.Y;
 
+    public static Point RotateAround(this Point rotPoint, Point origin, double angle)
+    {
+        // https://stackoverflow.com/a/705474
+        // 00 topleft
+        // x_rotated = ((x - dx) * cos(angle)) - ((dy - y) * sin(angle)) + dx
+        // y_rotated = dy - ((dy - y) * cos(angle)) + ((x - dx) * sin(angle))
+        // 00 botleft
+        // x_rotated = ((x - dx) * cos(angle)) - ((y - dy) * sin(angle)) + dx
+        // y_rotated = ((x - dx) * sin(angle)) + ((y - dy) * cos(angle)) + dy
+        var x = ((rotPoint.X - origin.X) * Math.Cos(angle)) - ((origin.Y - rotPoint.Y) * Math.Sin(angle)) + origin.X;
+        var y = origin.Y - ((origin.Y - rotPoint.Y) * Math.Cos(angle)) + ((rotPoint.X - origin.X) * Math.Sin(angle));
+        return (x, y);
+    }
+
+    public static Point GetPointOnLine(this TwoPoints twoPoints, double length, bool overshoot = false)
+    {
+        var vect = twoPoints.Vector();
+        var unitVector = vect.Normalize();
+        var len = vect.Length();
+        return GetPointOnLine(twoPoints, length, unitVector, len, overshoot);
+    }
+
+    public static Point GetPointOnLine(this TwoPoints twoPoints, double length, Vector unitVector, double lineLength, bool overshoot = false)
+    {
+        if (length < lineLength || overshoot)
+        {
+            var mult = length;// TODO hier ggf. auf spline umstellen
+            return new(unitVector.X * mult + twoPoints.P1.X, unitVector.Y * mult + twoPoints.P1.Y);
+        }
+        else
+        {
+            return twoPoints.P2;
+        }
+    }
+
 #if false
 private static (double x, double y) Divide((double x, double y) vect, double divisor) => Multiply(vect, 1 / divisor);
 private static (double x, double y) Multiply((double x, double y) vect, double factor) => (x: vect.x * factor, y: vect.y * factor);

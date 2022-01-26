@@ -7,30 +7,19 @@ using WpfLib;
 
 namespace WpfApp1;
 
-public interface ILanePart
-{
-    double BeginLength { set; }
-    double EndLength { get; }
-}
-
-public interface IDebugText
-{
-    string DebugText { get; }
-}
-
 [DebuggerDisplay($"{"SegLane"} ({{{nameof(ConveyorSegmentLane.DebugText)}}})")]
 public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectObject
 {
-    public string Text => "KEkse";
+    public string Text => $"Lane ({DebugText})";
     public ConveyorSegmentLane(double beginLength, int lane, ConveyorSegment segment)
     {
         BeginLength = beginLength;
-        Lane = lane;
+        LaneNumber = lane;
         Segment = segment;
         Rebuild();
     }
 
-    public void Rebuild() => StartEnd = GetLanePoints(Segment.StartEnd, Lane);
+    public void Rebuild() => StartEnd = GetLanePoints(Segment.StartEnd, LaneNumber);
 
     private TwoPoints GetLanePoints(TwoPoints original, int idx)
     {
@@ -107,24 +96,12 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectOb
         get => _Length;
         set => Func.Setter(ref _Length, value, UpdateEndLength);
     }
-    public Point UnitVector { get; internal set; }
+    public Vector UnitVector { get; internal set; }
     public LinkedListNode<ILanePart> ElementNode { get; internal set; }
-    public int Lane { get; internal set; }
+    public int LaneNumber { get; internal set; }
     public ConveyorSegment Segment { get; }
 
-    public string DebugText => $"{Segment.Conveyor.Number}.{Segment.Number}.{Lane}";
+    public string DebugText => $"{Segment.Conveyor.Number}.{Segment.Number}.{LaneNumber}";
 
-    internal Point GetPointAbsolute(double length, bool overshoot = false)
-    {
-        length -= BeginLength;
-        if (length < Length || overshoot)
-        {
-            var mult = length;// TODO hier ggf. auf spline umstellen
-            return new(UnitVector.X * mult + StartPoint.X, UnitVector.Y * mult + StartPoint.Y);
-        }
-        else
-        {
-            return EndPoint;
-        }
-    }
+    public Point GetPointAbsolute(double length, bool overshoot = false) => StartEnd.GetPointOnLine(length - BeginLength, UnitVector, Length, overshoot);
 }

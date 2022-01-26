@@ -17,6 +17,10 @@ using WpfLib;
 
 namespace WpfApp1;
 
+//Notes: WPF PropertyGrid
+// https://github.com/GuOrg/Gu.Wpf.PropertyGrid
+// https://github.com/PropertyTools/PropertyTools
+
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
@@ -140,7 +144,7 @@ public partial class MainWindow
                 {
                     if (MoveShapes.FirstOrDefault() is { Tag : ConveyorPoint point })
                     {
-                        point.Location = GetCanvasPoint(e);
+                        point.Location = SnapPoint(GetCanvasPoint(e));
                     }
                     InputState = InputState.None;
                     foreach (var shape in MoveShapes)
@@ -160,7 +164,7 @@ public partial class MainWindow
             }
             if (TempLines.TryPeek(out last))
             {
-                SetLineEnd(last, GetCanvasPoint(e));
+                SetLineEnd(last, SnapPoint(GetCanvasPoint(e)));
             }
             else
             {
@@ -187,8 +191,7 @@ public partial class MainWindow
                 ? ActionResults.AbortAll
                 : ActionResults.Abort;
 
-            var point = GetCanvasPoint(e);
-            point = SnapPoint(point);
+            var point = SnapPoint(GetCanvasPoint(e));
             TempLines.Push(AddLine(point, point)); // das ist geschummelt, damit ich nicht umständlich Zustände speichern muss
 
             return isShiftPressed ? ActionResults.Continue : ActionResults.Finish;

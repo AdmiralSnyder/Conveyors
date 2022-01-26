@@ -81,7 +81,11 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject
     {
         foreach (var lane in Lanes)
         {
-            lane.ElementNode = Conveyor.PointAndSegmentLanes[lane.Lane].AddLast(lane);
+            lane.ElementNode = Conveyor.PointAndSegmentLanes[lane.LaneNumber].AddLast(lane);
+            if (lane.ElementNode.Previous?.Value is { } prev)
+            {
+                lane.BeginLength = prev.EndLength;
+            }
         }
     }
 }
