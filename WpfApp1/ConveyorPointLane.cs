@@ -47,6 +47,8 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
         { };
 
         Arc!.Data = pg;
+        Arc.Stroke = IsLeft ? Brushes.Plum : Brushes.Tomato;
+
         if (Point.LaneStrategy == PointLaneStrategies.StraightLineSegment)
         {
             pg.Figures.Add(new()
@@ -66,8 +68,6 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
             var dotProd = oStartNorm.DotProduct(oEndNorm);
             var angleRad = ArcAngleRad = Math.Acos(dotProd);
             
-            Arc.Stroke = IsLeft ? Brushes.Plum : Brushes.Tomato;
-
             bool inside = dotProd > 0.5;
 
             (bool largeArg, SweepDirection swDir) config = (dotProd > 0.5, IsLeft) switch
@@ -94,12 +94,12 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
     {
         if (Point.LaneStrategy == PointLaneStrategies.Curve)
         {
-            return ArcStartEnd.P1.RotateAround(Point.Location, ArcAngleRad * (overshoot ? Length / length : Math.Max(1.0, Length / length)));
+            return ArcStartEnd.P1.RotateAround(Point.Location, ArcAngleRad * (overshoot ? Length / length - BeginLength : Math.Max(1.0, Length / length)));
         }
         else
         {
             // TODO precalculate stuff
-            return ArcStartEnd.GetPointOnLine(length, overshoot);
+            return ArcStartEnd.GetPointOnLine(length - BeginLength, overshoot);
         }
     }
 

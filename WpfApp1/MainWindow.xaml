@@ -23,9 +23,7 @@
         </StackPanel>
         <TextBlock Name="NotesLabel" DockPanel.Dock="Bottom" />
         <StackPanel Width="100" DockPanel.Dock="Right">
-            <TextBlock Text="Eins"/>
             <TextBlock Text="{Binding Path=SelectedObject.Text, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
-            <TextBlock Text="Zwei"/>
         </StackPanel>
         <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
             <Canvas Name="TheCanvas" Background="Green" MouseDown="TheCanvas_MouseDown" MouseMove="TheCanvas_MouseMove"

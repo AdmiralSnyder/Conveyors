@@ -20,6 +20,7 @@ namespace WpfApp1;
 //Notes: WPF PropertyGrid
 // https://github.com/GuOrg/Gu.Wpf.PropertyGrid
 // https://github.com/PropertyTools/PropertyTools
+// devexpress? syncfusion
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
@@ -31,7 +32,6 @@ public partial class MainWindow
         ShapeProvider = new() { SelectBehaviour = SelectShapeAction };
         //this.DataContext = this;
         InitializeComponent();
-        SnapGridWidth = 20;
     }
 
     public List<Conveyor> Conveyors = new();
