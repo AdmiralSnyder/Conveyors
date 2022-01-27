@@ -7,6 +7,8 @@ public static class MathsFunc
 
     public static Vector Vector(this TwoPoints startEnd) => (startEnd.P2.X - startEnd.P1.X, startEnd.P2.Y - startEnd.P1.Y);
 
+    public static Vector To(this Point from, Point to) => new TwoPoints(from, to).Vector();
+
     public static double Length(this Vector vect) => Math.Sqrt(vect.X * vect.X + vect.Y * vect.Y);
 
     public static double Length(this TwoPoints startEnd) => Length(startEnd.Vector());
@@ -26,11 +28,17 @@ public static class MathsFunc
         // 00 topleft
         // x_rotated = ((x - dx) * cos(angle)) - ((dy - y) * sin(angle)) + dx
         // y_rotated = dy - ((dy - y) * cos(angle)) + ((x - dx) * sin(angle))
+        //  var x = ((rotPoint.X - origin.X) * Math.Cos(angle)) - ((origin.Y - rotPoint.Y) * Math.Sin(angle)) + origin.X;
+        //  var y = origin.Y - ((origin.Y - rotPoint.Y) * Math.Cos(angle)) + ((rotPoint.X - origin.X) * Math.Sin(angle));
         // 00 botleft
         // x_rotated = ((x - dx) * cos(angle)) - ((y - dy) * sin(angle)) + dx
         // y_rotated = ((x - dx) * sin(angle)) + ((y - dy) * cos(angle)) + dy
+        //  var x = ((rotPoint.X - origin.X) * Math.Cos(angle)) - ((rotPoint.Y - origin.Y) * Math.Sin(angle)) + origin.X;
+        //  var y = ((rotPoint.X - origin.Y) * Math.Sin(angle)) + ((rotPoint.Y - origin.Y) * Math.Sin(angle)) + origin.Y;
+
         var x = ((rotPoint.X - origin.X) * Math.Cos(angle)) - ((origin.Y - rotPoint.Y) * Math.Sin(angle)) + origin.X;
         var y = origin.Y - ((origin.Y - rotPoint.Y) * Math.Cos(angle)) + ((rotPoint.X - origin.X) * Math.Sin(angle));
+        
         return (x, y);
     }
 

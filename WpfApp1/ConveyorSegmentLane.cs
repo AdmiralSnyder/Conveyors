@@ -11,13 +11,39 @@ namespace WpfApp1;
 public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectObject
 {
     public string Text => $"Lane ({DebugText})";
-    public ConveyorSegmentLane(double beginLength, int lane, ConveyorSegment segment)
+    public ConveyorSegmentLane(int lane, ConveyorSegment segment)
     {
-        BeginLength = beginLength;
         LaneNumber = lane;
         Segment = segment;
         Rebuild();
     }
+
+    public Line? Line { get; private set; }
+
+    public Point StartPoint { get; set; }
+    public Point EndPoint { get; set; }
+    public double EndLength { get; set; }
+
+    private double _BeginLength;
+    public double BeginLength
+    {
+        get => _BeginLength;
+        set => Func.Setter(ref _BeginLength, value, UpdateEndLength);
+    }
+
+    private double _Length;
+    public double Length
+    {
+        get => _Length;
+        set => Func.Setter(ref _Length, value, UpdateEndLength);
+    }
+    public Vector UnitVector { get; internal set; }
+    public LinkedListNode<ILanePart> ElementNode { get; internal set; }
+    public int LaneNumber { get; internal set; }
+    public ConveyorSegment Segment { get; }
+
+    public string DebugText => $"{Segment.Conveyor.Number}.{Segment.Number}.{LaneNumber}";
+
 
     public void Rebuild() => StartEnd = GetLanePoints(Segment.StartEnd, LaneNumber);
 
@@ -67,19 +93,7 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectOb
             }
         });
     }
-    public Line? Line { get; private set; }
-
-    public Point StartPoint { get; set; }
-    public Point EndPoint { get; set; }
-    public double EndLength { get; set; }
-
-    private double _BeginLength;
-    public double BeginLength 
-    {
-        get => _BeginLength;
-        set => Func.Setter(ref _BeginLength, value, UpdateEndLength);
-    }
-
+    
     private void UpdateEndLength() => EndLength = BeginLength + Length;
 
     public void AddToCanvas(CanvasInfo canvasInfo)
@@ -89,19 +103,6 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectOb
         
         canvasInfo.Canvas.Children.Add(Line);
     }
-
-    private double _Length;
-    public double Length 
-    {
-        get => _Length;
-        set => Func.Setter(ref _Length, value, UpdateEndLength);
-    }
-    public Vector UnitVector { get; internal set; }
-    public LinkedListNode<ILanePart> ElementNode { get; internal set; }
-    public int LaneNumber { get; internal set; }
-    public ConveyorSegment Segment { get; }
-
-    public string DebugText => $"{Segment.Conveyor.Number}.{Segment.Number}.{LaneNumber}";
 
     public Point GetPointAbsolute(double length, bool overshoot = false) => StartEnd.GetPointOnLine(length - BeginLength, UnitVector, Length, overshoot);
 }

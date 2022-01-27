@@ -19,11 +19,12 @@ public class Item : ISelectObject
     public static int Num = 0;
 
     public int LaneNumber { get; }
-    public Item(Conveyor conveyor, int lane)
+    public Item(Conveyor conveyor, int lane, ConveyorShapeProvider shapeProvider)
     {
         LaneNumber = lane;
         Conveyor = conveyor;
-        Shape = new Ellipse() { Width = 10, Height = 10, Fill = Brushes.Blue, Tag = this };
+        Shape = shapeProvider.CreateConveyorItemEllipse();
+        Shape.Tag = this;
         Conveyor.Canvas.Children.Add(Shape);
         var layer = AdornerLayer.GetAdornerLayer(Shape);
         layer.Add(new TextAdorner(Shape));

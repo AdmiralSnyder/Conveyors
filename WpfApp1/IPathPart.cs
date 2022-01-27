@@ -3,4 +3,5 @@
 public interface IPathPart
 {
     void RegisterLanes();
+    void RebuildLanes();
 }

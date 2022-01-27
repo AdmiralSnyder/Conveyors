@@ -36,11 +36,11 @@ public class Conveyor
 
     public LinkedList<ConveyorSegment> Segments = new();
     public LinkedList<ConveyorSegmentLane>[] SegmentLanes;
-
     public LinkedList<ConveyorPoint> Points = new();
     public LinkedList<IPathPart> PointsAndSegments = new();
     public LinkedList<ConveyorPointLane>[] PointLanes;
     public LinkedList<ILanePart>[] PointAndSegmentLanes;
+
     public static Conveyor Create(IEnumerable<Point> points, int lanesCount = 1)
     {
         var conv = new Conveyor(lanesCount);
@@ -75,12 +75,12 @@ public class Conveyor
         }
         foreach (var segment in conv.Segments)
         {
-            segment.BuildLanes();
+            segment.CreateLanes();
         }
 
         foreach (var point in conv.Points)
         {
-            point.BuildLanes();
+            point.CreateLanes();
         }
 
         foreach (var part in conv.PointsAndSegments)
@@ -91,6 +91,11 @@ public class Conveyor
         foreach (var point in conv.Points)
         {
             point.PrepareLanes();
+        }
+
+        foreach (var part in conv.PointsAndSegments)
+        {
+            part.RebuildLanes();
         }
 
         return conv;
@@ -120,13 +125,13 @@ public class Conveyor
     }
 
     public Canvas? Canvas;
-    public double Speed = 20;
+    public double Speed = 60;
 
-    internal void SpawnItems()
+    internal void SpawnItems(ConveyorShapeProvider shapeProvider)
     {
-        for (int i = 0; i < LanesCount; i++)
+        foreach (var i in LaneIndexes)
         {
-            var item = new Item(this, i);
+            var item = new Item(this, i, shapeProvider);
             Items[i].Enqueue(item);
         }
     }

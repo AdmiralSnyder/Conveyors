@@ -335,7 +335,7 @@ public partial class MainWindow
     {
         foreach (var conveyor in Conveyors)
         {
-            conveyor.SpawnItems();
+            conveyor.SpawnItems(ShapeProvider);
         }
     }
 

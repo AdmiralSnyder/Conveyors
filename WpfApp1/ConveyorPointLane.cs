@@ -18,6 +18,8 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
     public Path? Arc { get; set; }
     public int Lane { get; internal set; }
 
+    private bool Inside { get; set; }
+
     public LinkedListNode<ILanePart> ElementNode { get; internal set; }
     public LinkedListNode<ConveyorPointLane> Node { get; internal set; }
     public ConveyorPoint Point { get; }
@@ -67,8 +69,10 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
             var oEndNorm = oEnd.Normalize();
             var dotProd = oStartNorm.DotProduct(oEndNorm);
             var angleRad = ArcAngleRad = Math.Acos(dotProd);
-            
-            bool inside = dotProd > 0.5;
+
+            bool toTheLeft = ArcAngleRad < Math.PI;
+
+            Inside = toTheLeft ? IsLeft : !IsLeft;
 
             (bool largeArg, SweepDirection swDir) config = (dotProd > 0.5, IsLeft) switch
             {
@@ -90,11 +94,21 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
         }
     }
 
+    double LastLength = 0;
     public Point GetPointAbsolute(double length, bool overshoot = false)
     {
+        LastLength = length;
         if (Point.LaneStrategy == PointLaneStrategies.Curve)
         {
-            return ArcStartEnd.P1.RotateAround(Point.Location, ArcAngleRad * (overshoot ? Length / length - BeginLength : Math.Max(1.0, Length / length)));
+            if (Inside)
+            {
+                var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
+                return ArcStartEnd.P1.RotateAround(rotPoint, -ArcAngleRad * (overshoot ? (length - BeginLength) / Length : Math.Min(1.0, (length - BeginLength) / Length)));
+            }
+            else
+            {
+                return ArcStartEnd.P1.RotateAround(Point.Location, -ArcAngleRad * (overshoot ? (length - BeginLength) / Length : Math.Min(1.0, (length - BeginLength) / Length)));
+            }
         }
         else
         {

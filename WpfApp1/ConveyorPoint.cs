@@ -70,7 +70,15 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject
     {
         foreach (var lane in Lanes)
         {
-            lane?.RebuildArc();
+            if (lane is not null)
+            {
+                lane.RebuildArc();
+                if (lane.ElementNode.Previous?.Value is { } prev)
+                {
+                    lane.BeginLength = prev.EndLength;
+                }
+            }
+
         }
     }
 
@@ -96,7 +104,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject
         }
     }
 
-    internal void BuildLanes()
+    internal void CreateLanes()
     {
         if (IsFirst || IsLast) return;
 
@@ -115,10 +123,6 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject
         {
             lane.ElementNode = Conveyor.PointAndSegmentLanes[lane.Lane].AddLast(lane);
             lane.Node = Conveyor.PointLanes[lane.Lane].AddLast(lane);
-            if (lane.ElementNode.Previous?.Value is { } prev)
-            {
-                lane.BeginLength = prev.EndLength;
-            }
         }
     }
 

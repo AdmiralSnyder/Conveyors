@@ -80,6 +80,10 @@ namespace WpfApp1
             return result;
         }
 
+        private const double ItemSize = 3;//10;
+
+        public Ellipse CreateConveyorItemEllipse() => new() { Width = ItemSize, Height = ItemSize, Fill = Brushes.Blue };
+
         //private static Result_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         //{
         //    CursorChanger

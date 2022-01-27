@@ -63,13 +63,13 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject
         }
     }
 
-    internal void BuildLanes()
+    internal void CreateLanes()
     {
         foreach (int i in Conveyor.LaneIndexes)
         {
             var laneList = Conveyor.SegmentLanes[i];
             var prevSegment = laneList.Last;
-            ConveyorSegmentLane lane = new(prevSegment?.Value.EndLength ?? 0, i, this);
+            ConveyorSegmentLane lane = new(i, this);
             Lanes[i] = lane;
             lane.Node = laneList.AddLast(lane);
         }
@@ -82,6 +82,13 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject
         foreach (var lane in Lanes)
         {
             lane.ElementNode = Conveyor.PointAndSegmentLanes[lane.LaneNumber].AddLast(lane);
+        }
+    }
+
+    public void RebuildLanes()
+    {
+        foreach (var lane in Lanes)
+        {
             if (lane.ElementNode.Previous?.Value is { } prev)
             {
                 lane.BeginLength = prev.EndLength;
