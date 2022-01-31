@@ -41,7 +41,7 @@ public class Conveyor
     public LinkedList<ConveyorPointLane>[] PointLanes;
     public LinkedList<ILanePart>[] PointAndSegmentLanes;
 
-    public static Conveyor Create(IEnumerable<Point> points, int lanesCount = 1)
+    public static Conveyor Create(IEnumerable<Point> points, bool isRunning, int lanesCount = 1)
     {
         var conv = new Conveyor(lanesCount);
         double length = 0d;
@@ -98,6 +98,8 @@ public class Conveyor
             part.RebuildLanes();
         }
 
+        conv.IsRunning = isRunning;
+
         return conv;
 
         ConveyorPoint AddPoint(Point point)
@@ -125,7 +127,7 @@ public class Conveyor
     }
 
     public Canvas? Canvas;
-    public double Speed = 60;
+    public double Speed = 20;
 
     internal void SpawnItems(ConveyorShapeProvider shapeProvider)
     {

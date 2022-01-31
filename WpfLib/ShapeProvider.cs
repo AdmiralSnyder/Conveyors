@@ -31,6 +31,7 @@ namespace PointDef
         public static bool operator ==(V2d a, V2d b) => a.X == b.X && a.Y == b.Y;
         public static bool operator !=(V2d a, V2d b) => a.X != b.X || a.Y != b.Y;
 
+        public override string ToString() => $"({X}, {Y})";
     }
 
 

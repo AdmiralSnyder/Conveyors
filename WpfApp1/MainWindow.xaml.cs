@@ -1,5 +1,10 @@
-﻿using PointDef;
+﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
+using Microsoft.CodeAnalysis.Scripting.Hosting;
+using Microsoft.CSharp;
+using PointDef;
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,9 +37,12 @@ public partial class MainWindow
         ShapeProvider = new() { SelectBehaviour = SelectShapeAction };
         //this.DataContext = this;
         InitializeComponent();
+        AutoRoot = ConveyorAutomationObject.CreateAutomationObject(out var context);
+        AutoRoot.Init((TheCanvas, ShapeProvider));
+        context.LogAction = textEditor2.AppendText;
     }
 
-    public List<Conveyor> Conveyors = new();
+    public IGeneratedConveyorAutomationObject AutoRoot { get; }
 
     public static readonly DependencyProperty SnapGridWidthProperty =
        DependencyProperty.Register(nameof(SnapGridWidth), typeof(int), typeof(MainWindow), new UIPropertyMetadata(10));
@@ -142,7 +150,7 @@ public partial class MainWindow
                 break;
             case InputState.MovePoint:
                 {
-                    if (MoveShapes.FirstOrDefault() is { Tag : ConveyorPoint point })
+                    if (MoveShapes.FirstOrDefault() is { Tag: ConveyorPoint point })
                     {
                         point.Location = SnapPoint(GetCanvasPoint(e));
                     }
@@ -223,15 +231,12 @@ public partial class MainWindow
 
             // TODO reverse?
 
-            var conv = Conveyor.Create(points, int.TryParse(LanesTB.Text, out var lanesCnt) ? Math.Max(lanesCnt, 1) : 1);
-            CanvasInfo canvasInfo = new() { Canvas = TheCanvas, ShapeProvider = ShapeProvider };
-            Conveyors.Add(conv);
 
             TempLines.Clear();
 
             InputState = InputState.None;
 
-            Conveyor.AddToCanvas(conv, canvasInfo);
+            AutoRoot.AddConveyor(points, IsRunning, int.TryParse(LanesTB.Text, out var lanesCnt) ? Math.Max(lanesCnt, 1) : 1);
         }
     }
 
@@ -303,7 +308,7 @@ public partial class MainWindow
 
     private Point SnapPoint(Point point) => SnapPoint(point, SnapToGrid && !Keyboard.IsKeyDown(Key.LeftAlt));
     private Point SnapPoint(Point point, bool snap) => snap ? SnapPoint(point, snap, SnapGridWidth) : point;
-    private Point SnapPoint(Point point, bool snap, int snapGridWidth) => snap? ((int)((point.X + snapGridWidth / 2) / snapGridWidth) * snapGridWidth, (int) ((point.Y + snapGridWidth / 2) / snapGridWidth) * snapGridWidth) : point;
+    private Point SnapPoint(Point point, bool snap, int snapGridWidth) => snap ? ((int)((point.X + snapGridWidth / 2) / snapGridWidth) * snapGridWidth, (int)((point.Y + snapGridWidth / 2) / snapGridWidth) * snapGridWidth) : point;
 
     // TODO put the zoom functionality into a behaviour
     private void TheCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -333,7 +338,7 @@ public partial class MainWindow
 
     private void PutItemB_Click(object sender, RoutedEventArgs e)
     {
-        foreach (var conveyor in Conveyors)
+        foreach (var conveyor in AutoRoot.Conveyors)
         {
             conveyor.SpawnItems(ShapeProvider);
         }
@@ -347,7 +352,7 @@ public partial class MainWindow
     public bool IsRunning
     {
         get => _IsRunning;
-        set => Func.Setter(ref _IsRunning, value, isRunning => Conveyors.ForEach(c => c.IsRunning = isRunning));
+        set => Func.Setter(ref _IsRunning, value, isRunning => AutoRoot.Conveyors.ForEach(c => c.IsRunning = isRunning));
     }
 
     private void RunningCB_Click(object sender, RoutedEventArgs e) => IsRunning = RunningCB.IsChecked ?? false;
@@ -358,7 +363,7 @@ public partial class MainWindow
     {
         RunningCB.IsChecked = false;
 
-        foreach (var conveyor in Conveyors)
+        foreach (var conveyor in AutoRoot.Conveyors)
         {
             foreach (var point in conveyor.Points)
             {
@@ -388,7 +393,7 @@ public partial class MainWindow
 
             MoveShapes.Add(newCircle);
             var (prev, last) = point.GetAdjacentSegments();
-                
+
             if (prev is { })
             {
                 var prevLine = new Line()
@@ -432,6 +437,76 @@ public partial class MainWindow
     {
         SelectMode = !SelectMode;
     }
+
+    private void Button_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private async void RunB_Click(object sender, RoutedEventArgs e)
+    {
+        var text = textEditor.Text;
+        if (!text.EndsWith(";"))
+        {
+            text += ";";
+        }
+
+        text = text.Replace("$", "DynObj");
+
+
+        string classDefinition = @$"using System;
+using System.Linq.Expressions;
+
+class foo
+{{
+    //public static dynamic DynObj {{ get; set; }}
+    public static bool Execute(dynamic DynObj)
+    {{
+        {text}
+return true;
+    }}
+}}";
+        using var loader = new InteractiveAssemblyLoader();
+
+            var glob = new ScriptGlobals() { TheObject = AutoRoot };
+
+        Script baseScript = CSharpScript.Create(string.Empty, ScriptOptions.Default.AddImports(glob.GetType().Namespace, typeof(V2d).Namespace)
+            .AddReferences(typeof(ScriptGlobals).Assembly, typeof(V2d).Assembly), 
+            glob.GetType(), loader).ContinueWith(classDefinition);
+        var x = await baseScript.ContinueWith<bool>($"foo.Execute(TheObject)").RunAsync(glob);
+
+
+
+        // $.AddConveyor(new V2d[]{(30, 20), (80, 70), (140, 40)}, false, 2)
+
+
+
+        //    Dictionary<string, string> providerOptions = new Dictionary<string, string>();
+        //        providerOptions.Add("CompilerVersion", "v4.8");
+
+        //        CSharpCodeProvider provider = new CSharpCodeProvider(providerOptions);
+
+        //        CompilerResults results = provider.CompileAssemblyFromSource
+        //        (
+        //            new CompilerParameters(new[] { "System.Core.dll" }),
+        //@$"using System;
+        //using System.Linq.Expressions;
+
+        //class foo
+        //{{
+        //    //public static dynamic DynObj {{ get; set; }}
+        //    public static void Execute(dynamic DynObj)
+        //    {{
+        //        {text}
+        //    }}
+        //}}");
+        //        results.CompiledAssembly.GetType("foo").GetMethod("Execute").Invoke(null, new[] { AutoRoot});
+    }
+}
+
+public class ScriptGlobals
+{
+    public object TheObject { get; set; }
 }
 
 public enum InputState
