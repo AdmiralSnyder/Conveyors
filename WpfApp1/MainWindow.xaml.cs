@@ -468,15 +468,31 @@ return true;
 }}";
         using var loader = new InteractiveAssemblyLoader();
 
-            var glob = new ScriptGlobals() { TheObject = AutoRoot };
+        var glob = new ScriptGlobals() { TheObject = AutoRoot };
 
-        Script baseScript = CSharpScript.Create(string.Empty, ScriptOptions.Default.AddImports(glob.GetType().Namespace, typeof(V2d).Namespace)
-            .AddReferences(typeof(ScriptGlobals).Assembly, typeof(V2d).Assembly), 
-            glob.GetType(), loader).ContinueWith(classDefinition);
-        var x = await baseScript.ContinueWith<bool>($"foo.Execute(TheObject)").RunAsync(glob);
+        Script script = null;
+        try
+        {
+            script = CSharpScript.Create(string.Empty, ScriptOptions.Default.AddImports(glob.GetType().Namespace, typeof(V2d).Namespace)
+                .AddReferences(typeof(ScriptGlobals).Assembly, typeof(V2d).Assembly),
+                glob.GetType(), loader).ContinueWith(classDefinition);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.ToString(), "Error compiling script");
+        }
+        if (script is not null)
+        {
+            try
+            {
+                var x = await script.ContinueWith<bool>($"foo.Execute(TheObject)").RunAsync(glob);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error running script");
+            }
 
-
-
+        }
         // $.AddConveyor(new V2d[]{(30, 20), (80, 70), (140, 40)}, false, 2)
 
 
