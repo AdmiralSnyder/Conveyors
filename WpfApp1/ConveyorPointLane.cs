@@ -72,6 +72,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
 
             bool toTheLeft = ArcAngleRad < Math.PI;
 
+            // TODO correctly calculate the inside property.
             Inside = toTheLeft ? IsLeft : !IsLeft;
 
             (bool largeArg, SweepDirection swDir) config = (dotProd > 0.5, IsLeft) switch
@@ -100,14 +101,16 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
         LastLength = length;
         if (Point.LaneStrategy == PointLaneStrategies.Curve)
         {
+            var relLen = (length - BeginLength) / Length;
+            var angleFactor = (overshoot ? relLen : Math.Min(1.0, relLen));
             if (Inside)
             {
-                var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
-                return ArcStartEnd.P1.RotateAround(rotPoint, -ArcAngleRad * (overshoot ? (length - BeginLength) / Length : Math.Min(1.0, (length - BeginLength) / Length)));
+                return ArcStartEnd.P1.RotateAround(Point.Location, -ArcAngleRad * angleFactor);
             }
             else
             {
-                return ArcStartEnd.P1.RotateAround(Point.Location, -ArcAngleRad * (overshoot ? (length - BeginLength) / Length : Math.Min(1.0, (length - BeginLength) / Length)));
+                var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
+                return ArcStartEnd.P1.RotateAround(rotPoint, -ArcAngleRad * angleFactor);
             }
         }
         else

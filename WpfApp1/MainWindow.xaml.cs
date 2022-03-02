@@ -39,7 +39,9 @@ public partial class MainWindow
         InitializeComponent();
         AutoRoot = ConveyorAutomationObject.CreateAutomationObject(out var context);
         AutoRoot.Init((TheCanvas, ShapeProvider));
-        context.LogAction = textEditor2.AppendText;
+
+        context.LogAction = s => textEditor2.Dispatcher.Invoke(() => textEditor2.AppendText(s));
+        InitializeScriptingEnvironment();
     }
 
     public IGeneratedConveyorAutomationObject AutoRoot { get; }
@@ -236,7 +238,7 @@ public partial class MainWindow
 
             InputState = InputState.None;
 
-            AutoRoot.AddConveyor(points, IsRunning, int.TryParse(LanesTB.Text, out var lanesCnt) ? Math.Max(lanesCnt, 1) : 1);
+            AutoRoot.AddConveyor(points, IsRunning, int.TryParse(LanesCountTB.Text, out var lanesCnt) ? Math.Max(lanesCnt, 1) : 1);
         }
     }
 
@@ -340,7 +342,7 @@ public partial class MainWindow
     {
         foreach (var conveyor in AutoRoot.Conveyors)
         {
-            conveyor.SpawnItems(ShapeProvider);
+            conveyor.SpawnItems(ShapeProvider, FirstOnlyCB.IsChecked);
         }
     }
 
@@ -443,6 +445,32 @@ public partial class MainWindow
 
     }
 
+    private ScriptGlobals Globals;
+    private Script Script;
+    private Task initTask;
+
+    private void InitializeScriptingEnvironment()
+    {
+        using var loader = new InteractiveAssemblyLoader();
+
+        Globals = new ScriptGlobals() { TheObject = AutoRoot };
+
+        var globalsType = typeof(ScriptGlobals);
+        Script = CSharpScript.Create(string.Empty, ScriptOptions.Default.AddImports(globalsType.Namespace, typeof(V2d).Namespace)
+            .AddReferences(typeof(ScriptGlobals).Assembly, typeof(V2d).Assembly),
+            globalsType, loader);
+
+        initTask = Task.Run(async () =>
+        {
+            Script.RunAsync(Globals);
+            await RunB.Dispatcher.InvokeAsync(() =>
+            {
+                RunB.IsEnabled = true;
+                //RunB.Foreground = Brushes.Yellow;
+            });
+        });
+    }
+
     private async void RunB_Click(object sender, RoutedEventArgs e)
     {
         var text = textEditor.Text;
@@ -466,57 +494,31 @@ class foo
 return true;
     }}
 }}";
-        using var loader = new InteractiveAssemblyLoader();
 
-        var glob = new ScriptGlobals() { TheObject = AutoRoot };
-
-        Script script = null;
-        try
+        if (Script is not null)
         {
-            script = CSharpScript.Create(string.Empty, ScriptOptions.Default.AddImports(glob.GetType().Namespace, typeof(V2d).Namespace)
-                .AddReferences(typeof(ScriptGlobals).Assembly, typeof(V2d).Assembly),
-                glob.GetType(), loader).ContinueWith(classDefinition);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.ToString(), "Error compiling script");
-        }
-        if (script is not null)
-        {
-            try
+            var script = Script.ContinueWith(classDefinition);
+            await Task.Run(async () => await Dispatcher.InvokeAsync(async () =>
             {
-                var x = await script.ContinueWith<bool>($"foo.Execute(TheObject)").RunAsync(glob);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), "Error running script");
-            }
+                try
+                {
+                    Mouse.OverrideCursor = Cursors.Wait;
 
+                    try
+                    {
+                        var x = await script.ContinueWith<bool>($"foo.Execute(TheObject)").RunAsync(Globals);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.ToString(), "Error running script");
+                    }
+                }
+                finally
+                {
+                    Mouse.OverrideCursor = null;
+                }
+            }));
         }
-        // $.AddConveyor(new V2d[]{(30, 20), (80, 70), (140, 40)}, false, 2)
-
-
-
-        //    Dictionary<string, string> providerOptions = new Dictionary<string, string>();
-        //        providerOptions.Add("CompilerVersion", "v4.8");
-
-        //        CSharpCodeProvider provider = new CSharpCodeProvider(providerOptions);
-
-        //        CompilerResults results = provider.CompileAssemblyFromSource
-        //        (
-        //            new CompilerParameters(new[] { "System.Core.dll" }),
-        //@$"using System;
-        //using System.Linq.Expressions;
-
-        //class foo
-        //{{
-        //    //public static dynamic DynObj {{ get; set; }}
-        //    public static void Execute(dynamic DynObj)
-        //    {{
-        //        {text}
-        //    }}
-        //}}");
-        //        results.CompiledAssembly.GetType("foo").GetMethod("Execute").Invoke(null, new[] { AutoRoot});
     }
 }
 

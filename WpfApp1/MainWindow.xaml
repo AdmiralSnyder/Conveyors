@@ -15,17 +15,29 @@
     <Grid gu:Grid.Layout="auto * auto, * auto 100">
 
         <StackPanel Grid.ColumnSpan="3" gu:Cell.Index="0 0" Orientation="Horizontal">
-            <Button Name="AddConveyorB" Content="Add" Click="AddConveyorB_Click" />
-            <Button Name="PutItemB" Content="Put" Margin="20,0" Click="PutItemB_Click" />
-            <Button Name="MovePointB" Content="Move" Margin="20,0" Click="MovePointB_Click" />
-            <Button Name="SelectB" Content="Select" Margin="20,0" Click="SelectB_Click" />
-            <CheckBox Name="RunningCB" Checked="RunningCB_Click" Unchecked="RunningCB_Click">
-                Running
-            </CheckBox>
-            <TextBox Name="LanesTB" Margin="20,0" Text="2" />
-            <TextBox Name="GridWidth" Width="30" Margin="20,0"
-                     Text="{Binding Path=SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
-            <TextBlock Name="SelectionInfoT" Text="Please select something" />
+            <StackPanel.Resources>
+                <Style TargetType="{x:Type Button}">
+                    <Setter Property="Margin" Value="0,0,10,0" />
+                </Style>
+                <Style TargetType="{x:Type CheckBox}">
+                    <Setter Property="Margin" Value="0,0,10,0" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                </Style>
+                <Style TargetType="{x:Type TextBox}">
+                    <Setter Property="Margin" Value="0,0,10,0" />
+                </Style>
+            </StackPanel.Resources>
+            <Button Name="AddConveyorB" Content="Add" Click="AddConveyorB_Click" ToolTip="Add Conveyor" />
+            <CheckBox Name="RunningCB" Content="Running" Checked="RunningCB_Click" Unchecked="RunningCB_Click" />
+            <Button Name="PutItemB" Content="Put" Click="PutItemB_Click" ToolTip="Put Items" />
+            <CheckBox Name="FirstOnlyCB" Content="FirstOnly" />
+            <Button Name="MovePointB" Content="Move" Click="MovePointB_Click" />
+            <Button Name="SelectB" Content="Select" Click="SelectB_Click" />
+            <TextBox Name="LanesCountTB" Text="2" ToolTip="Lanes Count" />
+            <TextBox Name="GridWidth" Width="30"
+                     Text="{Binding Path=SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}"
+                     ToolTip="Grid Width" />
+            <TextBlock Name="SelectionInfoT" Text="(Please select something)" />
         </StackPanel>
         <TextBlock Name="NotesLabel" Grid.ColumnSpan="2" gu:Cell.Index="2 0" />
         <GridSplitter Width="{StaticResource SplitterSize}"
@@ -81,8 +93,17 @@
                           HorizontalAlignment="Stretch" VerticalAlignment="Center"
                           Background="{StaticResource SplitterColor}" />
             <Grid gu:Cell.Index="2 0" gu:Grid.Layout="* , * auto">
-                <avalonEdit:TextEditor Name="textEditor" gu:Cell.Index="0 0" FontFamily="Fira Code" FontSize="10pt" SyntaxHighlighting="C#" />
-                <Button Name="RunB" gu:Cell.Index="0 1" Content="Run" Click="RunB_Click"/>
+                <avalonEdit:TextEditor Name="textEditor" gu:Cell.Index="0 0" FontFamily="Fira Code" FontSize="10pt" SyntaxHighlighting="C#">
+                    $.AddConveyor(new V2d[]{(30, 60), (60, 60), (60, 90)}, false, 2)
+                </avalonEdit:TextEditor>
+                <Button Name="RunB" gu:Cell.Index="0 1" Click="RunB_Click" IsEnabled="False">
+                    <TextBlock>
+                        <TextBlock.LayoutTransform>
+                            <RotateTransform Angle="90" CenterX="0.5" CenterY="0.5" />
+                        </TextBlock.LayoutTransform>
+                        Run
+                    </TextBlock>
+                </Button>
             </Grid>
         </Grid>
     </Grid>

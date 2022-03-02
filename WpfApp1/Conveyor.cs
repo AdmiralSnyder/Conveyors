@@ -30,7 +30,9 @@ public class Conveyor
     {
         if (IsRunning)
         {
-            (Dispatcher = new(new ParameterizedThreadStart(ItemDispatcherThreadAction))).Start(this);
+            Dispatcher = new(new ParameterizedThreadStart(ItemDispatcherThreadAction));
+            Dispatcher.SetApartmentState(ApartmentState.STA);
+            Dispatcher.Start(this);
         }
     }
 
@@ -129,12 +131,13 @@ public class Conveyor
     public Canvas? Canvas;
     public double Speed = 20;
 
-    internal void SpawnItems(ConveyorShapeProvider shapeProvider)
+    internal void SpawnItems(ConveyorShapeProvider shapeProvider, bool? firstOnly = null)
     {
         foreach (var i in LaneIndexes)
         {
             var item = new Item(this, i, shapeProvider);
             Items[i].Enqueue(item);
+            if (firstOnly ?? false) break;
         }
     }
 
