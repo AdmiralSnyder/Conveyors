@@ -34,7 +34,10 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject
             foreach (var i in Conveyor.LaneIndexes)
             {
                 Lanes[i]?.Rebuild();
-            }        
+            }
+            var selectionBoundsPoints = (Point[])SelectionBoundsPoints;
+            selectionBoundsPoints[0] = StartEnd.P1;
+            selectionBoundsPoints[1] = StartEnd.P2;
         });
     }
 
@@ -50,6 +53,10 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject
     public double DefinitionLength { get; set; }
     public LinkedListNode<ConveyorSegment> Node { get; internal set; }
     public LinkedListNode<IPathPart> ElementsNode { get; internal set; }
+
+    public IEnumerable<Point> SelectionBoundsPoints { get; } = new Point[2];
+
+    public ISelectObject? SelectionParent => Conveyor;
 
     public void AddToCanvas(CanvasInfo canvasInfo)
     {
@@ -81,7 +88,7 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject
     {
         foreach (var lane in Lanes)
         {
-            lane.ElementNode = Conveyor.PointAndSegmentLanes[lane.LaneNumber].AddLast(lane);
+            lane.ElementsNode = Conveyor.PointAndSegmentLanes[lane.LaneNumber].AddLast(lane);
         }
     }
 
@@ -89,7 +96,7 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject
     {
         foreach (var lane in Lanes)
         {
-            if (lane.ElementNode.Previous?.Value is { } prev)
+            if (lane.ElementsNode.Previous?.Value is { } prev)
             {
                 lane.BeginLength = prev.EndLength;
             }

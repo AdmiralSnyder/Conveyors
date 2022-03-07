@@ -38,7 +38,7 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectOb
         set => Func.Setter(ref _Length, value, UpdateEndLength);
     }
     public Vector UnitVector { get; internal set; }
-    public LinkedListNode<ILanePart> ElementNode { get; internal set; }
+    public LinkedListNode<ILanePart> ElementsNode { get; internal set; }
     public int LaneNumber { get; internal set; }
     public ConveyorSegment Segment { get; }
 
@@ -91,9 +91,17 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectOb
                 Line.X2 = StartEnd.P2.X;
                 Line.Y2 = StartEnd.P2.Y;
             }
+
+            var selectionBoundsPoints = (Point[])SelectionBoundsPoints;
+            selectionBoundsPoints[0] = StartEnd.P1;
+            selectionBoundsPoints[1] = StartEnd.P2;
         });
     }
-    
+
+    public IEnumerable<Point> SelectionBoundsPoints { get; } = new Point[2];
+
+    public ISelectObject? SelectionParent => Segment;
+
     private void UpdateEndLength() => EndLength = BeginLength + Length;
 
     public void AddToCanvas(CanvasInfo canvasInfo)

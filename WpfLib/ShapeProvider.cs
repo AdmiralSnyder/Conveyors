@@ -17,6 +17,10 @@ namespace PointDef
     {
         public V2d(double x, double y) => (X, Y) = (x, y);
         public V2d((double x, double y) tuple) => (X, Y) = tuple;
+
+        public static readonly V2d MinValue = (double.MinValue, double.MinValue);
+        public static readonly V2d MaxValue = (double.MaxValue, double.MaxValue);
+
         public double X { get; set; }
         public double Y { get; set; }
         public static implicit operator (double, double)(V2d vect) => (vect.X, vect.Y);

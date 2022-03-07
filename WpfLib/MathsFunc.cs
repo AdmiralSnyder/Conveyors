@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace WpfLib;
 
@@ -20,6 +22,9 @@ public static class MathsFunc
     public static Point Subtract(this Point point, Vector vect) => (point.X - vect.X, point.Y - vect.Y);
     public static Point Add(this Point point, Vector vect) => (point.X + vect.X, point.Y + vect.Y);
     public static TwoPoints Add(this TwoPoints twoPoints, Vector vect) => (twoPoints.P1.Add(vect), twoPoints.P2.Add(vect));
+
+    public static IEnumerable<Point> Add(this IEnumerable<Point> points, Vector vect) => points.Select(p => p.Add(vect));
+    public static IEnumerable<Point> Scale(this IEnumerable<Point> points, double factor) => points.Select(p => p.Multiply(factor));
     public static double DotProduct(this Vector a, Vector b) => a.X * b.X + a.Y * b.Y;
 
     public static Point RotateAround(this Point rotPoint, Point origin, double angle)
@@ -61,6 +66,43 @@ public static class MathsFunc
         {
             return twoPoints.P2;
         }
+    }
+
+    public static TwoPoints GetBoundingRectTopLeftSize(IEnumerable<Point> points)
+    {
+        var pointsArr = points.ToArray();
+        return pointsArr.Length switch
+        {
+            0 => throw new NotImplementedException("case for 0 points missing"),
+            1 => (pointsArr[0], default),
+            _ => (GetTopLeft(pointsArr), GetSize(pointsArr)),
+        };
+    }
+
+    public static Point GetTopLeft(Point[] points)
+    {
+        Point result = Point.MaxValue;
+        foreach (var p in points)
+        {
+            result.X = Math.Min(result.X, p.X);
+            result.Y = Math.Min(result.Y, p.Y);
+        }
+        return result;
+    }
+
+    public static Point GetSize(Point[] points)
+    {
+        Point topLeft = Point.MaxValue;
+        Point bottomRight = Point.MinValue;
+        foreach (var p in points)
+        {
+            topLeft.X = Math.Min(topLeft.X, p.X);
+            topLeft.Y = Math.Min(topLeft.Y, p.Y);
+
+            bottomRight.X = Math.Max(bottomRight.X, p.X);
+            bottomRight.Y = Math.Max(bottomRight.Y, p.Y);
+        }
+        return bottomRight.Subtract(topLeft);
     }
 
 #if false

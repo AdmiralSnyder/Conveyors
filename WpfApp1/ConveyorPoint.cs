@@ -1,11 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using WpfLib;
 namespace WpfApp1;
 
-public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject
+public interface IElementsNode<T>
+{
+    public LinkedListNode<IPathPart> ElementsNode { get; }
+}
+
+public interface IListNode<T>
+{
+    public LinkedListNode<T> Node { get; }
+}
+
+public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNode<IPathPart>, IListNode<ConveyorPoint>
 {
     public string Text => $"Point {Conveyor.Number}.{Number} ({Location})";
 
@@ -54,7 +65,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject
                 {
                     len = prev.Lanes[i]?.EndLength ?? 0d;
                 }
-                var elNode = next?.Lanes[i]?.ElementNode;
+                var elNode = next?.Lanes[i]?.ElementsNode;
                 while(elNode is { })
                 {
                     var element = elNode.Value;
@@ -63,6 +74,8 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject
                     elNode = elNode.Next;
                 }
             }
+
+            ((Point[])SelectionBoundsPoints)[0] = Location;
         });
     }
 
@@ -73,12 +86,11 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject
             if (lane is not null)
             {
                 lane.RebuildArc();
-                if (lane.ElementNode.Previous?.Value is { } prev)
+                if (lane.ElementsNode.Previous?.Value is { } prev)
                 {
                     lane.BeginLength = prev.EndLength;
                 }
             }
-
         }
     }
 
@@ -91,9 +103,23 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject
     public LinkedListNode<ConveyorPoint> Node { get; internal set; }
     public LinkedListNode<IPathPart> ElementsNode { get; internal set; }
 
+    public Vector Incoming { get; private set; }
+    public Vector IncomingNorm { get; private set; }
+
+    public Vector Outgoing { get; private set; }
+    public Vector OutgoingNorm { get; private set; }
+
+    public double AngleRad { get; private set; }
+    public bool IsClockwise { get; private set; }
+    public bool IsStraight { get; private set; }
+
+    public IEnumerable<Point> SelectionBoundsPoints { get; } = new Point[1];
+
+    public ISelectObject? SelectionParent => Conveyor;
+
     public void AddToCanvas(CanvasInfo canvasInfo)
     {
-        PointCircle = canvasInfo.ShapeProvider.CreateConveyorPointEllipse(Location, IsFirst, IsLast);
+        PointCircle = canvasInfo.ShapeProvider.CreateConveyorPointEllipse(Location, IsFirst, IsLast, IsClockwise, IsStraight);
         PointCircle.Tag = this;
         canvasInfo.Canvas.Children.Add(PointCircle);
 
@@ -115,13 +141,30 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject
         }
     }
 
+    internal void PreparePoint()
+    {
+        if (IsFirst || IsLast) return;
+
+        var prevLocation = ((ConveyorPoint)Node.Previous.Value).Location;
+        var nextLocation = ((ConveyorPoint)Node.Next.Value).Location;
+
+        Incoming = Location.Subtract(prevLocation);
+        IncomingNorm = Incoming.Normalize();
+        Outgoing = nextLocation.Subtract(Location);
+        OutgoingNorm = Outgoing.Normalize();
+
+        AngleRad = Math.Acos(IncomingNorm.DotProduct(OutgoingNorm));
+        IsClockwise = AngleRad < Math.PI;
+        IsStraight = AngleRad == Math.PI;
+    }
+
     public void RegisterLanes()
     {
         if (IsFirst || IsLast) return;
 
         foreach (var lane in Lanes)
         {
-            lane.ElementNode = Conveyor.PointAndSegmentLanes[lane.Lane].AddLast(lane);
+            lane.ElementsNode = Conveyor.PointAndSegmentLanes[lane.Lane].AddLast(lane);
             lane.Node = Conveyor.PointLanes[lane.Lane].AddLast(lane);
         }
     }

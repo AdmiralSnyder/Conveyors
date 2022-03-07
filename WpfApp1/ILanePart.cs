@@ -8,5 +8,5 @@ public interface ILanePart
     double Length { get; }
     double EndLength { get; }
     Point GetPointAbsolute(double length, bool overshoot = false);
-    LinkedListNode<ILanePart> ElementNode { get; }
+    LinkedListNode<ILanePart> ElementsNode { get; }
 }

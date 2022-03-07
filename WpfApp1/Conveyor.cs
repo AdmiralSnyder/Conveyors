@@ -12,7 +12,7 @@ using System.Windows.Threading;
 
 namespace WpfApp1;
 
-public class Conveyor
+public class Conveyor : ISelectObject
 {
     private static int NextConveyorNumber = 0;
 
@@ -78,6 +78,11 @@ public class Conveyor
         foreach (var segment in conv.Segments)
         {
             segment.CreateLanes();
+        }
+
+        foreach (var point in conv.Points)
+        {
+            point.PreparePoint();
         }
 
         foreach (var point in conv.Points)
@@ -157,6 +162,15 @@ public class Conveyor
 
     public int Number { get; }
 
+    public string Text => nameof(Conveyor);
+
+    public IEnumerable<Point> SelectionBoundsPoints => Points.SelectMany(x => x.SelectionBoundsPoints)
+        .Concat(Segments.SelectMany(x => x.SelectionBoundsPoints))
+        .Concat(SegmentLanes.SelectMany(x => x.SelectMany(y => y.SelectionBoundsPoints))) // TODO use outer lanes only
+        .Concat(PointLanes.SelectMany(x => x.SelectMany(y => y.SelectionBoundsPoints)));
+
+    public ISelectObject? SelectionParent => null;
+
     private Thread? Dispatcher;
 
     public Conveyor(int lanesCount)
@@ -228,7 +242,7 @@ public class Conveyor
 
         double length = actualAge / 1000 * Speed;
         done = false;
-        lane = item.Lane ?? Segments.First.Value.Lanes[item.LaneNumber].ElementNode;
+        lane = item.Lane ?? Segments.First.Value.Lanes[item.LaneNumber].ElementsNode;
 
         while (lane is not null && lane.Value.EndLength < length)
         {
@@ -238,7 +252,7 @@ public class Conveyor
         if (lane is null)
         {
             done = true;
-            lane = Segments.Last.Value.Lanes[item.LaneNumber].ElementNode;
+            lane = Segments.Last.Value.Lanes[item.LaneNumber].ElementsNode;
         }
         if (length < 0)
         {

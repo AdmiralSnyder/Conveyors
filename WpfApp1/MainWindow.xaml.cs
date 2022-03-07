@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
 using Microsoft.CSharp;
-using PointDef;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
@@ -40,7 +39,7 @@ public partial class MainWindow
         AutoRoot = ConveyorAutomationObject.CreateAutomationObject(out var context);
         AutoRoot.Init((TheCanvas, ShapeProvider));
 
-        context.LogAction = s => textEditor2.Dispatcher.Invoke(() => textEditor2.AppendText(s));
+        context.LogAction = s => textEditor2.Dispatcher.Invoke(() => textEditor2.AppendText(s + Environment.NewLine));
         InitializeScriptingEnvironment();
     }
 
@@ -56,21 +55,62 @@ public partial class MainWindow
     }
 
     public static readonly DependencyProperty SelectedObjectProperty =
-       DependencyProperty.Register(nameof(SelectedObject), typeof(ISelectObject), typeof(MainWindow), new UIPropertyMetadata(null));
+       DependencyProperty.Register(nameof(SelectedObject), typeof(ISelectObject), typeof(MainWindow), new UIPropertyMetadata(null, SelectedObjectPropertyChanged));
+
+    static void SelectedObjectPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        ((MainWindow)d).ShowSelectionBoundingBox((ISelectObject)e.NewValue);
+    }
 
     public bool SelectMode { get; set; }
+
     public ISelectObject SelectedObject
     {
         get => (ISelectObject)GetValue(SelectedObjectProperty);
         set => SetValue(SelectedObjectProperty, value);
     }
+    bool HierarchicalSelection { get; set; } = true;
 
     private void SelectShapeAction(Shape shape)
     {
+        var oldSelectedObject = SelectedObject;
         if (SelectMode && shape.Tag is ISelectObject selectObject)
         {
-            SelectedObject = selectObject;
+            if (HierarchicalSelection)
+            {
+                SelectedObject = selectObject.FindPredecessorInPath(oldSelectedObject);                
+            }
+            else
+            {
+                SelectedObject = selectObject;
+            }
         }
+    }
+
+    private Rectangle SelectionRect;
+
+    private void ShowSelectionBoundingBox(ISelectObject? selectObject)
+    {
+
+        if (SelectionRect is not null)
+        {
+            TheCanvas.Children.Remove(SelectionRect);
+        }
+        if (selectObject is null) return;
+
+        var boundingRect = MathsFunc.GetBoundingRectTopLeftSize(selectObject.SelectionBoundsPoints);
+        SelectionRect = new()
+        {
+            Width = boundingRect.P2.X + 8,
+            Height = boundingRect.P2.Y + 8,
+            Stroke = Brushes.Moccasin,
+            StrokeDashArray = new(new[] { 1d, 2d }),
+            SnapsToDevicePixels = true,
+            RadiusX = 2,
+            RadiusY = 2,
+        };
+        SelectionRect.SetLocation(boundingRect.P1.Subtract((4, 4)));
+        TheCanvas.Children.Add(SelectionRect);
     }
 
     private void AddConveyorB_Click(object sender, RoutedEventArgs e)
@@ -254,7 +294,7 @@ public partial class MainWindow
     private ConveyorShapeProvider ShapeProvider;
     public Line AddLine(Point from, Point to)
     {
-        var line = ShapeProvider.CreateConveyorPositioningLine(((V2d)from, (V2d)to));
+        var line = ShapeProvider.CreateConveyorPositioningLine(((Point)from, (Point)to));
         TheCanvas.Children.Add(line);
         return line;
     }
@@ -435,19 +475,11 @@ public partial class MainWindow
         InputState = InputState.MovePoint;
     }
 
-    private void SelectB_Click(object sender, RoutedEventArgs e)
-    {
-        SelectMode = !SelectMode;
-    }
-
-    private void Button_Click(object sender, RoutedEventArgs e)
-    {
-
-    }
+    private void SelectB_Click(object sender, RoutedEventArgs e) => SelectMode = !SelectMode;
 
     private ScriptGlobals Globals;
     private Script Script;
-    private Task initTask;
+    private Task InitScriptTask;
 
     private void InitializeScriptingEnvironment()
     {
@@ -456,18 +488,14 @@ public partial class MainWindow
         Globals = new ScriptGlobals() { TheObject = AutoRoot };
 
         var globalsType = typeof(ScriptGlobals);
-        Script = CSharpScript.Create(string.Empty, ScriptOptions.Default.AddImports(globalsType.Namespace, typeof(V2d).Namespace)
-            .AddReferences(typeof(ScriptGlobals).Assembly, typeof(V2d).Assembly),
+        Script = CSharpScript.Create(string.Empty, ScriptOptions.Default.AddImports(globalsType.Namespace, typeof(Point).Namespace)
+            .AddReferences(typeof(ScriptGlobals).Assembly, typeof(Point).Assembly),
             globalsType, loader);
 
-        initTask = Task.Run(async () =>
+        InitScriptTask = Task.Run(async () =>
         {
-            Script.RunAsync(Globals);
-            await RunB.Dispatcher.InvokeAsync(() =>
-            {
-                RunB.IsEnabled = true;
-                //RunB.Foreground = Brushes.Yellow;
-            });
+            await Script.RunAsync(Globals);
+            await RunB.Dispatcher.InvokeAsync(() => RunB.IsEnabled = true);
         });
     }
 
@@ -518,6 +546,28 @@ return true;
                     Mouse.OverrideCursor = null;
                 }
             }));
+        }
+    }
+
+    private void HappyBirthdayRubyB_Click(object sender, RoutedEventArgs e)
+    {
+        int xOffset;
+        int yOffset = 0;
+        double scaling = 5;
+        foreach (var wordCoords in Func.GetTextLocations("HAPPY", "BIRTHDAY", "RUBY"))
+        {
+            xOffset = 0;
+
+            foreach (var charCoords in wordCoords)
+            {
+                foreach (var strokecoords in charCoords)
+                {
+                    AutoRoot.AddConveyor(strokecoords.Scale(scaling + yOffset).Add((xOffset * 60 * (1+ (yOffset * 0.2))  + 40, yOffset * 90 + 40)), true, yOffset + 2);
+                }
+                xOffset++;
+            }
+
+            yOffset++;
         }
     }
 }

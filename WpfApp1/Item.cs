@@ -91,5 +91,13 @@ public class Item : ISelectObject
         set => Func.Setter(ref _Location, value, newValue => Shape.Dispatcher.BeginInvoke(SetLocation, newValue));
     }
 
-    private void SetLocation(Point point) => Shape.SetCenterLocation(point);
+    public IEnumerable<Point> SelectionBoundsPoints { get; } = new Point[1];
+
+    public ISelectObject? SelectionParent => null;
+
+    private void SetLocation(Point point)
+    {
+        Shape.SetCenterLocation(point);
+        ((Point[])SelectionBoundsPoints)[0] = point;
+    }
 }

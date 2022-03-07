@@ -1,5 +1,4 @@
-﻿using PointDef;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -19,7 +18,7 @@ namespace WpfApp1
     {
         List<Conveyor> Conveyors { get; }
         CanvasInfo CanvasInfo { get; }
-        Conveyor AddConveyor(IEnumerable<V2d> points, bool isRunning, int lanes);
+        Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes);
     }
 
     public interface IAutomationContext
@@ -40,7 +39,7 @@ namespace WpfApp1
             CanvasInfo = new() { Canvas = tuple.Canvas, ShapeProvider = tuple.ShapeProvider};
         }
 
-        public Conveyor AddConveyor(IEnumerable<V2d> points, bool isRunning, int lanes)
+        public Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes)
         {
             var conv = Conveyor.Create(points, isRunning, lanes);
             Conveyor.AddToCanvas(conv, CanvasInfo);
@@ -71,7 +70,7 @@ namespace WpfApp1
 
         public List<Conveyor> Conveyors => AutomationObject.Conveyors;
         public CanvasInfo CanvasInfo => AutomationObject.CanvasInfo;
-        public Conveyor AddConveyor(IEnumerable<V2d> points, bool isRunning, int lanes
+        public Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes
             //, [CallerArgumentExpression("points")] string pointsArg = null
             //, [CallerArgumentExpression("isRunning")] string isRunningArg = null
             //, [CallerArgumentExpression("lanes")] string lanesArg = null

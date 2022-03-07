@@ -38,14 +38,19 @@ namespace WpfApp1
             return line;
         }
 
-        public Ellipse CreateConveyorPointEllipse(Point point, bool isFirst, bool isLast)
+        public Ellipse CreateConveyorPointEllipse(Point point, bool isFirst, bool isLast, bool isClockwise, bool isStraight)
         {
             const double Size = 4d;
             var result = new Ellipse()
             {
                 Width = Size,
                 Height = Size,
-                Fill = isLast ? Brushes.Red : isFirst ? Brushes.Cyan : Brushes.Blue,
+                Fill 
+                = isLast ? Brushes.Red 
+                : isFirst ?  Brushes.Cyan 
+                : isClockwise ? Brushes.Purple
+                : isStraight ? Brushes.Peru
+                : Brushes.Blue,
             };
             result.ApplyMouseBehaviour(this.SelectBehaviour);
             result.SetCenterLocation(point);

@@ -6,14 +6,36 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:mx="clr-namespace:WpfLib.MarkupExtensions;assembly=WpfLib"
         xmlns:system="clr-namespace:System;assembly=mscorlib" Name="TheWindow" Title="MainWindow"
-        Width="614" Height="352" Closing="Window_Closing" mc:Ignorable="d">
+        Width="614" Height="352" Closing="Window_Closing"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        mc:Ignorable="d">
+
     <Window.Resources>
         <local:SnapGridConverter x:Key="SnapGridConverter" />
         <Brush x:Key="SplitterColor">red</Brush>
+        <Brush x:Key="BackgroundColor">green</Brush>
         <system:Double x:Key="SplitterSize">5</system:Double>
-    </Window.Resources>
-    <Grid gu:Grid.Layout="auto * auto, * auto 100">
 
+        <Style x:Key="CommonGridSplitter" TargetType="{x:Type GridSplitter}">
+            <Setter Property="Background" Value="{StaticResource SplitterColor}" />
+        </Style>
+        <Style x:Key="HorizontalGridSplitter"
+               BasedOn="{StaticResource CommonGridSplitter}"
+               TargetType="{x:Type GridSplitter}">
+            <Setter Property="Height" Value="{StaticResource SplitterSize}" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="VerticalGridSplitter"
+               BasedOn="{StaticResource CommonGridSplitter}"
+               TargetType="{x:Type GridSplitter}">
+            <Setter Property="Width" Value="{StaticResource SplitterSize}" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+    </Window.Resources>
+
+    <Grid gu:Grid.Layout="auto * auto, * auto 130">
         <StackPanel Grid.ColumnSpan="3" gu:Cell.Index="0 0" Orientation="Horizontal">
             <StackPanel.Resources>
                 <Style TargetType="{x:Type Button}">
@@ -37,26 +59,48 @@
             <TextBox Name="GridWidth" Width="30"
                      Text="{Binding Path=SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}"
                      ToolTip="Grid Width" />
+            <Button Name="HappyBirthdayRubyB" Content="Happy Birthday Ruby" Click="HappyBirthdayRubyB_Click" />
             <TextBlock Name="SelectionInfoT" Text="(Please select something)" />
         </StackPanel>
         <TextBlock Name="NotesLabel" Grid.ColumnSpan="2" gu:Cell.Index="2 0" />
-        <GridSplitter Width="{StaticResource SplitterSize}"
-                      HorizontalAlignment="Center" VerticalAlignment="Stretch" gu:Cell.Index="1 1"
-                      Background="{StaticResource SplitterColor}" />
-        <Grid gu:Cell.Index="1 2" gu:Grid.Layout="* auto *, *">
+        <GridSplitter gu:Cell.Index="1 1" Style="{StaticResource VerticalGridSplitter}" />
+        <Grid gu:Cell.Index="1 2" gu:Grid.Layout="20 auto * auto 40, *">
             <TextBlock gu:Cell.Index="0 0" Text="{Binding Path=SelectedObject.Text, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
-            <GridSplitter Grid.Row="1"
-                          Height="{StaticResource SplitterSize}"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                          Background="{StaticResource SplitterColor}" />
-            <avalonEdit:TextEditor Name="textEditor2" gu:Cell.Index="2 0" FontFamily="Fira Code" FontSize="8pt" SyntaxHighlighting="C#" />
+            <GridSplitter Grid.Row="1" Style="{StaticResource HorizontalGridSplitter}" />
+            <local:PropertyGrid x:Name="SelectedPG" gu:Cell.Index="2 0"
+                                InspectedObject="{Binding SelectedObject}" />
+            <GridSplitter Grid.Row="3" Style="{StaticResource HorizontalGridSplitter}" />
+            <avalonEdit:TextEditor Name="textEditor2" gu:Cell.Index="4 0" FontFamily="Fira Code" FontSize="5pt" SyntaxHighlighting="C#" />
         </Grid>
         <Grid gu:Cell.Index="1 0" gu:Grid.Layout="* auto auto, *">
-
             <ScrollViewer gu:Cell.Index="0 0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
-                <Canvas Name="TheCanvas" Background="Green" MouseDown="TheCanvas_MouseDown" MouseMove="TheCanvas_MouseMove"
+                <Canvas Name="TheCanvas" MouseDown="TheCanvas_MouseDown" MouseMove="TheCanvas_MouseMove"
                         MouseUp="TheCanvas_MouseUp" MouseWheel="TheCanvas_MouseWheel">
-                    <ItemsControl Name="SnapGridIC"
+                    <Canvas.Background>
+                        <DrawingBrush AlignmentX="Left" AlignmentY="Top" Stretch="None" TileMode="Tile" Viewport="-0.5, -0.5, 10, 10"
+                                      ViewportUnits="Absolute">
+                            <DrawingBrush.Drawing>
+                                <DrawingGroup>
+                                    <DrawingGroup.Children>
+                                        <GeometryDrawing Brush="{StaticResource BackgroundColor}">
+                                            <GeometryDrawing.Geometry>
+                                                <RectangleGeometry Rect="0, 0, 10, 10" />
+                                            </GeometryDrawing.Geometry>
+                                            <GeometryDrawing.Pen>
+                                                <Pen Brush="{StaticResource BackgroundColor}" />
+                                            </GeometryDrawing.Pen>
+                                        </GeometryDrawing>
+                                        <GeometryDrawing Brush="WhiteSmoke">
+                                            <GeometryDrawing.Geometry>
+                                                <EllipseGeometry RadiusX="0.5" RadiusY="0.5" />
+                                            </GeometryDrawing.Geometry>
+                                        </GeometryDrawing>
+                                    </DrawingGroup.Children>
+                                </DrawingGroup>
+                            </DrawingBrush.Drawing>
+                        </DrawingBrush>
+                    </Canvas.Background>
+                    <!--<ItemsControl Name="SnapGridIC"
                                   ItemsSource="{mx:MultiBinding {Binding ElementName=TheCanvas, Path=ActualWidth},
                                                                 {Binding ElementName=TheCanvas, Path=ActualHeight},
                                                                 {Binding Path=SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}},
@@ -78,22 +122,18 @@
                                 <Ellipse Width="1" Height="1" Fill="WhiteSmoke" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    </ItemsControl>-->
                     <Canvas.RenderTransform>
                         <TransformGroup>
                             <ScaleTransform x:Name="CanvasScaleTransform" />
                             <TranslateTransform x:Name="CanvasTranslateTransform" />
                         </TransformGroup>
                     </Canvas.RenderTransform>
-
                 </Canvas>
             </ScrollViewer>
-            <GridSplitter Grid.Row="1"
-                          Height="{StaticResource SplitterSize}"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                          Background="{StaticResource SplitterColor}" />
+            <GridSplitter Grid.Row="1" Style="{StaticResource HorizontalGridSplitter}" />
             <Grid gu:Cell.Index="2 0" gu:Grid.Layout="* , * auto">
-                <avalonEdit:TextEditor Name="textEditor" gu:Cell.Index="0 0" FontFamily="Fira Code" FontSize="10pt" SyntaxHighlighting="C#">
+                <avalonEdit:TextEditor Name="textEditor" gu:Cell.Index="0 0" FontFamily="Fira Code" FontSize="7pt" SyntaxHighlighting="C#">
                     $.AddConveyor(new V2d[]{(30, 60), (60, 60), (60, 90)}, false, 2)
                 </avalonEdit:TextEditor>
                 <Button Name="RunB" gu:Cell.Index="0 1" Click="RunB_Click" IsEnabled="False">
