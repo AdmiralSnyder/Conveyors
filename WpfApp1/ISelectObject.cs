@@ -2,11 +2,22 @@
 
 namespace WpfApp1;
 
-public interface ISelectObject
+public interface ISelectObject : ISelectable
 {
     string Text { get; }
-    IEnumerable<Point> SelectionBoundsPoints { get; }
+    Point[] SelectionBoundsPoints { get; }
     ISelectObject? SelectionParent { get; }
+
+    void SetSelectionPoints(params Point[] points)
+    {
+        var boundsPoints = SelectionBoundsPoints;
+        for (int i = 0; i < points.Length; i++)
+        {
+            boundsPoints[i] = points[i];
+        }
+
+        NotifyRefresh();
+    }
 
     ISelectObject GetSelectRoot()
     {

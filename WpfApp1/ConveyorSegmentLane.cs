@@ -92,13 +92,11 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectOb
                 Line.Y2 = StartEnd.P2.Y;
             }
 
-            var selectionBoundsPoints = (Point[])SelectionBoundsPoints;
-            selectionBoundsPoints[0] = StartEnd.P1;
-            selectionBoundsPoints[1] = StartEnd.P2;
+            ((ISelectObject)this).SetSelectionPoints(StartEnd.P1, StartEnd.P2);
         });
     }
 
-    public IEnumerable<Point> SelectionBoundsPoints { get; } = new Point[2];
+    public Point[] SelectionBoundsPoints { get; } = new Point[2];
 
     public ISelectObject? SelectionParent => Segment;
 

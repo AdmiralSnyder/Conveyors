@@ -42,7 +42,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
     private PathGeometry ArcGeometry { get; set; } = new();
     private double ArcAngleRad { get; set; }
 
-    public IEnumerable<Point> SelectionBoundsPoints { get; } = new Point[2];
+    public Point[] SelectionBoundsPoints { get; } = new Point[2];
 
     public ISelectObject? SelectionParent => Point;
 
@@ -56,8 +56,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
         ArcStartEnd = (prevEnd, nextStart);
 
         var selectionBoundsPoints = (Point[])SelectionBoundsPoints;
-        selectionBoundsPoints[0] = prevEnd;
-        selectionBoundsPoints[1] = nextStart;
+        ((ISelectObject)this).SetSelectionPoints(prevEnd, nextStart);
         // TODO add 3rd
 
         ArcGeometry.Figures.Clear();

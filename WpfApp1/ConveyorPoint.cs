@@ -30,8 +30,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
 
     public bool IsLast { get; internal set; }
     public bool IsFirst { get; internal set; }
-    //public double Y { get; internal set; }
-    //public double X { get; internal set; }
+
     private Point _Location;
     public Point Location 
     {
@@ -46,24 +45,25 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
             if (prev is { })
             {
                 prev.StartEnd = (prev.StartEnd.P1, Location);
-                prev.GetAdjacentPoints().prev?.RebuildLanes();
+                prev.GetAdjacentPoints().prev?.PreparePoint();
             }
+
+            ((ISelectObject)this).SetSelectionPoints(_Location);
+            
+            PreparePoint();
 
             if (next is { })
             {
                 next.StartEnd = (Location, next.StartEnd.P2);
-                next.GetAdjacentPoints().next?.RebuildLanes();
+                next.GetAdjacentPoints().next?.PreparePoint();
             }
-            
-            ((Point[])SelectionBoundsPoints)[0] = Location;
 
-            prev?.GetAdjacentPoints().prev?.PreparePoint();
-            
-            
-            PreparePoint();
-            next?.GetAdjacentPoints().next?.PreparePoint();
+
+            prev?.GetAdjacentPoints().prev?.RebuildLanes();
             
             RebuildLanes();
+
+            next?.GetAdjacentPoints().next?.RebuildLanes();        
 
             // TODO this might better be a method of the lanes?
             double len = 0d;
@@ -83,6 +83,8 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
                 }
             }
 
+            // This is utterly dirty - the conveyor should be a listener on the point's locations - or rather, all locations...
+            ((ISelectObject)Conveyor).SetSelectionPoints();
         });
     }
 
@@ -130,7 +132,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
     public bool IsClockwise { get; private set; }
     public bool IsStraight { get; private set; }
 
-    public IEnumerable<Point> SelectionBoundsPoints { get; } = new Point[1];
+    public Point[] SelectionBoundsPoints { get; } = new Point[1];
 
     public ISelectObject? SelectionParent => Conveyor;
 

@@ -21,6 +21,11 @@ namespace WpfApp1
         void NotifyRefresh() => Manager.DoARefresh(this);
     }
 
+    public interface ISelectable : INotification<ISelectable>
+    {
+        void NotifyRefresh() => Manager.DoARefresh(this);
+    }
+
     public interface IRefreshListener<TNotification>
         where TNotification : INotification<TNotification>
     {

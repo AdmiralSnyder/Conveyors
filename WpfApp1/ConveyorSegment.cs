@@ -35,9 +35,7 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject, IRefreshab
             {
                 Lanes[i]?.Rebuild();
             }
-            var selectionBoundsPoints = (Point[])SelectionBoundsPoints;
-            selectionBoundsPoints[0] = StartEnd.P1;
-            selectionBoundsPoints[1] = StartEnd.P2;
+            ((ISelectObject)this).SetSelectionPoints(StartEnd.P1, StartEnd.P2);
         });
     }
 
@@ -54,7 +52,7 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject, IRefreshab
     public LinkedListNode<ConveyorSegment> Node { get; internal set; }
     public LinkedListNode<IPathPart> ElementsNode { get; internal set; }
 
-    public IEnumerable<Point> SelectionBoundsPoints { get; } = new Point[2];
+    public Point[] SelectionBoundsPoints { get; } = new Point[2];
 
     public ISelectObject? SelectionParent => Conveyor;
 
