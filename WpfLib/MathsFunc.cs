@@ -2,10 +2,60 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WpfLib;
+namespace WpfLib.Maths;
 
-public static class MathsFunc
+public static class AngleExtensions
 {
+    public static Angle Degrees(this double valueDeg) => new() { Degrees = valueDeg, Radians = Maths.DegToRad(valueDeg) };
+    public static Angle Radians(this double valueRad) => new() { Degrees = Maths.RadToDeg(valueRad), Radians = valueRad };
+}
+public class Angle
+{
+    public double Degrees { get; init; }
+    public double Radians { get; init; }
+    public override string ToString() => $"{Degrees:0.##}° {Radians:0.##}rad";
+    public bool IsStraight => Degrees == 180d;
+    /// <summary>
+    /// Spitzer Winkel
+    /// </summary>
+    public bool IsAcute => Degrees < 90d;
+    /// <summary>
+    /// Stumpfer Winkel
+    /// </summary>
+    public bool IsObtuse => Degrees > 90d;
+    public bool IsRight => Degrees == 90d;
+    public bool IsReflex => Degrees > 180d && Degrees < 360d;
+    public bool IsNormalized => Degrees < 360d;
+    public bool IsClockwise => Degrees < 0d;
+}
+
+
+public static class Maths
+{
+    public const double OneEightyOverPi = 180d / Math.PI;
+    public const double PiOverOneEighty = Math.PI / 180d;
+
+    public static double RadToDeg(double rad) => rad * OneEightyOverPi;
+
+    public static double DegToRad(double deg) => deg * PiOverOneEighty;
+
+    public static double Distance(Point p1, Point p2)
+    {
+        p1.X = p2.X - p1.X;
+        p1.X = p1.X * p1.X;
+        p1.Y = p2.Y - p1.Y;
+        p1.Y = p1.Y * p1.Y;
+        return Math.Sqrt(p1.X + p1.Y);
+    }
+
+    public static double Length(this Line line) => Distance(new(line.X1, line.Y1), new(line.X2, line.Y2));
+    public static double Length(this (double x, double y) tuple) => Distance(new(0, 0), new(tuple.x, tuple.y));
+
+    public const double PiHalf = Math.PI / 2;
+
+    public static readonly Vector XAxisV1 = new(1d, 0d);
+
+    public static readonly Vector YAxisV1 = new(0d, 1d);
 
     public static Vector Vector(this TwoPoints startEnd) => (startEnd.P2.X - startEnd.P1.X, startEnd.P2.Y - startEnd.P1.Y);
 
@@ -17,6 +67,8 @@ public static class MathsFunc
     public static Vector Normalize(this Vector vect) => vect.Divide(vect.Length());
     public static Vector Normalize(this Vector vect, double length) => vect.Divide(length);
 
+    public static Vector Inverse(this Vector vect) => new(-vect.X, -vect.Y);
+
     public static Vector Multiply(this Vector vect, double factor) => (vect.X * factor, vect.Y * factor);
     public static Vector Divide(this Vector vect, double factor) => (vect.X / factor, vect.Y / factor);
     public static Point Subtract(this Point point, Vector vect) => (point.X - vect.X, point.Y - vect.Y);
@@ -26,6 +78,8 @@ public static class MathsFunc
     public static IEnumerable<Point> Add(this IEnumerable<Point> points, Vector vect) => points.Select(p => p.Add(vect));
     public static IEnumerable<Point> Scale(this IEnumerable<Point> points, double factor) => points.Select(p => p.Multiply(factor));
     public static double DotProduct(this Vector a, Vector b) => a.X * b.X + a.Y * b.Y;
+
+    public static double CrossProduct(this Vector a, Vector b) => a.X * b.Y - a.Y * b.X;
 
     public static Point RotateAround(this Point rotPoint, Point origin, double angle)
     {
@@ -43,7 +97,7 @@ public static class MathsFunc
 
         var x = ((rotPoint.X - origin.X) * Math.Cos(angle)) - ((origin.Y - rotPoint.Y) * Math.Sin(angle)) + origin.X;
         var y = origin.Y - ((origin.Y - rotPoint.Y) * Math.Cos(angle)) + ((rotPoint.X - origin.X) * Math.Sin(angle));
-        
+
         return (x, y);
     }
 
@@ -110,8 +164,6 @@ private static (double x, double y) Divide((double x, double y) vect, double div
 private static (double x, double y) Multiply((double x, double y) vect, double factor) => (x: vect.x * factor, y: vect.y * factor);
 private static (double x, double y) Normalize((double x, double y) vect) => Divide(vect, vect.Length());
 #endif
-    public static double RadToDeg(double rad) => Math.PI / rad; 
-
 
     /// <summary>
     /// returns whether the elements in an array have the same distance
@@ -124,7 +176,7 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         // 1. step
         var step = arr[1] - arr[0];
         // check whether the step is the same for every consecutive pair in the array
-        for(int i = 1; i < arr.Length; i++)
+        for (int i = 1; i < arr.Length; i++)
         {
             if (arr[i - 1] + step != arr[i]) return false;
         }

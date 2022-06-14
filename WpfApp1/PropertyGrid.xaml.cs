@@ -19,11 +19,12 @@ namespace WpfApp1
     /// <summary>
     /// Interaction logic for PropertyGrid.xaml
     /// </summary>
-    public partial class PropertyGrid : UserControl
+    public partial class PropertyGrid : UserControl, IRefreshListener<IRefreshable>
     {
         public PropertyGrid()
         {
             InitializeComponent();
+            RefreshManager<IRefreshable>.RegisterRefreshListener(this);
         }
 
         public static readonly DependencyProperty InspectedObjectProperty = 
@@ -73,7 +74,7 @@ namespace WpfApp1
 
             if (InspectedObject is not null)
             {
-                TheGrid.RowDefinitions.Add(new());
+                TheGrid.RowDefinitions.Add(new() { MinHeight = 20d});
                 TextBlock typeLabel = new() { Text = InspectedObject.GetType().Name, Background = Brushes.Salmon, ToolTip = InspectedObject.GetType().Name };
                 TheGrid.Children.Add(typeLabel);
                 typeLabel.SetValue(Grid.RowProperty, rowIdx);
@@ -85,7 +86,7 @@ namespace WpfApp1
 
             foreach (var row in Rows)
             {
-                TheGrid.RowDefinitions.Add(new());
+                TheGrid.RowDefinitions.Add(new() { MinHeight = 20d });
 
                 TheGrid.Children.Add(row.Label);
                 row.Label.SetValue(Grid.RowProperty, rowIdx);
@@ -103,29 +104,43 @@ namespace WpfApp1
             }
         }
 
+        WeakReference<object> ObjRef;
+
         private void LoadObject(object? obj)
         {
+            if (ObjRef is { } objRef && objRef.TryGetTarget(out var oldObj) && !Equals(obj, oldObj))
+            {
+                RefreshManager<IRefreshable>.UnRegisterObserver(this, oldObj);
+            }
+
             if (obj is not null)
             {
-                foreach (var row in Rows)
-                {
-                    var propertyValue = row.PropertyInfo.GetValue(obj);
+                RefreshObjectData(obj);
 
-                    // CHEATING for now
-                    ((TextBox)row.ValueControl).Text = propertyValue?.ToString() ?? "<NULL>";
-                    ((TextBox)row.ValueControl).ToolTip = propertyValue?.ToString() ?? "<NULL>";
-                    ((TextBox)row.ValueControl).TextChanged += (s, e) =>
-                    {
-                        // TODO add more types
-                        if (row.PropertyInfo.PropertyType == typeof(double) && double.TryParse(((TextBox)s).Text, out var val) && row.PropertyInfo.CanWrite)
-                        {
-                            row.PropertyInfo.SetValue(obj, val);
-                        }
-                    };
-                }
+                RefreshManager<IRefreshable>.RegisterObserver(this, obj);
+                ObjRef = new(obj);
             }
         }
 
+        private void RefreshObjectData(object? obj)
+        {
+            foreach (var row in Rows)
+            {
+                var propertyValue = row.PropertyInfo.GetValue(obj);
+
+                // CHEATING for now
+                ((TextBox)row.ValueControl).Text = propertyValue?.ToString() ?? "<NULL>";
+                ((TextBox)row.ValueControl).ToolTip = propertyValue?.ToString() ?? "<NULL>";
+                ((TextBox)row.ValueControl).TextChanged += (s, e) =>
+                {
+                    // TODO add more types
+                    if (row.PropertyInfo.PropertyType == typeof(double) && double.TryParse(((TextBox)s).Text, out var val) && row.PropertyInfo.CanWrite)
+                    {
+                        row.PropertyInfo.SetValue(obj, val);
+                    }
+                };
+            }
+        }
 
         private class PropertyGridRowInfo
         {
@@ -148,6 +163,11 @@ namespace WpfApp1
         {
             // CHEATING for now
             return new TextBox();
+        }
+
+        public void Notify(IRefreshable obj)
+        {
+            RefreshObjectData(obj);
         }
 
         private List<PropertyGridRowInfo> Rows { get; set; } = EmptyRows;

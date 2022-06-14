@@ -34,19 +34,26 @@ public partial class MainWindow
     public MainWindow()
     {
         ShapeProvider = new() { SelectBehaviour = SelectShapeAction };
-        //this.DataContext = this;
+        this.DataContext = this;
+        SelectionManager = new()
+        {
+            UpdateBoundingBox = ShowSelectionBoundingBox
+        };
         InitializeComponent();
         AutoRoot = ConveyorAutomationObject.CreateAutomationObject(out var context);
         AutoRoot.Init((TheCanvas, ShapeProvider));
 
         context.LogAction = s => textEditor2.Dispatcher.Invoke(() => textEditor2.AppendText(s + Environment.NewLine));
         InitializeScriptingEnvironment();
+
     }
+
+
 
     public IGeneratedConveyorAutomationObject AutoRoot { get; }
 
     public static readonly DependencyProperty SnapGridWidthProperty =
-       DependencyProperty.Register(nameof(SnapGridWidth), typeof(int), typeof(MainWindow), new UIPropertyMetadata(10));
+        DependencyProperty.Register(nameof(SnapGridWidth), typeof(int), typeof(MainWindow), new UIPropertyMetadata(10));
 
     public int SnapGridWidth
     {
@@ -54,35 +61,28 @@ public partial class MainWindow
         set => SetValue(SnapGridWidthProperty, value);
     }
 
-    public static readonly DependencyProperty SelectedObjectProperty =
-       DependencyProperty.Register(nameof(SelectedObject), typeof(ISelectObject), typeof(MainWindow), new UIPropertyMetadata(null, SelectedObjectPropertyChanged));
+    //public static readonly DependencyProperty SelectedObjectProperty =
+    //   DependencyProperty.Register(nameof(SelectedObject), typeof(ISelectObject), typeof(MainWindow), new UIPropertyMetadata(null, SelectedObjectPropertyChanged));
 
-    static void SelectedObjectPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        ((MainWindow)d).ShowSelectionBoundingBox((ISelectObject)e.NewValue);
-    }
+    //static void SelectedObjectPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    //{
+    //    ((MainWindow)d).ShowSelectionBoundingBox((ISelectObject)e.NewValue);
+    //}
 
-    public bool SelectMode { get; set; }
-
-    public ISelectObject SelectedObject
-    {
-        get => (ISelectObject)GetValue(SelectedObjectProperty);
-        set => SetValue(SelectedObjectProperty, value);
-    }
-    bool HierarchicalSelection { get; set; } = true;
+    public SelectionManager SelectionManager { get; set; }
 
     private void SelectShapeAction(Shape shape)
     {
-        var oldSelectedObject = SelectedObject;
-        if (SelectMode && shape.Tag is ISelectObject selectObject)
+        var oldSelectedObject = SelectionManager.SelectedObject;
+        if (SelectionManager.SelectMode && shape.Tag is ISelectObject selectObject)
         {
-            if (HierarchicalSelection)
+            if (SelectionManager.HierarchicalSelection)
             {
-                SelectedObject = selectObject.FindPredecessorInPath(oldSelectedObject);                
+                SelectionManager.SelectedObject = selectObject.FindPredecessorInPath(oldSelectedObject);                
             }
             else
             {
-                SelectedObject = selectObject;
+                SelectionManager.SelectedObject = selectObject;
             }
         }
     }
@@ -91,14 +91,13 @@ public partial class MainWindow
 
     private void ShowSelectionBoundingBox(ISelectObject? selectObject)
     {
-
         if (SelectionRect is not null)
         {
             TheCanvas.Children.Remove(SelectionRect);
         }
         if (selectObject is null) return;
 
-        var boundingRect = MathsFunc.GetBoundingRectTopLeftSize(selectObject.SelectionBoundsPoints);
+        var boundingRect = Maths.GetBoundingRectTopLeftSize(selectObject.SelectionBoundsPoints);
         SelectionRect = new()
         {
             Width = boundingRect.P2.X + 8,
@@ -113,10 +112,8 @@ public partial class MainWindow
         TheCanvas.Children.Add(SelectionRect);
     }
 
-    private void AddConveyorB_Click(object sender, RoutedEventArgs e)
-    {
-        InputState = InputState.SelectFirstPoint;
-    }
+    private void AddConveyorB_Click(object sender, RoutedEventArgs e) => InputState = InputState.SelectFirstPoint;
+
     private InputState _InputState;
     private InputState InputState
     {
@@ -147,6 +144,7 @@ public partial class MainWindow
     private readonly Stack<Line> TempLines = new();
     private Point? PanPoint;
     private Point PanValue = new();
+    
     private void TheCanvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton == MouseButton.Middle && PanPoint is null)
@@ -157,7 +155,7 @@ public partial class MainWindow
         }
 
         var modifier = Keyboard.Modifiers;
-        var isShiftPressed = modifier == ModifierKeys.Shift;
+        var isShiftPressed = modifier.HasFlag(ModifierKeys.Shift);
         switch (InputState)
         {
             case InputState.None: return;
@@ -419,9 +417,8 @@ public partial class MainWindow
 
     private void MoveCircleClicked(Shape shape)
     {
-        if (shape is Ellipse moveCircle)
+        if (shape is Ellipse moveCircle && moveCircle.Tag is ConveyorPoint point)
         {
-            var point = (ConveyorPoint)moveCircle.Tag;
             const double size = 5d;
             var newCircle = new Ellipse()
             {
@@ -475,7 +472,7 @@ public partial class MainWindow
         InputState = InputState.MovePoint;
     }
 
-    private void SelectB_Click(object sender, RoutedEventArgs e) => SelectMode = !SelectMode;
+    private void SelectB_Click(object sender, RoutedEventArgs e) => SelectionManager.ToggleSelectMode();
 
     private ScriptGlobals Globals;
     private Script Script;
@@ -488,7 +485,7 @@ public partial class MainWindow
         Globals = new ScriptGlobals() { TheObject = AutoRoot };
 
         var globalsType = typeof(ScriptGlobals);
-        Script = CSharpScript.Create(string.Empty, ScriptOptions.Default.AddImports(globalsType.Namespace, typeof(Point).Namespace)
+        Script = CSharpScript.Create("", ScriptOptions.Default.AddImports(globalsType.Namespace, typeof(Point).Namespace)
             .AddReferences(typeof(ScriptGlobals).Assembly, typeof(Point).Assembly),
             globalsType, loader);
 

@@ -88,21 +88,15 @@ namespace WpfApp1
 
         public void Init(object obj) => AutomationObject.Init(obj);
 
-        public AutomationConveyorAutomationObject()
-        {
-            AutomationObject = new();
-        }
+        public AutomationConveyorAutomationObject() => AutomationObject = new();
     }
 
     public static class CSharpOutputHelpers
     {
-        public static string Out<T>(this IEnumerable<T> items)
-        {
-            return $"new {typeof(T).Name}[]{{{string.Join(", ", items.Select(i => Out(i)))}}}";
-        }
+        public static string Out<T>(this IEnumerable<T> items) => $"new {typeof(T).Name}[]{{{string.Join(", ", items.Select(i => i.Out()))}}}";
 
         public static string Out(this bool obj) => obj ? "true" : "false";
 
-        public static string Out(this object obj) => obj.ToString();
+        public static string Out(this object? obj) => obj?.ToString() ?? "null";
     }
 }

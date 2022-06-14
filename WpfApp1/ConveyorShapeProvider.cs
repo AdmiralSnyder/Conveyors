@@ -52,14 +52,20 @@ namespace WpfApp1
                 : isStraight ? Brushes.Peru
                 : Brushes.Blue,
             };
-            result.ApplyMouseBehaviour(this.SelectBehaviour);
             result.SetCenterLocation(point);
-            return result;
+            return WithSelectBehaviour(result);
         }
 
-        public Path CreateConveyorPointPath()
+        public Path CreateConveyorPointPath(PathGeometry geometry, bool isLeft)
         {
-            return null;
+            Path arc = new()
+            {
+                Data = geometry,
+                Stroke = isLeft ? Brushes.Plum : Brushes.Tomato,
+            };
+
+
+            return WithSelectBehaviour(arc);
         }
 
         public Line CreateConveyorPointLine()

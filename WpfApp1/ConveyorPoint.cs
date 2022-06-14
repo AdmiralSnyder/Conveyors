@@ -16,7 +16,7 @@ public interface IListNode<T>
     public LinkedListNode<T> Node { get; }
 }
 
-public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNode<IPathPart>, IListNode<ConveyorPoint>
+public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNode<IPathPart>, IListNode<ConveyorPoint>, IRefreshable
 {
     public string Text => $"Point {Conveyor.Number}.{Number} ({Location})";
 
@@ -54,7 +54,15 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
                 next.StartEnd = (Location, next.StartEnd.P2);
                 next.GetAdjacentPoints().next?.RebuildLanes();
             }
+            
+            ((Point[])SelectionBoundsPoints)[0] = Location;
 
+            prev?.GetAdjacentPoints().prev?.PreparePoint();
+            
+            
+            PreparePoint();
+            next?.GetAdjacentPoints().next?.PreparePoint();
+            
             RebuildLanes();
 
             // TODO this might better be a method of the lanes?
@@ -75,7 +83,6 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
                 }
             }
 
-            ((Point[])SelectionBoundsPoints)[0] = Location;
         });
     }
 
@@ -105,11 +112,21 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
 
     public Vector Incoming { get; private set; }
     public Vector IncomingNorm { get; private set; }
+    public Vector IncomingNormInversed { get; private set; }
 
     public Vector Outgoing { get; private set; }
     public Vector OutgoingNorm { get; private set; }
 
-    public double AngleRad { get; private set; }
+    public double CrossIn { get; private set; }
+    public double CrossOut { get; private set; }
+    public double DotInX { get; private set; }
+    public double DotOutX { get; private set; }
+    public double DotInOut { get; private set; }
+
+    public Angle Angle { get; private set; }
+    public Angle IncomingAngle { get; private set; }
+    public Angle OutgoingAngle { get; private set; }
+
     public bool IsClockwise { get; private set; }
     public bool IsStraight { get; private set; }
 
@@ -143,19 +160,40 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
 
     internal void PreparePoint()
     {
-        if (IsFirst || IsLast) return;
+        var prevNode = Node.Previous;
+        var nextNode = Node.Next;
 
-        var prevLocation = ((ConveyorPoint)Node.Previous.Value).Location;
-        var nextLocation = ((ConveyorPoint)Node.Next.Value).Location;
+        if (prevNode is not null && nextNode is not null)
+        {
 
-        Incoming = Location.Subtract(prevLocation);
-        IncomingNorm = Incoming.Normalize();
-        Outgoing = nextLocation.Subtract(Location);
-        OutgoingNorm = Outgoing.Normalize();
+            var prevLocation = ((ConveyorPoint)prevNode.Value).Location;
+            var nextLocation = ((ConveyorPoint)nextNode.Value).Location;
 
-        AngleRad = Math.Acos(IncomingNorm.DotProduct(OutgoingNorm));
-        IsClockwise = AngleRad < Math.PI;
-        IsStraight = AngleRad == Math.PI;
+            Incoming = Location.Subtract(prevLocation);
+            IncomingNorm = Incoming.Normalize();
+            IncomingNormInversed = IncomingNorm.Inverse();
+
+            Outgoing = nextLocation.Subtract(Location);
+            OutgoingNorm = Outgoing.Normalize();
+
+            CrossIn = IncomingNorm.CrossProduct(Maths.XAxisV1);
+            CrossOut = OutgoingNorm.CrossProduct(Maths.XAxisV1);
+
+            DotInX = IncomingNorm.DotProduct(Maths.XAxisV1);
+            DotOutX = OutgoingNorm.DotProduct(Maths.XAxisV1);
+
+            IncomingAngle = Math.Acos(DotInX).Radians();
+            OutgoingAngle = Math.Acos(DotOutX).Radians();
+
+            DotInOut = IncomingNorm.DotProduct(OutgoingNorm);
+
+            Angle = Math.Acos(DotInOut).Radians();
+
+            IsClockwise = true; // TODO
+            IsStraight = Angle.IsStraight;
+        }
+
+        ((IRefreshable)this).NotifyRefresh();
     }
 
     public void RegisterLanes()

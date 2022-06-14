@@ -6,7 +6,7 @@ using WpfLib;
 
 namespace WpfApp1;
 
-public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject
+public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject, IRefreshable
 {
     public string Text => $"Segment {Conveyor.Number}.{Number} ({StartEnd})";
 

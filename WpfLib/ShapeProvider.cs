@@ -64,8 +64,14 @@ namespace WpfLib
         {
             var line = new Line();
             line.SetLocation(points);
-            line.ApplyMouseBehaviour(SelectBehaviour);
-            return line;
+            
+            return WithSelectBehaviour(line);
+        }
+
+        protected T WithSelectBehaviour<T>(T shape) where T : Shape
+        {
+            shape.ApplyMouseBehaviour(SelectBehaviour);
+            return shape;
         }
     }
 }

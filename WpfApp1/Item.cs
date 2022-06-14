@@ -9,7 +9,7 @@ using WpfLib;
 
 namespace WpfApp1;
 
-public class Item : ISelectObject
+public class Item : ISelectObject, IRefreshable
 {
     public string DebugText => $"Item {Number}";
 

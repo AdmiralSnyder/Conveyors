@@ -8,7 +8,7 @@ using WpfLib;
 namespace WpfApp1;
 
 [DebuggerDisplay($"{"SegLane"} ({{{nameof(ConveyorSegmentLane.DebugText)}}})")]
-public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectObject
+public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectObject, IRefreshable
 {
     public string Text => $"Lane ({DebugText})";
     public ConveyorSegmentLane(int lane, ConveyorSegment segment)

@@ -7,7 +7,7 @@ using WpfLib;
 
 namespace WpfApp1;
 
-public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
+public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefreshable
 {
     public ConveyorPointLane(ConveyorPoint point) => Point = point;
     private bool IsLeft => Lane < Point.Conveyor.LanesCount / 2;
@@ -15,10 +15,11 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
     public double Length { get; private set; }
     public double EndLength => BeginLength + Length;
     public string Text => $"PointLane {Point.Conveyor.Number}.{Point.Number}.{Lane} ({Length :2})";
-    public Path? Arc { get; set; }
+    public Path? Arc { get; private set; }
     public int Lane { get; internal set; }
 
-    private bool Inside { get; set; }
+    public bool Inside { get; private set; }
+    public Angle AngleRadPoint => Point.Angle;
 
     public LinkedListNode<ILanePart> ElementsNode { get; internal set; }
     public LinkedListNode<ConveyorPointLane> Node { get; internal set; }
@@ -26,6 +27,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
 
     public void AddToCanvas(CanvasInfo canvasInfo)
     {
+        Arc = canvasInfo.ShapeProvider.CreateConveyorPointPath(ArcGeometry, IsLeft);
         canvasInfo.Canvas.Children.Add(Arc);
         Arc!.Tag = this;
     }
@@ -33,10 +35,11 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
     internal void Prepare()
     {
         if (Point.IsFirst || Point.IsLast) return;
-        PrepareArc();
+        RebuildArc();
     }
 
     private TwoPoints ArcStartEnd { get; set; }
+    private PathGeometry ArcGeometry { get; set; } = new();
     private double ArcAngleRad { get; set; }
 
     public IEnumerable<Point> SelectionBoundsPoints { get; } = new Point[2];
@@ -57,14 +60,11 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
         selectionBoundsPoints[1] = nextStart;
         // TODO add 3rd
 
-        var pg = new PathGeometry();
-
-        Arc!.Data = pg;
-        Arc.Stroke = IsLeft ? Brushes.Plum : Brushes.Tomato;
+        ArcGeometry.Figures.Clear();
 
         if (Point.LaneStrategy == PointLaneStrategies.StraightLineSegment)
         {
-            pg.Figures.Add(new()
+            ArcGeometry.Figures.Add(new()
             {
                 StartPoint = prevEnd,
                 Segments = { new LineSegment(nextStart, true) }
@@ -79,14 +79,15 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
             //var oStartNorm = oStart.Normalize(oStartLen);
             //var oEndNorm = oEnd.Normalize();
             //var dotProd = oStartNorm.DotProduct(oEndNorm);
-            var angleRad = Point.AngleRad;// ArcAngleRad = Math.Acos(dotProd);
+            var angle = Point.Angle;
+            
 
-            bool toTheLeft = ArcAngleRad < Math.PI;
+            bool toTheLeft = angle.IsAcute;
 
             // TODO correctly calculate the inside property.
             Inside = toTheLeft ? IsLeft : !IsLeft;
 
-            (bool largeArg, SweepDirection swDir) config = (!Point.IsClockwise, IsLeft) switch
+            var (largeArg, swDir) = (!Point.IsClockwise, IsLeft) switch
             {
                 // TODO inside
                 (true, true) => (false, SweepDirection.Counterclockwise), // left turn, left side, bad
@@ -96,13 +97,13 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
                 (false, false) => (false, SweepDirection.Counterclockwise), // left turn, right side, good
             };
 
-            pg.Figures.Add(new()
+            ArcGeometry.Figures.Add(new()
             {
                 StartPoint = prevEnd,
-                Segments = { new ArcSegment(nextStart, new(oStartLen, oStartLen), MathsFunc.RadToDeg(angleRad), config.largeArg, config.swDir, true) }
+                Segments = { new ArcSegment(nextStart, new(oStartLen, oStartLen), angle.Degrees, largeArg, swDir, true) }
             });
 
-            Length = /*2 * Math.PI * */oStartLen * angleRad/* / 2 * Math.PI*/;
+            Length = /*2 * Math.PI * */oStartLen * angle.Radians/* / 2 * Math.PI*/;
         }
     }
 
@@ -116,12 +117,20 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
             var angleFactor = (overshoot ? relLen : Math.Min(1.0, relLen));
             if (Inside)
             {
-                return ArcStartEnd.P1.RotateAround(Point.Location, -Point.AngleRad* angleFactor);
+                if (Point.Angle.IsClockwise)
+                {
+                    return ArcStartEnd.P1.RotateAround(Point.Location, - Point.Angle.Radians * angleFactor);
+                }
+                else
+                {
+                    var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
+                    return ArcStartEnd.P1.RotateAround(rotPoint, Point.Angle.Radians * angleFactor);
+                }
             }
             else
             {
                 var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
-                return ArcStartEnd.P1.RotateAround(rotPoint, -Point.AngleRad * angleFactor);
+                return ArcStartEnd.P1.RotateAround(rotPoint, -Point.Angle.Radians * angleFactor);
             }
         }
         else
@@ -129,11 +138,5 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject
             // TODO precalculate stuff
             return ArcStartEnd.GetPointOnLine(length - BeginLength, overshoot);
         }
-    }
-
-    private void PrepareArc()
-    {
-        Arc = new();
-        RebuildArc();
     }
 }

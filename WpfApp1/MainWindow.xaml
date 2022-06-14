@@ -54,13 +54,13 @@
             <Button Name="PutItemB" Content="Put" Click="PutItemB_Click" ToolTip="Put Items" />
             <CheckBox Name="FirstOnlyCB" Content="FirstOnly" />
             <Button Name="MovePointB" Content="Move" Click="MovePointB_Click" />
-            <Button Name="SelectB" Content="Select" Click="SelectB_Click" />
+            <CheckBox Name="SelectB" Content="Select"
+                      IsChecked="{Binding SelectionManager.SelectMode }" />
             <TextBox Name="LanesCountTB" Text="2" ToolTip="Lanes Count" />
             <TextBox Name="GridWidth" Width="30"
                      Text="{Binding Path=SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}"
                      ToolTip="Grid Width" />
             <Button Name="HappyBirthdayRubyB" Content="Happy Birthday Ruby" Click="HappyBirthdayRubyB_Click" />
-            <TextBlock Name="SelectionInfoT" Text="(Please select something)" />
         </StackPanel>
         <TextBlock Name="NotesLabel" Grid.ColumnSpan="2" gu:Cell.Index="2 0" />
         <GridSplitter gu:Cell.Index="1 1" Style="{StaticResource VerticalGridSplitter}" />
@@ -68,7 +68,7 @@
             <TextBlock gu:Cell.Index="0 0" Text="{Binding Path=SelectedObject.Text, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
             <GridSplitter Grid.Row="1" Style="{StaticResource HorizontalGridSplitter}" />
             <local:PropertyGrid x:Name="SelectedPG" gu:Cell.Index="2 0"
-                                InspectedObject="{Binding SelectedObject}" />
+                                InspectedObject="{Binding SelectionManager.SelectedObject}" />
             <GridSplitter Grid.Row="3" Style="{StaticResource HorizontalGridSplitter}" />
             <avalonEdit:TextEditor Name="textEditor2" gu:Cell.Index="4 0" FontFamily="Fira Code" FontSize="5pt" SyntaxHighlighting="C#" />
         </Grid>
@@ -134,7 +134,7 @@
             <GridSplitter Grid.Row="1" Style="{StaticResource HorizontalGridSplitter}" />
             <Grid gu:Cell.Index="2 0" gu:Grid.Layout="* , * auto">
                 <avalonEdit:TextEditor Name="textEditor" gu:Cell.Index="0 0" FontFamily="Fira Code" FontSize="7pt" SyntaxHighlighting="C#">
-                    $.AddConveyor(new V2d[]{(30, 60), (60, 60), (60, 90)}, false, 2)
+                    $.AddConveyor(new V2d[]{(30, 60), (60, 60), (60, 90), (90, 90), (90, 60), (120, 60)}, false, 2)
                 </avalonEdit:TextEditor>
                 <Button Name="RunB" gu:Cell.Index="0 1" Click="RunB_Click" IsEnabled="False">
                     <TextBlock>

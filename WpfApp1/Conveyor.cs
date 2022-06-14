@@ -12,7 +12,7 @@ using System.Windows.Threading;
 
 namespace WpfApp1;
 
-public class Conveyor : ISelectObject
+public class Conveyor : ISelectObject, IRefreshable
 {
     private static int NextConveyorNumber = 0;
 
@@ -80,10 +80,10 @@ public class Conveyor : ISelectObject
             segment.CreateLanes();
         }
 
-        foreach (var point in conv.Points)
-        {
-            point.PreparePoint();
-        }
+        //foreach (var point in conv.Points)
+        //{
+        //    point.PreparePoint();
+        //}
 
         foreach (var point in conv.Points)
         {

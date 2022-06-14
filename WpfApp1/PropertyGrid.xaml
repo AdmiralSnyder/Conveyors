@@ -3,11 +3,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:WpfApp1"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" d:DesignHeight="450"
              d:DesignWidth="800" mc:Ignorable="d">
-    <Grid Name="TheGrid">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-    </Grid>
+    <ScrollViewer>
+        <Grid Name="TheGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="25" />
+                <ColumnDefinition MinWidth="40" />
+                <ColumnDefinition MinWidth="25" MaxWidth="100" />
+            </Grid.ColumnDefinitions>
+        </Grid>
+    </ScrollViewer>
 </UserControl>
