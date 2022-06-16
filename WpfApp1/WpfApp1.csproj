@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Compile Include="..\GlobalUsings.cs" Link="GlobalUsings.cs" />
+    <Compile Include="..\GlobalUsings.WpfLib.cs" Link="GlobalUsings.WpfLib.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CoreLib\CoreLib.csproj" />
     <ProjectReference Include="..\WpfLib\WpfLib.csproj" />
   </ItemGroup>
 

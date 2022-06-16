@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WpfLib.Maths;
+namespace CoreLib.Maths;
 
 public static class AngleExtensions
 {
@@ -32,6 +32,15 @@ public class Angle
 
 public static class Maths
 {
+    public static Angle AngleBetween(double ax, double ay, double bx, double by)
+    {
+        double sin = ax * by - bx * ay;
+        double cos = ax * bx + ay * by;
+        return Math.Atan2(sin, cos).Radians();
+    }
+
+    public static Angle AngleBetween(Vector a, Vector b) => AngleBetween(a.X, a.Y, b.X, b.Y);
+
     public const double OneEightyOverPi = 180d / Math.PI;
     public const double PiOverOneEighty = Math.PI / 180d;
 
@@ -42,13 +51,12 @@ public static class Maths
     public static double Distance(Point p1, Point p2)
     {
         p1.X = p2.X - p1.X;
-        p1.X = p1.X * p1.X;
+        p1.X *= p1.X;
         p1.Y = p2.Y - p1.Y;
-        p1.Y = p1.Y * p1.Y;
+        p1.Y *= p1.Y;
         return Math.Sqrt(p1.X + p1.Y);
     }
 
-    public static double Length(this Line line) => Distance(new(line.X1, line.Y1), new(line.X2, line.Y2));
     public static double Length(this (double x, double y) tuple) => Distance(new(0, 0), new(tuple.x, tuple.y));
 
     public const double PiHalf = Math.PI / 2;
@@ -68,6 +76,7 @@ public static class Maths
     public static Vector Normalize(this Vector vect, double length) => vect.Divide(length);
 
     public static Vector Inverse(this Vector vect) => new(-vect.X, -vect.Y);
+    public static Vector InverseY(this Vector vect) => new(vect.X, -vect.Y);
 
     public static Vector Multiply(this Vector vect, double factor) => (vect.X * factor, vect.Y * factor);
     public static Vector Divide(this Vector vect, double factor) => (vect.X / factor, vect.Y / factor);
@@ -78,6 +87,8 @@ public static class Maths
     public static IEnumerable<Point> Add(this IEnumerable<Point> points, Vector vect) => points.Select(p => p.Add(vect));
     public static IEnumerable<Point> Scale(this IEnumerable<Point> points, double factor) => points.Select(p => p.Multiply(factor));
     public static double DotProduct(this Vector a, Vector b) => a.X * b.X + a.Y * b.Y;
+
+    public static double Determinant(this Vector a, Vector b) => a.X * b.X - a.Y * b.Y;
 
     public static double CrossProduct(this Vector a, Vector b) => a.X * b.Y - a.Y * b.X;
 

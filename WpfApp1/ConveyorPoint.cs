@@ -32,7 +32,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
     public bool IsFirst { get; internal set; }
 
     private Point _Location;
-    public Point Location 
+    public Point Location
     {
         get => _Location;
         set => Func.Setter(ref _Location, value, () =>
@@ -49,7 +49,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
             }
 
             ((ISelectObject)this).SetSelectionPoints(_Location);
-            
+
             PreparePoint();
 
             if (next is { })
@@ -60,10 +60,10 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
 
 
             prev?.GetAdjacentPoints().prev?.RebuildLanes();
-            
+
             RebuildLanes();
 
-            next?.GetAdjacentPoints().next?.RebuildLanes();        
+            next?.GetAdjacentPoints().next?.RebuildLanes();
 
             // TODO this might better be a method of the lanes?
             double len = 0d;
@@ -74,7 +74,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
                     len = prev.Lanes[i]?.EndLength ?? 0d;
                 }
                 var elNode = next?.Lanes[i]?.ElementsNode;
-                while(elNode is { })
+                while (elNode is { })
                 {
                     var element = elNode.Value;
                     element.BeginLength = len;
@@ -119,13 +119,9 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
     public Vector Outgoing { get; private set; }
     public Vector OutgoingNorm { get; private set; }
 
-    public double CrossIn { get; private set; }
-    public double CrossOut { get; private set; }
-    public double DotInX { get; private set; }
-    public double DotOutX { get; private set; }
-    public double DotInOut { get; private set; }
-
     public Angle Angle { get; private set; }
+    public Angle AbsoluteAngle { get; private set; }
+
     public Angle IncomingAngle { get; private set; }
     public Angle OutgoingAngle { get; private set; }
 
@@ -178,20 +174,16 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
             Outgoing = nextLocation.Subtract(Location);
             OutgoingNorm = Outgoing.Normalize();
 
-            CrossIn = IncomingNorm.CrossProduct(Maths.XAxisV1);
-            CrossOut = OutgoingNorm.CrossProduct(Maths.XAxisV1);
+            var dotInX = IncomingNorm.DotProduct(Maths.XAxisV1);
+            var dotOutX = OutgoingNorm.DotProduct(Maths.XAxisV1);
 
-            DotInX = IncomingNorm.DotProduct(Maths.XAxisV1);
-            DotOutX = OutgoingNorm.DotProduct(Maths.XAxisV1);
+            IncomingAngle = Math.Acos(dotInX).Radians();
+            OutgoingAngle = Math.Acos(dotOutX).Radians();
 
-            IncomingAngle = Math.Acos(DotInX).Radians();
-            OutgoingAngle = Math.Acos(DotOutX).Radians();
+            Angle = Maths.AngleBetween(IncomingNormInversed, OutgoingNorm);
+            AbsoluteAngle = Math.Abs(Angle.Radians).Radians();
 
-            DotInOut = IncomingNorm.DotProduct(OutgoingNorm);
-
-            Angle = Math.Acos(DotInOut).Radians();
-
-            IsClockwise = true; // TODO
+            IsClockwise = Angle.Radians < 0;
             IsStraight = Angle.IsStraight;
         }
 

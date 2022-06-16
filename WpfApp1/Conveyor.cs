@@ -38,7 +38,7 @@ public class Conveyor : ISelectObject, IRefreshable
 
     public LinkedList<ConveyorSegment> Segments = new();
     public LinkedList<ConveyorSegmentLane>[] SegmentLanes;
-    public LinkedList<ConveyorPoint> Points = new();
+    public LinkedList<ConveyorPoint> Points { get; } = new();
     public LinkedList<IPathPart> PointsAndSegments = new();
     public LinkedList<ConveyorPointLane>[] PointLanes;
     public LinkedList<ILanePart>[] PointAndSegmentLanes;
@@ -221,7 +221,7 @@ public class Conveyor : ISelectObject, IRefreshable
     }
 
     // TODO add an out parameter for stalling
-    internal Point GetItemLocation(Item item, out bool done, out LinkedListNode<ILanePart> lane, out double staleAge)
+    internal Point GetItemLocation(Item item, out bool done, out LinkedListNode<ILanePart> laneNode, out double staleAge)
     {
         var actualAge = item.Age - item.StaleAge;
         var nextItem = GetNextItem(item);
@@ -231,34 +231,34 @@ public class Conveyor : ISelectObject, IRefreshable
             if (actualAge + Speed * 2.8 > nextAge) // this needs to be something depending on the speed and size of the items.
             {
                 // collision -> avoid
-                lane = nextItem.Lane;
+                laneNode = nextItem.Lane;
                 var targetAge = nextAge - Speed * 2.8;
                 var targetlength = targetAge / 1000 * Speed;
                 staleAge = actualAge - targetAge;
                 done = false;
-                return lane.Value.GetPointAbsolute(targetlength);
+                return laneNode.Value.GetPointAbsolute(targetlength);
             }
         }
 
         double length = actualAge / 1000 * Speed;
         done = false;
-        lane = item.Lane ?? Segments.First.Value.Lanes[item.LaneNumber].ElementsNode;
+        laneNode = item.Lane ?? Segments.First.Value.Lanes[item.LaneNumber].ElementsNode;
 
-        while (lane is not null && lane.Value.EndLength < length)
+        while (laneNode is not null && laneNode.Value.EndLength < length)
         {
-            lane = lane!.Next;
+            laneNode = laneNode!.Next;
         }
 
-        if (lane is null)
+        if (laneNode is null)
         {
             done = true;
-            lane = Segments.Last.Value.Lanes[item.LaneNumber].ElementsNode;
+            laneNode = Segments.Last.Value.Lanes[item.LaneNumber].ElementsNode;
         }
         if (length < 0)
         {
             length = 0;
         }
         staleAge = 0;
-        return lane.Value.GetPointAbsolute(length);
+        return laneNode.Value.GetPointAbsolute(length);
     }
 }

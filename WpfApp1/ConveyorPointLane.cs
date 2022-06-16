@@ -55,7 +55,6 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
         
         ArcStartEnd = (prevEnd, nextStart);
 
-        var selectionBoundsPoints = (Point[])SelectionBoundsPoints;
         ((ISelectObject)this).SetSelectionPoints(prevEnd, nextStart);
         // TODO add 3rd
 
@@ -78,19 +77,17 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
             //var oStartNorm = oStart.Normalize(oStartLen);
             //var oEndNorm = oEnd.Normalize();
             //var dotProd = oStartNorm.DotProduct(oEndNorm);
-            var angle = Point.Angle;
-            
 
-            bool toTheLeft = angle.IsAcute;
+            bool clockwise = !Point.IsClockwise;
 
             // TODO correctly calculate the inside property.
-            Inside = toTheLeft ? IsLeft : !IsLeft;
+            Inside = clockwise ? IsLeft : !IsLeft;
 
-            var (largeArg, swDir) = (!Point.IsClockwise, IsLeft) switch
+            var (largeArg, swDir) = (clockwise, IsLeft) switch
             {
                 // TODO inside
-                (true, true) => (false, SweepDirection.Counterclockwise), // left turn, left side, bad
-                (true, false) => (true, SweepDirection.Clockwise),  // right turn, right side, bad
+                (true, true) => (false, SweepDirection.Clockwise), // left turn, left side, bad
+                (true, false) => (false, SweepDirection.Counterclockwise),  // right turn, right side, bad
                                                                     // outside
                 (false, true) => (false, SweepDirection.Clockwise), // right turn, left side, good
                 (false, false) => (false, SweepDirection.Counterclockwise), // left turn, right side, good
@@ -99,10 +96,10 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
             ArcGeometry.Figures.Add(new()
             {
                 StartPoint = prevEnd,
-                Segments = { new ArcSegment(nextStart, new(oStartLen, oStartLen), angle.Degrees, largeArg, swDir, true) }
+                Segments = { new ArcSegment(nextStart, new(oStartLen, oStartLen), Point.Angle.Degrees, largeArg, swDir, true) }
             });
 
-            Length = /*2 * Math.PI * */oStartLen * angle.Radians/* / 2 * Math.PI*/;
+            Length = /*2 * Math.PI * */oStartLen * (Point.AbsoluteAngle.Radians)/* / 2 * Math.PI*/;
         }
     }
 
@@ -118,7 +115,8 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
             {
                 if (Point.Angle.IsClockwise)
                 {
-                    return ArcStartEnd.P1.RotateAround(Point.Location, - Point.Angle.Radians * angleFactor);
+                    var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
+                    return ArcStartEnd.P1.RotateAround(rotPoint, Point.Angle.Radians * angleFactor);
                 }
                 else
                 {
@@ -128,8 +126,15 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
             }
             else
             {
-                var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
-                return ArcStartEnd.P1.RotateAround(rotPoint, -Point.Angle.Radians * angleFactor);
+                if (Point.IsClockwise)
+                {
+                    return ArcStartEnd.P1.RotateAround(Point.Location, Point.Angle.Radians * angleFactor);
+                }
+                else
+                {
+                    //var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
+                    return ArcStartEnd.P1.RotateAround(Point.Location, Point.Angle.Radians * angleFactor);
+                }
             }
         }
         else

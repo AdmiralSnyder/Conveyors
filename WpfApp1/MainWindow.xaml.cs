@@ -1,10 +1,6 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CodeAnalysis.Scripting.Hosting;
-using Microsoft.CSharp;
-using System;
-using System.CodeDom.Compiler;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,11 +16,6 @@ using System.Windows.Shapes;
 using WpfLib;
 
 namespace WpfApp1;
-
-//Notes: WPF PropertyGrid
-// https://github.com/GuOrg/Gu.Wpf.PropertyGrid
-// https://github.com/PropertyTools/PropertyTools
-// devexpress? syncfusion
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
@@ -44,7 +35,7 @@ public partial class MainWindow
         AutoRoot.Init((TheCanvas, ShapeProvider));
 
         context.LogAction = s => textEditor2.Dispatcher.Invoke(() => textEditor2.AppendText(s + Environment.NewLine));
-        InitializeScriptingEnvironment();
+        ScriptRunner.InitializeScriptingEnvironment(AutoRoot, Dispatcher, RunB);
 
     }
 
@@ -474,77 +465,10 @@ public partial class MainWindow
 
     private void SelectB_Click(object sender, RoutedEventArgs e) => SelectionManager.ToggleSelectMode();
 
-    private ScriptGlobals Globals;
-    private Script Script;
-    private Task InitScriptTask;
 
-    private void InitializeScriptingEnvironment()
-    {
-        using var loader = new InteractiveAssemblyLoader();
+    private async void RunB_Click(object sender, RoutedEventArgs e) => await ScriptRunner.RunScript(textEditor.Text);
 
-        Globals = new ScriptGlobals() { TheObject = AutoRoot };
-
-        var globalsType = typeof(ScriptGlobals);
-        Script = CSharpScript.Create("", ScriptOptions.Default.AddImports(globalsType.Namespace, typeof(Point).Namespace)
-            .AddReferences(typeof(ScriptGlobals).Assembly, typeof(Point).Assembly),
-            globalsType, loader);
-
-        InitScriptTask = Task.Run(async () =>
-        {
-            await Script.RunAsync(Globals);
-            await RunB.Dispatcher.InvokeAsync(() => RunB.IsEnabled = true);
-        });
-    }
-
-    private async void RunB_Click(object sender, RoutedEventArgs e)
-    {
-        var text = textEditor.Text;
-        if (!text.EndsWith(";"))
-        {
-            text += ";";
-        }
-
-        text = text.Replace("$", "DynObj");
-
-
-        string classDefinition = @$"using System;
-using System.Linq.Expressions;
-
-class foo
-{{
-    //public static dynamic DynObj {{ get; set; }}
-    public static bool Execute(dynamic DynObj)
-    {{
-        {text}
-return true;
-    }}
-}}";
-
-        if (Script is not null)
-        {
-            var script = Script.ContinueWith(classDefinition);
-            await Task.Run(async () => await Dispatcher.InvokeAsync(async () =>
-            {
-                try
-                {
-                    Mouse.OverrideCursor = Cursors.Wait;
-
-                    try
-                    {
-                        var x = await script.ContinueWith<bool>($"foo.Execute(TheObject)").RunAsync(Globals);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.ToString(), "Error running script");
-                    }
-                }
-                finally
-                {
-                    Mouse.OverrideCursor = null;
-                }
-            }));
-        }
-    }
+    private ScriptRunner ScriptRunner = new();
 
     private void HappyBirthdayRubyB_Click(object sender, RoutedEventArgs e)
     {
@@ -567,11 +491,6 @@ return true;
             yOffset++;
         }
     }
-}
-
-public class ScriptGlobals
-{
-    public object TheObject { get; set; }
 }
 
 public enum InputState

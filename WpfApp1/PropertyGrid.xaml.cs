@@ -144,7 +144,7 @@ namespace WpfApp1
 
         private class PropertyGridRowInfo
         {
-            public PropertyGridRowInfo(PropertyInfo propertyInfo!!)
+            public PropertyGridRowInfo(PropertyInfo propertyInfo)
             {
                 PropertyInfo = propertyInfo;
                 Label = new() { Text = PropertyInfo.Name, Background = Brushes.Gray, ToolTip = PropertyInfo.Name};
