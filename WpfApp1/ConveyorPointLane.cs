@@ -93,11 +93,11 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
                 (false, false) => (false, SweepDirection.Counterclockwise), // left turn, right side, good
             };
 
-            ArcGeometry.Figures.Add(new()
-            {
-                StartPoint = prevEnd + (1,1),
-                Segments = { new LineSegment(prevEnd, true) }
-            });
+            //ArcGeometry.Figures.Add(new()
+            //{
+            //    StartPoint = prevEnd + (1,1),
+            //    Segments = { new LineSegment(prevEnd, true) }
+            //});
             ArcGeometry.Figures.Add(new()
             {
                 StartPoint = prevEnd,
