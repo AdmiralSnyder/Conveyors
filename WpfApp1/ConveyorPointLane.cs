@@ -72,7 +72,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
         else if (Point.LaneStrategy == PointLaneStrategies.Curve)
         {
             Vector oStart = Point.Location.Subtract(prevEnd);
-            var oStartLen = oStart.Length();
+            var radius = oStart.Length();
             //Vector oEnd = nextStart.Subtract(Point.Location);
             //var oStartNorm = oStart.Normalize(oStartLen);
             //var oEndNorm = oEnd.Normalize();
@@ -95,11 +95,17 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
 
             ArcGeometry.Figures.Add(new()
             {
+                StartPoint = prevEnd + (1,1),
+                Segments = { new LineSegment(prevEnd, true) }
+            });
+            ArcGeometry.Figures.Add(new()
+            {
                 StartPoint = prevEnd,
-                Segments = { new ArcSegment(nextStart, new(oStartLen, oStartLen), Point.Angle.Degrees, largeArg, swDir, true) }
+                Segments = { new ArcSegment(nextStart, new(radius, radius), Point.Angle.Degrees, largeArg, swDir, true) }
             });
 
-            Length = /*2 * Math.PI * */oStartLen * (Point.AbsoluteAngle.Radians)/* / 2 * Math.PI*/;
+
+            Length = /*2 * Math.PI * */radius * (Angle.HalfCircle.Radians - Point.AbsoluteAngle.Radians)/* / 2 * Math.PI*/;
         }
     }
 
@@ -110,30 +116,29 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
         if (Point.LaneStrategy == PointLaneStrategies.Curve)
         {
             var relLen = (length - BeginLength) / Length;
-            var angleFactor = (overshoot ? relLen : Math.Min(1.0, relLen));
+            var intepolationFactor = (overshoot ? relLen : Math.Min(1.0, relLen));
             if (Inside)
             {
                 if (Point.Angle.IsClockwise)
                 {
                     var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
-                    return ArcStartEnd.P1.RotateAround(rotPoint, Point.Angle.Radians * angleFactor);
+                    return ArcStartEnd.P1.RotateAround(rotPoint, Point.Angle.CounterAngle() * intepolationFactor);
                 }
                 else
                 {
                     var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
-                    return ArcStartEnd.P1.RotateAround(rotPoint, Point.Angle.Radians * angleFactor);
+                    return ArcStartEnd.P1.RotateAround(rotPoint, Point.Angle.CounterAngle() * intepolationFactor);
                 }
             }
             else
             {
                 if (Point.IsClockwise)
                 {
-                    return ArcStartEnd.P1.RotateAround(Point.Location, Point.Angle.Radians * angleFactor);
+                    return ArcStartEnd.P1.RotateAround(Point.Location, ~Point.Angle.CounterAngle() * intepolationFactor);
                 }
                 else
                 {
-                    //var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
-                    return ArcStartEnd.P1.RotateAround(Point.Location, Point.Angle.Radians * angleFactor);
+                    return ArcStartEnd.P1.RotateAround(Point.Location, ~Point.Angle.CounterAngle() * intepolationFactor);
                 }
             }
         }

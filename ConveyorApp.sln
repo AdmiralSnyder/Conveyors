@@ -9,6 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WpfLib", "WpfLib\WpfLib.csp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{600AE424-D6C4-4269-8F5E-D2289A6560D5}"
 	ProjectSection(SolutionItems) = preProject
+		P:\angleRotation.png = P:\angleRotation.png
 		GlobalUsings.cs = GlobalUsings.cs
 		GlobalUsings.WPF.cs = GlobalUsings.WPF.cs
 		GlobalUsings.WpfLib.cs = GlobalUsings.WpfLib.cs

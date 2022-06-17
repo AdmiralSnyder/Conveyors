@@ -59,29 +59,30 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
             }
 
 
-            prev?.GetAdjacentPoints().prev?.RebuildLanes();
+            (prev?.GetAdjacentPoints().prev ?? this)?.RebuildLanes();
 
-            RebuildLanes();
+            //RebuildLanes();
 
-            next?.GetAdjacentPoints().next?.RebuildLanes();
+            //next?.GetAdjacentPoints().next?.RebuildLanes();
 
             // TODO this might better be a method of the lanes?
-            double len = 0d;
-            foreach (var i in Conveyor.LaneIndexes)
-            {
-                if (prev is { })
-                {
-                    len = prev.Lanes[i]?.EndLength ?? 0d;
-                }
-                var elNode = next?.Lanes[i]?.ElementsNode;
-                while (elNode is { })
-                {
-                    var element = elNode.Value;
-                    element.BeginLength = len;
-                    len = element.EndLength;
-                    elNode = elNode.Next;
-                }
-            }
+
+            //double len = 0d;
+            //foreach (var i in Conveyor.LaneIndexes)
+            //{
+            //    if (prev is { })
+            //    {
+            //        len = prev.Lanes[i]?.EndLength ?? 0d;
+            //    }
+            //    var elNode = next?.Lanes[i]?.ElementsNode;
+            //    while (elNode is { })
+            //    {
+            //        var element = elNode.Value;
+            //        element.BeginLength = len;
+            //        len = element.EndLength;
+            //        elNode = elNode.Next;
+            //    }
+            //}
 
             // This is utterly dirty - the conveyor should be a listener on the point's locations - or rather, all locations...
             ((ISelectObject)Conveyor).SetSelectionPoints();
@@ -101,6 +102,8 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
                 }
             }
         }
+
+        this.ElementsNode.Next?.Value?.RebuildLanes();
     }
 
     public ConveyorPointLane[] Lanes;
@@ -120,6 +123,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
     public Vector OutgoingNorm { get; private set; }
 
     public Angle Angle { get; private set; }
+    
     public Angle AbsoluteAngle { get; private set; }
 
     public Angle IncomingAngle { get; private set; }

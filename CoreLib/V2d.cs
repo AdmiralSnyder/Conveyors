@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-
 using PointAlias = System.Windows.Point;
 
 
@@ -16,8 +15,38 @@ namespace PointDef
 
         public double X { get; set; }
         public double Y { get; set; }
+        public Maths.Quadrants Quadrant => X switch
+        {
+            < 0 => Y switch
+            {
+                < 0 => Maths.Quadrants.Three,
+                _ => Maths.Quadrants.Two,
+            },
+            _ => Y switch
+            {
+                < 0 => Maths.Quadrants.Four,
+                _ => Maths.Quadrants.One,
+            }
+        };
+
         public static implicit operator (double, double)(V2d vect) => (vect.X, vect.Y);
         public static implicit operator PointAlias(V2d vect) => new(vect.X, vect.Y);
+
+        public Angle Angle()
+        {
+            var r = this.Length();
+            //Angle psi = default();
+            //point.X == r * Math.Cos(psi.Radians);
+
+            //point.X / r == Math.Cos(psi.Radians);
+
+            // Math.Acos(point.X / r) == Math.Acos(Math.Cos(psi.Radians));
+
+            // Math.Acos(point.X / r) == psi.Radians;
+
+            Angle psi = Math.Acos(X / r).Radians();
+            return psi;
+        }
 
         public static implicit operator V2d((double, double) tuple) => new(tuple);
         public static implicit operator V2d(PointAlias p) => new(p.X, p.Y);

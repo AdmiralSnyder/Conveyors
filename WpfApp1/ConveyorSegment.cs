@@ -94,7 +94,7 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject, IRefreshab
     {
         foreach (var lane in Lanes)
         {
-            if (lane.ElementsNode.Previous?.Value is { } prev)
+            if (lane?.ElementsNode.Previous?.Value is { } prev)
             {
                 lane.BeginLength = prev.EndLength;
             }

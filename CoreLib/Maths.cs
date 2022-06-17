@@ -11,6 +11,18 @@ public static class AngleExtensions
 }
 public class Angle
 {
+
+    public static Angle Zero = 0d.Degrees();
+    public static Angle Minus90 = (-90d).Degrees();
+    public static Angle Minus180 = (-180d).Degrees();
+    public static Angle Minus270 = (-270d).Degrees();
+
+    public static Angle Plus90 = (90d).Degrees();
+    public static Angle Plus180 = (180d).Degrees();
+    public static Angle Plus270 = (270d).Degrees();
+
+    public static Angle FullCircle = 360d.Degrees();
+    public static Angle HalfCircle = 180d.Degrees();
     public double Degrees { get; init; }
     public double Radians { get; init; }
     public override string ToString() => $"{Degrees:0.##}° {Radians:0.##}rad";
@@ -27,6 +39,14 @@ public class Angle
     public bool IsReflex => Degrees > 180d && Degrees < 360d;
     public bool IsNormalized => Degrees < 360d;
     public bool IsClockwise => Degrees < 0d;
+
+    public Angle CounterAngle() => Radians > 0 ? (Math.PI - Radians).Radians() : (-Math.PI - Radians).Radians();
+
+    public static Angle operator +(Angle a1, Angle a2) => (a1.Radians + a2.Radians).Radians();
+    public static Angle operator -(Angle a1, Angle a2) => (a1.Radians - a2.Radians).Radians();
+
+    public static Angle operator ~(Angle a1) => (-a1.Radians).Radians();
+    public static Angle operator *(Angle a1, double times) => (a1.Radians * times).Radians();
 }
 
 
@@ -92,7 +112,44 @@ public static class Maths
 
     public static double CrossProduct(this Vector a, Vector b) => a.X * b.Y - a.Y * b.X;
 
-    public static Point RotateAround(this Point rotPoint, Point origin, double angle)
+    public static Point RotateAround(this Point rotPoint, Point origin, Angle angle)
+    {
+        var originatePoint = rotPoint - origin;
+
+        var originatedRotPoint = originatePoint.RotateAroundOrigin(angle);
+        return originatedRotPoint + origin;
+    }
+
+    public static Point RotateAroundOrigin(this Point point, Angle angle)
+    {
+        var r = point.Length();
+        var firstAnglePointInfos = BringInFirstQuadrant(point);
+        var firstAngle = firstAnglePointInfos.FirstQuadrantPoint.Angle() + firstAnglePointInfos.CorrectionAngle;
+        var totalAngle = firstAngle + angle;
+        
+        var x2 = Math.Round(Math.Cos(totalAngle.Radians) * r, 7);
+        var y2 = Math.Round(Math.Sin(totalAngle.Radians) * r, 7);
+
+        return (x2, y2);
+    }
+
+    public static (Point FirstQuadrantPoint, Angle CorrectionAngle) BringInFirstQuadrant(Point point) => point.Quadrant switch
+    {
+        Quadrants.One => (point, Angle.Zero),
+        Quadrants.Two => ((point.Y, -point.X), Angle.Plus90),
+        Quadrants.Three => (point.Inverse(), Angle.Plus180),
+        Quadrants.Four => ((-point.Y, point.X), Angle.Plus270),
+    };
+
+    public enum Quadrants
+    {
+        One,
+        Two,
+        Three,
+        Four
+    }
+
+    public static Point RotateAroundOld(this Point rotPoint, Point origin, double angle)
     {
         // https://stackoverflow.com/a/705474
         // 00 topleft

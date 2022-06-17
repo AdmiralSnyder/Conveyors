@@ -91,7 +91,7 @@ namespace WpfApp1
             return result;
         }
 
-        private const double ItemSize = 10;
+        private const double ItemSize = 3;
 
         public Ellipse CreateConveyorItemEllipse() => new() { Width = ItemSize, Height = ItemSize, Fill = Brushes.Blue };
 

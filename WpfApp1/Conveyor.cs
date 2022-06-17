@@ -134,12 +134,13 @@ public class Conveyor : ISelectObject, IRefreshable
     }
 
     public Canvas? Canvas;
-    public double Speed = 20;
+    public double Speed = 5;
 
     internal void SpawnItems(ConveyorShapeProvider shapeProvider, bool? firstOnly = null)
     {
         foreach (var i in LaneIndexes)
         {
+            //if ((firstOnly ?? false) && i == 0) continue;
             var item = new Item(this, i, shapeProvider);
             Items[i].Enqueue(item);
             if (firstOnly ?? false) break;
