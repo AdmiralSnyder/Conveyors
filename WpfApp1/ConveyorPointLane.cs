@@ -14,7 +14,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
     public double BeginLength { get; set; }
     public double Length { get; private set; }
     public double EndLength => BeginLength + Length;
-    public string Text => $"PointLane {Point.Conveyor.Number}.{Point.Number}.{Lane} ({Length :2})";
+    public string Text => $"PointLane {Point.Conveyor.Number}.{Point.Number}.{Lane} ({Length:2})";
     public Path? Arc { get; private set; }
     public int Lane { get; internal set; }
 
@@ -50,9 +50,9 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
     {
         if (Point.IsFirst || Point.IsLast) return;
 
-        var prevEnd =  ((ConveyorSegmentLane)ElementsNode.Previous.Value).EndPoint;
+        var prevEnd = ((ConveyorSegmentLane)ElementsNode.Previous.Value).EndPoint;
         var nextStart = ((ConveyorSegmentLane)ElementsNode.Next.Value).StartPoint;
-        
+
         ArcStartEnd = (prevEnd, nextStart);
 
         ((ISelectObject)this).SetSelectionPoints(prevEnd, nextStart);
@@ -88,7 +88,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
                 // TODO inside
                 (true, true) => (false, SweepDirection.Clockwise), // left turn, left side, bad
                 (true, false) => (false, SweepDirection.Counterclockwise),  // right turn, right side, bad
-                                                                    // outside
+                                                                            // outside
                 (false, true) => (false, SweepDirection.Clockwise), // right turn, left side, good
                 (false, false) => (false, SweepDirection.Counterclockwise), // left turn, right side, good
             };
@@ -105,7 +105,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
             });
 
 
-            Length = /*2 * Math.PI * */radius * (Angle.HalfCircle.Radians - Point.AbsoluteAngle.Radians)/* / 2 * Math.PI*/;
+            Length = (Angle.HalfCircle - Point.AbsoluteAngle).Radians * radius;
         }
     }
 
@@ -113,39 +113,24 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
     public Point GetPointAbsolute(double length, bool overshoot = false)
     {
         LastLength = length;
-        if (Point.LaneStrategy == PointLaneStrategies.Curve)
+        if (Point.LaneStrategy == PointLaneStrategies.StraightLineSegment)
+        {
+            // TODO precalculate stuff
+            return ArcStartEnd.GetPointOnLine(length - BeginLength, overshoot);
+        }
+        else
         {
             var relLen = (length - BeginLength) / Length;
             var intepolationFactor = (overshoot ? relLen : Math.Min(1.0, relLen));
             if (Inside)
             {
-                if (Point.Angle.IsClockwise)
-                {
-                    var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
-                    return ArcStartEnd.P1.RotateAround(rotPoint, Point.Angle.CounterAngle() * intepolationFactor);
-                }
-                else
-                {
-                    var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
-                    return ArcStartEnd.P1.RotateAround(rotPoint, Point.Angle.CounterAngle() * intepolationFactor);
-                }
+                var rotPoint = ArcStartEnd.P2.Add(Point.Location.To(ArcStartEnd.P1));
+                return ArcStartEnd.P1.RotateAround(rotPoint, Point.Angle.CounterAngle() * intepolationFactor);
             }
             else
             {
-                if (Point.IsClockwise)
-                {
-                    return ArcStartEnd.P1.RotateAround(Point.Location, ~Point.Angle.CounterAngle() * intepolationFactor);
-                }
-                else
-                {
-                    return ArcStartEnd.P1.RotateAround(Point.Location, ~Point.Angle.CounterAngle() * intepolationFactor);
-                }
+                return ArcStartEnd.P1.RotateAround(Point.Location, ~Point.Angle.CounterAngle() * intepolationFactor);
             }
-        }
-        else
-        {
-            // TODO precalculate stuff
-            return ArcStartEnd.GetPointOnLine(length - BeginLength, overshoot);
         }
     }
 }
