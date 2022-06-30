@@ -81,7 +81,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
             bool clockwise = !Point.IsClockwise;
 
             // TODO correctly calculate the inside property.
-            Inside = clockwise ? IsLeft : !IsLeft;
+            Inside = IsLeft == clockwise;
 
             var (largeArg, swDir) = (clockwise, IsLeft) switch
             {
@@ -93,16 +93,49 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
                 (false, false) => (false, SweepDirection.Counterclockwise), // left turn, right side, good
             };
 
-            //ArcGeometry.Figures.Add(new()
-            //{
-            //    StartPoint = prevEnd + (1,1),
-            //    Segments = { new LineSegment(prevEnd, true) }
-            //});
-            ArcGeometry.Figures.Add(new()
+            if (Inside)
             {
-                StartPoint = prevEnd,
-                Segments = { new ArcSegment(nextStart, new(radius, radius), Point.Angle.Degrees, largeArg, swDir, true) }
-            });
+                var P1 = ((ConveyorSegmentLane)ElementsNode.Previous.Value).StartPoint;
+                var P2 = ((ConveyorSegmentLane)ElementsNode.Previous.Value).EndPoint;
+                var R1 = ((ConveyorSegmentLane)ElementsNode.Next.Value).StartPoint;
+                var R2 = ((ConveyorSegmentLane)ElementsNode.Next.Value).EndPoint;
+
+                var yr1 = R1.Y;
+                var xp = P2.X - P1.X;
+                var yp1 = P1.Y;
+                var xr1 = R1.X;
+                var yp = P2.Y - P1.Y;
+                var xp1 = P1.X;
+                var xr = R2.X - R1.X;
+                var yr = R2.Y - R1.Y;
+                var sr = (yr1 * xp - yp1 * xp - xr1 * yp + xp1 * yp) / (xr* yp - yr*xp); // TODO what happens if zero??
+
+                var xq = xr1 + sr * (R2.X - R1.X);
+                var yq = yr1 + sr * (R2.Y - R1.Y);
+
+                var cross = new Vector(xq, yq);
+                var start = P2;
+                var end = R1;
+                var CrossStart = start - cross;
+                var CrossEnd = end - cross;
+                var ActStart = (start - CrossEnd) - CrossStart;
+                var ActEnd = (end - CrossEnd) - CrossStart;
+
+                ArcGeometry.Figures.Add(new()
+                {
+                    StartPoint = ActStart,
+                    Segments = { new ArcSegment(ActEnd, new(radius, radius), Point.Angle.Degrees, largeArg, swDir, true) }
+                });
+            }
+            else
+            {
+                ArcGeometry.Figures.Add(new()
+                {
+                    StartPoint = prevEnd,
+                    Segments = { new ArcSegment(nextStart, new(radius, radius), Point.Angle.Degrees, largeArg, swDir, true) }
+                });
+            }
+
 
 
             Length = (Angle.HalfCircle - Point.AbsoluteAngle).Radians * radius;

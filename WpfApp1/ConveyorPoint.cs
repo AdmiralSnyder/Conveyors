@@ -57,8 +57,6 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
                 next.StartEnd = (Location, next.StartEnd.P2);
                 next.GetAdjacentPoints().next?.PreparePoint();
             }
-
-
             (prev?.GetAdjacentPoints().prev ?? this)?.RebuildLanes();
 
             //RebuildLanes();
@@ -103,7 +101,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
             }
         }
 
-        this.ElementsNode.Next?.Value?.RebuildLanes();
+        ElementsNode.Next?.Value?.RebuildLanes();
     }
 
     public ConveyorPointLane[] Lanes;
@@ -187,7 +185,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
             Angle = Maths.AngleBetween(IncomingNormInversed, OutgoingNorm);
             AbsoluteAngle = Math.Abs(Angle.Radians).Radians();
 
-            IsClockwise = Angle.Radians < 0;
+            IsClockwise = Angle.Radians <0;
             IsStraight = Angle.IsStraight;
         }
 

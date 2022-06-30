@@ -186,6 +186,7 @@ public partial class MainWindow
                         point.Location = SnapPoint(GetCanvasPoint(e));
                     }
                     InputState = InputState.None;
+
                     foreach (var shape in MoveShapes)
                     {
                         TheCanvas.Children.Remove(shape);

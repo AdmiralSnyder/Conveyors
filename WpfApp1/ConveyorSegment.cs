@@ -99,5 +99,7 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject, IRefreshab
                 lane.BeginLength = prev.EndLength;
             }
         }
+
+        ElementsNode.Next?.Value?.RebuildLanes();
     }
 }
