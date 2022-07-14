@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,8 +21,6 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectOb
 
     public Line? Line { get; private set; }
 
-    public Point StartPoint { get; set; }
-    public Point EndPoint { get; set; }
     public double EndLength { get; set; }
 
     private double _BeginLength;
@@ -63,7 +62,7 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectOb
     }
 
 
-    private TwoPoints OffsetLanePoints(TwoPoints original, double offset)
+    private static TwoPoints OffsetLanePoints(TwoPoints original, double offset)
     {
         var origVect = original.Vector();
         var origNormalVect = origVect.Normalize();
@@ -73,17 +72,34 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectOb
     }
 
     public LinkedListNode<ConveyorSegmentLane> Node { get; set; }
+
+    private Point _StartPoint;
+    public Point StartPoint 
+    {
+        get => _StartPoint; 
+        set => Func.Setter(ref _StartPoint, value, UpdateStartEnd);
+    }
+
+    private Point _EndPoint;
+    public Point EndPoint 
+    {
+        get => _EndPoint; 
+        set => Func.Setter(ref _EndPoint, value, UpdateStartEnd); 
+    }
+
+    private void UpdateStartEnd() => StartEnd = (StartPoint, EndPoint);
+
+
     private TwoPoints _StartEnd;
     private TwoPoints StartEnd 
     {
         get => _StartEnd;
         set => Func.Setter(ref _StartEnd, value, () =>
         {
-            Length = StartEnd.Length();
-            EndLength = BeginLength + Length;
+            UpdateLength();
             UnitVector = StartEnd.Vector().Normalize(Length);
-            StartPoint = StartEnd.P1;
-            EndPoint = StartEnd.P2;
+            _StartPoint = StartEnd.P1;
+            _EndPoint = StartEnd.P2;
             if (Line is not null)
             {
                 Line.X1 = StartEnd.P1.X;
@@ -94,6 +110,12 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectOb
 
             ((ISelectObject)this).SetSelectionPoints(StartEnd.P1, StartEnd.P2);
         });
+    }
+
+    void UpdateLength()
+    {
+        Length = StartEnd.Length();
+        EndLength = BeginLength + Length;
     }
 
     public Point[] SelectionBoundsPoints { get; } = new Point[2];

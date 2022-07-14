@@ -100,9 +100,11 @@ public class Conveyor : ISelectObject, IRefreshable
             point.PrepareLanes();
         }
 
+        //conv.PointsAndSegments.First().RebuildLanes();
+
         foreach (var part in conv.PointsAndSegments)
         {
-            part.RebuildLanes();
+            part.UpdateLengths();
         }
 
         conv.IsRunning = isRunning;
@@ -134,7 +136,7 @@ public class Conveyor : ISelectObject, IRefreshable
     }
 
     public Canvas? Canvas;
-    public double Speed = 5;
+    public double Speed = 20;
 
     internal void SpawnItems(ConveyorShapeProvider shapeProvider, bool? firstOnly = null)
     {

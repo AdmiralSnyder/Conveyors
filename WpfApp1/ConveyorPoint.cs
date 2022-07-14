@@ -94,14 +94,22 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
             if (lane is not null)
             {
                 lane.RebuildArc();
-                if (lane.ElementsNode.Previous?.Value is { } prev)
-                {
-                    lane.BeginLength = prev.EndLength;
-                }
             }
         }
 
         ElementsNode.Next?.Value?.RebuildLanes();
+    }
+
+    public void UpdateLengths()
+    {
+        foreach (var lane in Lanes)
+        {
+            if (lane?.ElementsNode.Previous?.Value is { } prev)
+            {
+                lane.BeginLength = prev.EndLength;
+            }
+        }
+        ElementsNode.Next?.Value?.UpdateLengths();
     }
 
     public ConveyorPointLane[] Lanes;

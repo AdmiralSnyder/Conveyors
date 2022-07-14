@@ -92,6 +92,11 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject, IRefreshab
 
     public void RebuildLanes()
     {
+        ElementsNode.Next?.Value?.RebuildLanes();
+    }
+
+    public void UpdateLengths()
+    {
         foreach (var lane in Lanes)
         {
             if (lane?.ElementsNode.Previous?.Value is { } prev)
@@ -100,6 +105,6 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject, IRefreshab
             }
         }
 
-        ElementsNode.Next?.Value?.RebuildLanes();
+        ElementsNode.Next?.Value?.UpdateLengths();
     }
 }

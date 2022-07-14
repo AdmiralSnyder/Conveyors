@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Numerics;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -9,7 +11,12 @@ namespace WpfApp1;
 
 public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefreshable
 {
-    public ConveyorPointLane(ConveyorPoint point) => Point = point;
+    public ConveyorPointLane(ConveyorPoint point)
+    {
+        Point = point;
+        Number = point.Conveyor.PointLanes[0].Count;
+    }
+
     private bool IsLeft => Lane < Point.Conveyor.LanesCount / 2;
     public double BeginLength { get; set; }
     public double Length { get; private set; }
@@ -24,6 +31,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
     public LinkedListNode<ILanePart> ElementsNode { get; internal set; }
     public LinkedListNode<ConveyorPointLane> Node { get; internal set; }
     public ConveyorPoint Point { get; }
+    public int Number { get; }
 
     public void AddToCanvas(CanvasInfo canvasInfo)
     {
@@ -86,11 +94,11 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
             var (largeArg, swDir) = (clockwise, IsLeft) switch
             {
                 // TODO inside
-                (true, true) => (false, SweepDirection.Clockwise), // left turn, left side, bad
+                (true, true) => (false, SweepDirection.Counterclockwise), // left turn, left side, bad
                 (true, false) => (false, SweepDirection.Counterclockwise),  // right turn, right side, bad
                                                                             // outside
                 (false, true) => (false, SweepDirection.Clockwise), // right turn, left side, good
-                (false, false) => (false, SweepDirection.Counterclockwise), // left turn, right side, good
+                (false, false) => (false, SweepDirection.Clockwise), // left turn, right side, good
             };
 
             if (Inside)
@@ -108,24 +116,34 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
                 var xp1 = P1.X;
                 var xr = R2.X - R1.X;
                 var yr = R2.Y - R1.Y;
-                var sr = (yr1 * xp - yp1 * xp - xr1 * yp + xp1 * yp) / (xr* yp - yr*xp); // TODO what happens if zero??
+                var sr = (yr1 * xp - yp1 * xp - xr1 * yp + xp1 * yp) / (xr * yp - yr * xp); // TODO what happens if zero??
 
                 var xq = xr1 + sr * (R2.X - R1.X);
                 var yq = yr1 + sr * (R2.Y - R1.Y);
 
                 var cross = new Vector(xq, yq);
-                var start = P2;
-                var end = R1;
+                var start = R1;
+                var end = P2;
                 var CrossStart = start - cross;
                 var CrossEnd = end - cross;
-                var ActStart = (start - CrossEnd) - CrossStart;
-                var ActEnd = (end - CrossEnd) - CrossStart;
+                var ActStart = (start - CrossStart) - CrossEnd;
+                var ActEnd = (end - CrossStart) - CrossEnd;
 
                 ArcGeometry.Figures.Add(new()
                 {
                     StartPoint = ActStart,
                     Segments = { new ArcSegment(ActEnd, new(radius, radius), Point.Angle.Degrees, largeArg, swDir, true) }
                 });
+
+                if (ElementsNode.Previous?.Value is ConveyorSegmentLane prevSegLane)
+                {
+                    prevSegLane.EndPoint = ActStart;
+                }
+
+                if (ElementsNode.Next?.Value is ConveyorSegmentLane nextSegLane)
+                {
+                    nextSegLane.StartPoint = ActEnd;
+                }
             }
             else
             {
@@ -136,7 +154,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
                 });
             }
 
-
+            
 
             Length = (Angle.HalfCircle - Point.AbsoluteAngle).Radians * radius;
         }
