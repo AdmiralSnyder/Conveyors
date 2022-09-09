@@ -14,7 +14,9 @@ namespace WpfApp1
         public void Init(object obj);
     }
 
-    public interface IGeneratedConveyorAutomationObject: IAutomationRoot
+    public interface IAutomationFeatures { }
+
+    public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomationFeatures
     {
         List<Conveyor> Conveyors { get; }
         CanvasInfo CanvasInfo { get; }
@@ -27,11 +29,9 @@ namespace WpfApp1
         public Action<string> LogAction { get; set; }
     }
 
-    public partial class ConveyorAutomationObject : IAutomationRoot, IGeneratedConveyorAutomationObject
+    [Generate2<IGeneratedConveyorAutomationObject>]
+    public partial class ConveyorAutomationObject : IAutomationRoot
     {
-        public List<Conveyor> Conveyors { get; } = new();
-        public CanvasInfo CanvasInfo { get; private set; }
-        
         [Generated]
         public void Init(object obj)
         {
@@ -39,57 +39,22 @@ namespace WpfApp1
             CanvasInfo = new() { Canvas = tuple.Canvas, ShapeProvider = tuple.ShapeProvider};
         }
 
-        public Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes)
+        public partial Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes)
         {
             var conv = Conveyor.Create(points, isRunning, lanes);
             Conveyor.AddToCanvas(conv, CanvasInfo);
             Conveyors.Add(conv);
             return conv;
         }
-
-        [Generated]
-        public static IGeneratedConveyorAutomationObject CreateAutomationObject() => CreateAutomationObject(out _);
-
-        [Generated]
-        public static IGeneratedConveyorAutomationObject CreateAutomationObject(out IAutomationContext context)
-        {
-            var result = new AutomationConveyorAutomationObject<ConveyorAutomationObject>();
-            context = result;
-            return result;
-        }
     }
 
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Property)]
     public class GeneratedAttribute : Attribute{ }
 
-    [Generated]
-    public partial class AutomationConveyorAutomationObject<TWrapper> : IGeneratedConveyorAutomationObject, IAutomationRoot, IAutomationContext
-        where TWrapper : IGeneratedConveyorAutomationObject, IAutomationRoot, new()
-    {
-        private TWrapper AutomationObject { get; }
-
-        public List<Conveyor> Conveyors => AutomationObject.Conveyors;
-        public CanvasInfo CanvasInfo => AutomationObject.CanvasInfo;
-        public Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes
-            //, [CallerArgumentExpression("points")] string pointsArg = null
-            //, [CallerArgumentExpression("isRunning")] string isRunningArg = null
-            //, [CallerArgumentExpression("lanes")] string lanesArg = null
-            )
-        {
-            if (!IsAutomated)
-            {
-                LogAction?.Invoke($"$.AddConveyor({points.Out()}, {isRunning.Out()}, {lanes.Out()})");
-            }
-            return AutomationObject.AddConveyor(points, isRunning, lanes);
-        }
-
-        public bool IsAutomated { get; set; }
-        public Action<string> LogAction { get ; set; }
-
-        public void Init(object obj) => AutomationObject.Init(obj);
-
-        public AutomationConveyorAutomationObject() => AutomationObject = new();
-    }
+    [AttributeUsage(AttributeTargets.Class)]
+    public class Generate2Attribute<T> : Attribute
+    where T : IAutomationFeatures
+    { }
 
     public static class CSharpOutputHelpers
     {

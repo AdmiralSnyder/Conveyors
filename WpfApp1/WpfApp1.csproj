@@ -1,27 +1,63 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-	  <LangVersion>preview</LangVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net7.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<LangVersion>preview</LangVersion>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputBasePath>..\GeneratedOutput</CompilerGeneratedFilesOutputBasePath>
+		<CompilerGeneratedFilesOutputPath>$(CompilerGeneratedFilesOutputBasePath)\data</CompilerGeneratedFilesOutputPath>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="..\GlobalUsings.cs" Link="GlobalUsings.cs" />
-    <Compile Include="..\GlobalUsings.WpfLib.cs" Link="GlobalUsings.WpfLib.cs" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AvalonEdit" Version="6.1.3.50" />
-    <PackageReference Include="Gu.Wpf.GridExtensions" Version="0.1.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.2.0-1.final" />
-  </ItemGroup>
+	<PropertyGroup>
+		<DeleteFileStuffExpression>$(CompilerGeneratedFilesOutputPath)/**\*</DeleteFileStuffExpression>
+		<RemoveFolderStuffExpression>$(CompilerGeneratedFilesOutputPath)/**</RemoveFolderStuffExpression>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CoreLib\CoreLib.csproj" />
-    <ProjectReference Include="..\WpfLib\WpfLib.csproj" />
-  </ItemGroup>
+	<Target Name="ClearGeneratedStuff" BeforeTargets="CoreCompile">
+		<!--BeforeTargets="CoreCompile"-->
+		<!--BeforeTargets="BeforeBuild"-->
+		<!--<ItemGroup>
+			<FilesToDelete23 Include="$(DeleteFileStuffExpression)"/>
+		</ItemGroup>
+		<ItemGroup>
+			<FoldersToRemove Include="$(RemoveFolderStuffExpression)"/>
+		</ItemGroup>
+
+		<Message Text="KDNJHOFVSH2 XX $(DeleteFileStuffExpression) XX   XFilesToDelete23X @(FilesToDelete23) XX" Importance="high"/>
+		<Delete Files="@(FilesToDelete23)">
+			<Output TaskParameter="DeletedFiles" ItemName="FilesDeleted"/>
+		</Delete>-->
+
+		<Message Text="INFO Removing Folder + content: $(CompilerGeneratedFilesOutputPath)" Importance="high"/>
+		<RemoveDir Directories="$(CompilerGeneratedFilesOutputPath)">
+			<Output TaskParameter="RemovedDirectories" ItemName="RemovedDirs"/>
+		</RemoveDir>
+		<Message Text="Folders removed: @(RemovedDirs)" Importance="high"/>
+	</Target>
+	<!--<Target Name="CopyGeneratedStuff" AfterTargets="Build">	
+		<Copy SourceFiles="$(CompilerGeneratedFilesOutputPath)/**/**/blub.g.cs" DestinationFolder="..\GeneratedOutputCopy" />
+	</Target>-->
+
+	<ItemGroup>
+		<Compile Include="..\GlobalUsings.cs" Link="GlobalUsings.cs" />
+		<Compile Include="..\GlobalUsings.WpfLib.cs" Link="GlobalUsings.WpfLib.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AvalonEdit" Version="6.1.3.50" />
+		<PackageReference Include="Gu.Wpf.GridExtensions" Version="0.1.1" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.2.0-1.final" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\AutomationObjectGenerator\AutomationObjectGenerator.csproj" OutputItemType="Analyzer"
+						  ReferenceOutputAssembly="false"/>
+		<ProjectReference Include="..\CoreLib\CoreLib.csproj" />
+		<ProjectReference Include="..\WpfLib\WpfLib.csproj" />
+	</ItemGroup>
 
 </Project>
