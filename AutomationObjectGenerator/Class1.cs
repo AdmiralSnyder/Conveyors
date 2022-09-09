@@ -39,10 +39,10 @@ namespace AutomationObjectGenerator
                     {
                         member = FullyQualifyTypes(member);
 
-                        //if (member is MethodDeclarationSyntax method)
-                        //{
-                        //    member = method.AddModifiers(partialToken);
-                        //}
+                        if (member is MethodDeclarationSyntax method)
+                        {
+                            member = method.WithSemicolonToken(default);
+                        }
 
                         //member = member.AddModifiers(publicToken);
 
@@ -112,7 +112,7 @@ namespace AutomationObjectGenerator
                         TargetNode: "Blub",
                         UsingDeclarations: "",
                         Properties: members.OfType<PropertyDeclarationSyntax>().Select(x => (Name: x.Identifier.Text, Declaration: x.ToFullString())).ToList(),
-                        Methods: members.OfType<MethodDeclarationSyntax>().Select(x => (Name: x.Identifier.Text, Declaration: x.ToFullString()[..^1], Arguments: x.ParameterList.Parameters.Select(p => p.Identifier.Text).ToList())).ToList(),
+                        Methods: members.OfType<MethodDeclarationSyntax>().Select(x => (Name: x.Identifier.Text, Declaration: x.ToFullString(), Arguments: x.ParameterList.Parameters.Select(p => p.Identifier.Text).ToList())).ToList(),
                         TargetNameSpace: gasc.SemanticModel.GetDeclaredSymbol((gasc.TargetNode as ClassDeclarationSyntax))?.ContainingNamespace.Name,
                         TargetClassName: (gasc.TargetNode as ClassDeclarationSyntax)?.Identifier.Text
                     );
