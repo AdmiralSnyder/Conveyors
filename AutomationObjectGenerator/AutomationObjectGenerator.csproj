@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<!--AutoUpdateAssemblyName-->
   <PropertyGroup>
@@ -6,13 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<LangVersion>preview</LangVersion>
-	  <AssemblyName>AutomationObjectGenerator.4</AssemblyName>
+	  <AssemblyName>AutomationObjectGenerator.29</AssemblyName>
 	  <GenerateAssemblyNameAttribute>false</GenerateAssemblyNameAttribute>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="IndexRange" Version="1.0.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0-1.final" />
+    <PackageReference Include="IsExternalInit" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0-3.22459.4" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
 

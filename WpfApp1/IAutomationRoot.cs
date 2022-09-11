@@ -36,6 +36,7 @@ namespace WpfApp1
         public void Init(object obj)
         {
             var tuple = ((Canvas Canvas, ConveyorShapeProvider ShapeProvider))obj;
+            Conveyors = new();
             CanvasInfo = new() { Canvas = tuple.Canvas, ShapeProvider = tuple.ShapeProvider};
         }
 

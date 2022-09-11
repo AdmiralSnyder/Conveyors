@@ -1,2 +1,1 @@
-#C:\Users\AGayk\source\repos\ConveyorApp\AutomationObjectGenerator\AutomationObjectGenerator.csproj
 WpfApp1

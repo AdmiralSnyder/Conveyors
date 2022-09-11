@@ -7,39 +7,34 @@
 		<UseWPF>true</UseWPF>
 		<LangVersion>preview</LangVersion>
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-		<CompilerGeneratedFilesOutputBasePath>..\GeneratedOutput</CompilerGeneratedFilesOutputBasePath>
-		<CompilerGeneratedFilesOutputPath>$(CompilerGeneratedFilesOutputBasePath)\data</CompilerGeneratedFilesOutputPath>
+		<!--<CompilerGeneratedFilesOutputBasePath>..\GeneratedOutput</CompilerGeneratedFilesOutputBasePath>
+		<CompilerGeneratedFilesOutputPath>$(CompilerGeneratedFilesOutputBasePath)\data</CompilerGeneratedFilesOutputPath>-->
 	</PropertyGroup>
 
 
-	<PropertyGroup>
+	<!--<PropertyGroup>
 		<DeleteFileStuffExpression>$(CompilerGeneratedFilesOutputPath)/**\*</DeleteFileStuffExpression>
 		<RemoveFolderStuffExpression>$(CompilerGeneratedFilesOutputPath)/**</RemoveFolderStuffExpression>
-	</PropertyGroup>
+	</PropertyGroup>-->
 
-	<Target Name="ClearGeneratedStuff" BeforeTargets="CoreCompile">
-		<!--BeforeTargets="CoreCompile"-->
-		<!--BeforeTargets="BeforeBuild"-->
-		<!--<ItemGroup>
-			<FilesToDelete23 Include="$(DeleteFileStuffExpression)"/>
-		</ItemGroup>
+	<Target Name="RemoveDuplicateAnalyzers" BeforeTargets="CoreCompile">
+		<!-- Work around https://github.com/dotnet/wpf/issues/6792 -->
+
 		<ItemGroup>
-			<FoldersToRemove Include="$(RemoveFolderStuffExpression)"/>
+			<FilteredAnalyzer Include="@(Analyzer-&gt;Distinct())" />
+			<Analyzer Remove="@(Analyzer)" />
+			<Analyzer Include="@(FilteredAnalyzer)" />
 		</ItemGroup>
-
-		<Message Text="KDNJHOFVSH2 XX $(DeleteFileStuffExpression) XX   XFilesToDelete23X @(FilesToDelete23) XX" Importance="high"/>
-		<Delete Files="@(FilesToDelete23)">
-			<Output TaskParameter="DeletedFiles" ItemName="FilesDeleted"/>
-		</Delete>-->
-
-		<Message Text="INFO Removing Folder + content: $(CompilerGeneratedFilesOutputPath)" Importance="high"/>
-		<RemoveDir Directories="$(CompilerGeneratedFilesOutputPath)">
-			<Output TaskParameter="RemovedDirectories" ItemName="RemovedDirs"/>
-		</RemoveDir>
-		<Message Text="Folders removed: @(RemovedDirs)" Importance="high"/>
 	</Target>
-	<!--<Target Name="CopyGeneratedStuff" AfterTargets="Build">	
-		<Copy SourceFiles="$(CompilerGeneratedFilesOutputPath)/**/**/blub.g.cs" DestinationFolder="..\GeneratedOutputCopy" />
+
+	<!--<Target Name="ClearGeneratedStuff" BeforeTargets="CoreCompile">
+		
+
+		<Message Text="INFO Removing Folder + content: $(CompilerGeneratedFilesOutputPath)" Importance="high" />
+		<RemoveDir Directories="$(CompilerGeneratedFilesOutputPath)">
+			<Output TaskParameter="RemovedDirectories" ItemName="RemovedDirs" />
+		</RemoveDir>
+		<Message Text="Folders removed: @(RemovedDirs)" Importance="high" />
 	</Target>-->
 
 	<ItemGroup>
@@ -50,12 +45,11 @@
 	<ItemGroup>
 		<PackageReference Include="AvalonEdit" Version="6.1.3.50" />
 		<PackageReference Include="Gu.Wpf.GridExtensions" Version="0.1.1" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.2.0-1.final" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.4.0-3.22459.4" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\AutomationObjectGenerator\AutomationObjectGenerator.csproj" OutputItemType="Analyzer"
-						  ReferenceOutputAssembly="false"/>
+		<ProjectReference Include="..\AutomationObjectGenerator\AutomationObjectGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\CoreLib\CoreLib.csproj" />
 		<ProjectReference Include="..\WpfLib\WpfLib.csproj" />
 	</ItemGroup>
