@@ -471,12 +471,21 @@ public partial class MainWindow
 
     private ScriptRunner ScriptRunner = new();
 
-    private void HappyBirthdayRubyB_Click(object sender, RoutedEventArgs e)
+    private void HappyBirthdayRubyB_Click(object sender, RoutedEventArgs e) => WriteString("R");
+        //WriteString("""
+        //HAPPY
+        //BIRTHDAY
+        //RUBY
+        //"""");
+
+    private void WriteString(string text) => WriteStrings(text.Split(Environment.NewLine));
+
+    private void WriteStrings(IEnumerable<string> lines)
     {
         int xOffset;
         int yOffset = 0;
         double scaling = 5;
-        foreach (var wordCoords in Func.GetTextLocations("HAPPY", "BIRTHDAY", "RUBY"))
+        foreach (var wordCoords in Func.GetTextLocations(lines))
         {
             xOffset = 0;
 

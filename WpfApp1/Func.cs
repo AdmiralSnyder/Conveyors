@@ -63,6 +63,7 @@ namespace WpfApp1
 
         public static IEnumerable<Point[][]> GetTextLocations(string s) => s.Select(c => TextLocations[c]);
 
+        public static IEnumerable<IEnumerable<Point[][]>> GetTextLocations(IEnumerable<string> strings) => strings.Select(GetTextLocations);
         public static IEnumerable<IEnumerable<Point[][]>> GetTextLocations(params string[] strings) => strings.Select(GetTextLocations);
     }
 }

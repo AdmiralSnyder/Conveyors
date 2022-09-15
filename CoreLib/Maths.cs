@@ -47,6 +47,16 @@ public class Angle
 
     public static Angle operator ~(Angle a1) => (-a1.Radians).Radians();
     public static Angle operator *(Angle a1, double times) => (a1.Radians * times).Radians();
+
+    public static bool operator ==(Angle a1, Angle a2) => a1.Equals(a2);
+    public static bool operator !=(Angle a1, Angle a2) => !a1.Equals(a2);
+
+    public override bool Equals(object? obj) => obj is Angle a && a.Degrees == Degrees;
+
+    
+    
+    // TODO maybe improve that HashCode...
+    public override int GetHashCode() => HashCode.Combine(typeof(Angle).GetHashCode(), Degrees);
 }
 
 
@@ -250,4 +260,8 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         }
         return true;
     }
+
+    public static bool VectorsAreParallel(Vector v1, Vector v2) => v1.Angle() == v2.Angle();
+
+    public static bool VectorsAreInverseParallel(Vector v1, Vector v2) => ((v1.Angle()- v2.Angle()).Degrees / 180.0) is { } offset && double.IsOddInteger(offset);
 }

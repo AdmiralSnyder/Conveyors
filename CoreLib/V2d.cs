@@ -10,6 +10,8 @@ namespace PointDef
         public V2d(double x, double y) => (X, Y) = (x, y);
         public V2d((double x, double y) tuple) => (X, Y) = tuple;
 
+        public V2d(V2d from, V2d to) => (X, Y) = to.Subtract(from);
+
         public static readonly V2d MinValue = (double.MinValue, double.MinValue);
         public static readonly V2d MaxValue = (double.MaxValue, double.MaxValue);
 
@@ -65,5 +67,7 @@ namespace PointDef
         {
             return HashCode.Combine(X, Y);
         }
+
+        private void Deconstruct(out double x, out double y) => (x, y) = (X, Y);
     }
 }

@@ -108,41 +108,56 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
                 var R1 = ((ConveyorSegmentLane)ElementsNode.Next.Value).StartPoint;
                 var R2 = ((ConveyorSegmentLane)ElementsNode.Next.Value).EndPoint;
 
-                var yr1 = R1.Y;
-                var xp = P2.X - P1.X;
-                var yp1 = P1.Y;
-                var xr1 = R1.X;
-                var yp = P2.Y - P1.Y;
-                var xp1 = P1.X;
-                var xr = R2.X - R1.X;
-                var yr = R2.Y - R1.Y;
-                var sr = (yr1 * xp - yp1 * xp - xr1 * yp + xp1 * yp) / (xr * yp - yr * xp); // TODO what happens if zero??
-
-                var xq = xr1 + sr * (R2.X - R1.X);
-                var yq = yr1 + sr * (R2.Y - R1.Y);
-
-                var cross = new Vector(xq, yq);
-                var start = R1;
-                var end = P2;
-                var CrossStart = start - cross;
-                var CrossEnd = end - cross;
-                var ActStart = (start - CrossStart) - CrossEnd;
-                var ActEnd = (end - CrossStart) - CrossEnd;
-
-                ArcGeometry.Figures.Add(new()
+                if (Maths.VectorsAreParallel(new(P1, P2), new(R1, R2)) || Maths.VectorsAreInverseParallel(new(P1, P2), new(R1, R2)))
                 {
-                    StartPoint = ActStart,
-                    Segments = { new ArcSegment(ActEnd, new(radius, radius), Point.Angle.Degrees, largeArg, swDir, true) }
-                });
+                    if (ElementsNode.Previous?.Value is ConveyorSegmentLane prevSegLane)
+                    {
+                        prevSegLane.EndPoint = P2;
+                    }
 
-                if (ElementsNode.Previous?.Value is ConveyorSegmentLane prevSegLane)
-                {
-                    prevSegLane.EndPoint = ActStart;
+                    if (ElementsNode.Next?.Value is ConveyorSegmentLane nextSegLane)
+                    {
+                        nextSegLane.StartPoint = R1;
+                    }
                 }
-
-                if (ElementsNode.Next?.Value is ConveyorSegmentLane nextSegLane)
+                else
                 {
-                    nextSegLane.StartPoint = ActEnd;
+                    var yr1 = R1.Y;
+                    var xp = P2.X - P1.X;
+                    var yp1 = P1.Y;
+                    var xr1 = R1.X;
+                    var yp = P2.Y - P1.Y;
+                    var xp1 = P1.X;
+                    var xr = R2.X - R1.X;
+                    var yr = R2.Y - R1.Y;
+                    var sr = (yr1 * xp - yp1 * xp - xr1 * yp + xp1 * yp) / (xr * yp - yr * xp); // TODO what happens if zero??
+
+                    var xq = xr1 + sr * (R2.X - R1.X);
+                    var yq = yr1 + sr * (R2.Y - R1.Y);
+
+                    var cross = new Vector(xq, yq);
+                    var start = R1;
+                    var end = P2;
+                    var CrossStart = start - cross;
+                    var CrossEnd = end - cross;
+                    var ActStart = (start - CrossStart) - CrossEnd;
+                    var ActEnd = (end - CrossStart) - CrossEnd;
+
+                    ArcGeometry.Figures.Add(new()
+                    {
+                        StartPoint = ActStart,
+                        Segments = { new ArcSegment(ActEnd, new(radius, radius), Point.Angle.Degrees, largeArg, swDir, true) }
+                    });
+
+                    if (ElementsNode.Previous?.Value is ConveyorSegmentLane prevSegLane)
+                    {
+                        prevSegLane.EndPoint = ActStart;
+                    }
+
+                    if (ElementsNode.Next?.Value is ConveyorSegmentLane nextSegLane)
+                    {
+                        nextSegLane.StartPoint = ActEnd;
+                    }
                 }
             }
             else
