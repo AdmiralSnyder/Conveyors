@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<LangVersion>preview</LangVersion>
-	  <AssemblyName>AutomationObjectGenerator.30</AssemblyName>
+	  <AssemblyName>AutomationObjectGenerator.34</AssemblyName>
 	  <GenerateAssemblyNameAttribute>false</GenerateAssemblyNameAttribute>
   </PropertyGroup>
 
@@ -16,7 +16,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0-1.final" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
 

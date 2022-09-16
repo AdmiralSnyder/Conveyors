@@ -21,6 +21,10 @@ namespace WpfApp1
         List<Conveyor> Conveyors { get; }
         CanvasInfo CanvasInfo { get; }
         Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes);
+
+        void MovePoint(ConveyorPoint conveyorPoint, Point point);
+
+        void OffsetPoint(ConveyorPoint conveyorPoint, Point point);
     }
 
     public interface IAutomationContext
@@ -47,6 +51,16 @@ namespace WpfApp1
             Conveyors.Add(conv);
             return conv;
         }
+
+        public partial void MovePoint(ConveyorPoint conveyorPoint, Point point)
+        {
+            conveyorPoint.Location = point;
+        }
+
+        public partial void OffsetPoint(ConveyorPoint conveyorPoint, Point point)
+        {
+            conveyorPoint.Location = conveyorPoint.Location + point;
+        }
     }
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Property)]
@@ -64,5 +78,7 @@ namespace WpfApp1
         public static string Out(this bool obj) => obj ? "true" : "false";
 
         public static string Out(this object? obj) => obj?.ToString() ?? "null";
+
+        public static string Out(this IAutomationOutByID obj) => $@"""{obj.ID}""";
     }
 }

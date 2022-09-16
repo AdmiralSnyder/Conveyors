@@ -183,7 +183,7 @@ public partial class MainWindow
                 {
                     if (MoveShapes.FirstOrDefault() is { Tag: ConveyorPoint point })
                     {
-                        point.Location = SnapPoint(GetCanvasPoint(e));
+                        AutoRoot.MovePoint(point, SnapPoint(GetCanvasPoint(e)));
                     }
                     InputState = InputState.None;
 

@@ -30,11 +30,11 @@ namespace AutomationObjectGenerator
                 .WithTrailingTrivia(oneWhiteSpace),
             }));
 
-            var automationClassesNoFAWMN = initContext.SyntaxProvider.CreateSyntaxProvider(
-                (sn, ct) => sn is ClassDeclarationSyntax cds && cds.AttributeLists.Any(al => al.Attributes.Any(a => a.Name is GenericNameSyntax gns 
-                && gns.Identifier.Text.StartsWith("Generate2") && gns.TypeArgumentList.Arguments.Count == 1))
-                ,
-                GetAutomationTypeInfo);
+            //var automationClassesNoFAWMN = initContext.SyntaxProvider.CreateSyntaxProvider(
+            //    (sn, ct) => sn is ClassDeclarationSyntax cds && cds.AttributeLists.Any(al => al.Attributes.Any(a => a.Name is GenericNameSyntax gns 
+            //    && gns.Identifier.Text.StartsWith("Generate2") && gns.TypeArgumentList.Arguments.Count == 1))
+            //    ,
+            //    GetAutomationTypeInfo);
 
             InfoAndDiagnostics<AutomationClassInfo> GetAutomationTypeInfo(GeneratorSyntaxContext gsc, CancellationToken ct)
             {
@@ -61,10 +61,15 @@ namespace AutomationObjectGenerator
                 return result;
             }
 
-            //AutomationClassInfo GetAutomationTypeInfo2(GeneratorAttributeSyntaxContext gasc, CancellationToken ct)
-            //{
-            //    return GetAutomationTypeInfo3(gasc.TargetNode as ClassDeclarationSyntax, gasc.SemanticModel, gasc.Attributes.First().AttributeClass.TypeArguments.FirstOrDefault(), ct);
-            //}
+            InfoAndDiagnostics<AutomationClassInfo> GetAutomationTypeInfo2(GeneratorAttributeSyntaxContext gasc, CancellationToken ct)
+            {
+                InfoAndDiagnostics<AutomationClassInfo> result = new()
+                {
+                    Info = GetAutomationTypeInfo3(gasc.TargetNode as ClassDeclarationSyntax, gasc.SemanticModel, gasc.Attributes.First().AttributeClass.TypeArguments.FirstOrDefault(), ct)
+                };
+                return result;
+            }
+
             AutomationClassInfo GetAutomationTypeInfo3(ClassDeclarationSyntax targetNode, SemanticModel semanticModel, ITypeSymbol automationInterface, CancellationToken ct)
             {
 
@@ -151,12 +156,12 @@ namespace AutomationObjectGenerator
                     );
             }
 
-            //var automationClasses = initContext.SyntaxProvider.ForAttributeWithMetadataName("WpfApp1.Generate2Attribute`1",
-            //    (sn, ct) => true,
-            //    //!++ TODO do not let the node escape!
-            //    GetAutomationTypeInfo2);
+            var automationClasses = initContext.SyntaxProvider.ForAttributeWithMetadataName("WpfApp1.Generate2Attribute`1",
+                (sn, ct) => true,
+                //!++ TODO do not let the node escape!
+                GetAutomationTypeInfo2);
 
-            initContext.RegisterSourceOutput(automationClassesNoFAWMN,
+            initContext.RegisterSourceOutput(automationClasses,
             (spc, infoAndDiagnostics) =>
             {
                 foreach (var diag in infoAndDiagnostics.Diagnostics)
@@ -214,7 +219,7 @@ namespace AutomationObjectGenerator
                                   //LogAction?.Invoke($"$.{{m.Name}}({{m.ArgumentNames.Select(a => $"{a}Arg").JoinComma()}})");
                                     LogAction?.Invoke($"$.{{m.Name}}({{m.ArgumentNames.Select(a => $"{{{a}.Out()}}").JoinComma()}})");
                                 }
-                                return AutomationObject.{{m.Name}}({{m.ArgumentNames.JoinComma()}});
+                                {{(m.IsVoid ? "" : "return ")}}AutomationObject.{{m.Name}}({{m.ArgumentNames.JoinComma()}});
                             }
                         """).JoinNL()}}
                     }
@@ -330,17 +335,19 @@ namespace AutomationObjectGenerator
         string Declaration,
         string[]/*ImmutableArray<string>*/ Arguments,
         string[]/*ImmutableArray<string>*/ ArgumentTypes,
-        string[]/*ImmutableArray<string>*/ ArgumentNames
+        string[]/*ImmutableArray<string>*/ ArgumentNames,
+        bool IsVoid
     )
     {
         public MethodDeclarationInfo(MethodDeclarationSyntax syntax) : this
         (
             syntax.ReturnType.ToFullString(),
-            syntax.Identifier.Text, 
-            syntax.ToFullString(), 
+            syntax.Identifier.Text,
+            syntax.ToFullString(),
             syntax.ParameterList.Parameters.Select(p => p.ToFullString()).ToArray(),
             syntax.ParameterList.Parameters.Select(p => p.Type.ToFullString()).ToArray(),
-            syntax.ParameterList.Parameters.Select(p => p.Identifier.Text).ToArray()
+            syntax.ParameterList.Parameters.Select(p => p.Identifier.Text).ToArray(),
+            syntax.ReturnType is PredefinedTypeSyntax pds && pds.Keyword.IsKind(SyntaxKind.VoidKeyword)
         )
         { }
     }

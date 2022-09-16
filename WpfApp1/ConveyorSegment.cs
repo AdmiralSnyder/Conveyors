@@ -44,6 +44,45 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject, IRefreshab
         ElementsNode.Next?.Value as ConveyorPoint
     );
 
+    internal ConveyorPoint? GetPreviousPoint() => ElementsNode.Next?.Value as ConveyorPoint;
+    internal ConveyorPoint? GetNextPoint() => ElementsNode.Next?.Value as ConveyorPoint;
+
+    internal ConveyorPoint? TryGetPreviousPoint(int desiredLevel = 0)
+    {
+        if (desiredLevel < 0) return null;
+
+        var segmentNode = ElementsNode;
+        ConveyorPoint? result = segmentNode?.Previous?.Value as ConveyorPoint;
+        while (desiredLevel-- > 0)
+        {
+            segmentNode = segmentNode?.Previous?.Previous;
+            if (segmentNode?.Previous?.Value is ConveyorPoint cp)
+            {
+                result = cp;
+            }
+        }
+       
+        return segmentNode?.Previous?.Value as ConveyorPoint ?? result;
+    }
+
+    internal ConveyorPoint? TryGetNextPoint(int desiredLevel = 0)
+    {
+        if (desiredLevel < 0) return null;
+
+        var segmentNode = ElementsNode;
+        ConveyorPoint? result = segmentNode?.Next?.Value as ConveyorPoint;
+        while (desiredLevel-- > 0)
+        {
+            segmentNode = segmentNode?.Next?.Next;
+            if (segmentNode?.Next?.Value is ConveyorPoint cp)
+            {
+                result = cp;
+            }
+        }
+
+        return segmentNode?.Next?.Value as ConveyorPoint ?? result;
+    }
+
     public ConveyorSegmentLane[] Lanes { get; }
     public int Number { get; }
     public Conveyor Conveyor { get; }

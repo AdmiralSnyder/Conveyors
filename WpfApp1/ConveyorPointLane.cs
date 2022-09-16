@@ -54,8 +54,22 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
 
     public ISelectObject? SelectionParent => Point;
 
+    struct MyStruct : IDisposable
+    {
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public void RebuildArc()
     {
+        using (MyStruct myStruct2 = new())
+        { 
+        }
+
+        using var myStruct = new MyStruct();
+
         if (Point.IsFirst || Point.IsLast) return;
 
         var prevEnd = ((ConveyorSegmentLane)ElementsNode.Previous.Value).EndPoint;
@@ -103,12 +117,38 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
 
             if (Inside)
             {
-                var P1 = ((ConveyorSegmentLane)ElementsNode.Previous.Value).StartPoint;
-                var P2 = ((ConveyorSegmentLane)ElementsNode.Previous.Value).EndPoint;
-                var R1 = ((ConveyorSegmentLane)ElementsNode.Next.Value).StartPoint;
-                var R2 = ((ConveyorSegmentLane)ElementsNode.Next.Value).EndPoint;
+                var previousSegmentLane = (ConveyorSegmentLane)ElementsNode.Previous.Value;
+                var P1 = previousSegmentLane.StartPoint;
+                var P2 = previousSegmentLane.EndPoint;
 
-                if (Maths.VectorsAreParallel(new(P1, P2), new(R1, R2)) || Maths.VectorsAreInverseParallel(new(P1, P2), new(R1, R2)))
+                var nextSegmentLane = (ConveyorSegmentLane)ElementsNode.Next.Value;
+                var R1 = nextSegmentLane.StartPoint;
+                var R2 = nextSegmentLane.EndPoint;
+
+                //if (previousSegmentLane.Length == 0 || nextSegmentLane.Length == 0 || Maths.VectorsAreParallel(new(P1, P2), new(R1, R2)) || Maths.VectorsAreInverseParallel(new(P1, P2), new(R1, R2)))
+                //{
+                //    if (ElementsNode.Previous?.Value is ConveyorSegmentLane prevSegLane)
+                //    {
+                //        prevSegLane.EndPoint = P2;
+                //    }
+
+                //    if (ElementsNode.Next?.Value is ConveyorSegmentLane nextSegLane)
+                //    {
+                //        nextSegLane.StartPoint = R1;
+                //    }
+                //}
+                //else
+                //{
+                var yr1 = R1.Y;
+                var xp = P2.X - P1.X;
+                var yp1 = P1.Y;
+                var xr1 = R1.X;
+                var yp = P2.Y - P1.Y;
+                var xp1 = P1.X;
+                var xr = R2.X - R1.X;
+                var yr = R2.Y - R1.Y;
+                var quotient = (xr * yp - yr * xp);
+                if (quotient == 0)
                 {
                     if (ElementsNode.Previous?.Value is ConveyorSegmentLane prevSegLane)
                     {
@@ -122,15 +162,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
                 }
                 else
                 {
-                    var yr1 = R1.Y;
-                    var xp = P2.X - P1.X;
-                    var yp1 = P1.Y;
-                    var xr1 = R1.X;
-                    var yp = P2.Y - P1.Y;
-                    var xp1 = P1.X;
-                    var xr = R2.X - R1.X;
-                    var yr = R2.Y - R1.Y;
-                    var sr = (yr1 * xp - yp1 * xp - xr1 * yp + xp1 * yp) / (xr * yp - yr * xp); // TODO what happens if zero??
+                    var sr = (yr1 * xp - yp1 * xp - xr1 * yp + xp1 * yp) / quotient; // TODO what happens if zero??
 
                     var xq = xr1 + sr * (R2.X - R1.X);
                     var yq = yr1 + sr * (R2.Y - R1.Y);
@@ -159,6 +191,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
                         nextSegLane.StartPoint = ActEnd;
                     }
                 }
+                //}
             }
             else
             {
@@ -169,7 +202,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
                 });
             }
 
-            
+
 
             Length = (Angle.HalfCircle - Point.AbsoluteAngle).Radians * radius;
         }

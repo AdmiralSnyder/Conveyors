@@ -16,9 +16,20 @@ public interface IListNode<T>
     public LinkedListNode<T> Node { get; }
 }
 
-public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNode<IPathPart>, IListNode<ConveyorPoint>, IRefreshable
+public interface IAutomationOutByID
 {
-    public string Text => $"Point {Conveyor.Number}.{Number} ({Location})";
+    string ID { get; }
+}
+
+public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNode<IPathPart>, IListNode<ConveyorPoint>, IRefreshable, IAutomationOutByID
+{
+    public string ID => $"{Conveyor.Number}.{Number}";
+
+    public string Text => $"Point {ID} ({Location})";
+
+    public static Dictionary<string, ConveyorPoint> PointsByID = new();
+
+    public static implicit operator ConveyorPoint(string id) => PointsByID.TryGetValue(id, out var cp) ? cp : null;
 
     public ConveyorPoint(Conveyor conveyor)
     {
@@ -26,6 +37,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
         Lanes = new ConveyorPointLane[conveyor.LanesCount];
         LaneStrategy = PointLaneStrategies.Curve;
         Number = Conveyor.Points.Count;
+        PointsByID[ID] = this;
     }
 
     public bool IsLast { get; internal set; }
@@ -37,10 +49,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
         get => _Location;
         set => Func.Setter(ref _Location, value, () =>
         {
-            if (PointCircle is not null)
-            {
-                PointCircle.SetCenterLocation(Location);
-            }
+            PointCircle?.SetCenterLocation(Location);
             var (prev, next) = GetAdjacentSegments();
             if (prev is { })
             {
@@ -57,8 +66,8 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
                 next.StartEnd = (Location, next.StartEnd.P2);
                 next.GetAdjacentPoints().next?.PreparePoint();
             }
-            (prev?.GetAdjacentPoints().prev ?? this)?.RebuildLanes();
-
+            (prev?.TryGetPreviousPoint(2) ?? this)?.RebuildLanes();
+            
             //RebuildLanes();
 
             //next?.GetAdjacentPoints().next?.RebuildLanes();
@@ -91,10 +100,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
     {
         foreach (var lane in Lanes)
         {
-            if (lane is not null)
-            {
-                lane.RebuildArc();
-            }
+            lane?.RebuildArc();
         }
 
         ElementsNode.Next?.Value?.RebuildLanes();
