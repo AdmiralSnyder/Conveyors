@@ -44,57 +44,76 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
     public bool IsLast { get; internal set; }
     public bool IsFirst { get; internal set; }
 
+    private void PointLocationUpdated()
+    {
+        PointCircle?.SetCenterLocation(Location);
+        ((ISelectObject)this).SetSelectionPoints(_Location);
+
+        var (prev, next) = GetAdjacentSegments();
+
+        PreparePoint();
+
+        var prevP = prev?.GetPreviousPoint();
+        var nextP = next?.GetNextPoint();
+
+        prev?.SetEnd(Location);
+        next?.SetStart(Location);
+
+        prevP?.PreparePoint();
+        nextP?.PreparePoint();
+
+        prevP?.RebuildLanes();
+        
+        RebuildLanes2();
+        
+        nextP?.RebuildLanes2();
+
+        //if (prev?.GetPreviousPoint() is { } )
+        //{
+        //    prev.StartEnd = (prev.StartEnd.P1, Location);
+        //}
+        //if (next is { })
+        //{
+        //    next.StartEnd = (Location, next.StartEnd.P2);
+        //}
+
+
+
+
+        //(prev?.TryGetPreviousPoint(2) ?? this)?.RebuildLanes();
+
+
+        //next?.GetAdjacentPoints().next?.RebuildLanes();
+
+        // TODO this might better be a method of the lanes?
+
+        //double len = 0d;
+        //foreach (var i in Conveyor.LaneIndexes)
+        //{
+        //    if (prev is { })
+        //    {
+        //        len = prev.Lanes[i]?.EndLength ?? 0d;
+        //    }
+        //    var elNode = next?.Lanes[i]?.ElementsNode;
+        //    while (elNode is { })
+        //    {
+        //        var element = elNode.Value;
+        //        element.BeginLength = len;
+        //        len = element.EndLength;
+        //        elNode = elNode.Next;
+        //    }
+        //}
+
+        // This is utterly dirty - the conveyor should be a listener on the point's locations - or rather, all locations...
+        ((ISelectObject)Conveyor).SetSelectionPoints();
+
+    }
+
     private Point _Location;
     public Point Location
     {
         get => _Location;
-        set => Func.Setter(ref _Location, value, () =>
-        {
-            PointCircle?.SetCenterLocation(Location);
-            var (prev, next) = GetAdjacentSegments();
-            if (prev is { })
-            {
-                prev.StartEnd = (prev.StartEnd.P1, Location);
-                prev.GetAdjacentPoints().prev?.PreparePoint();
-            }
-
-            ((ISelectObject)this).SetSelectionPoints(_Location);
-
-            PreparePoint();
-
-            if (next is { })
-            {
-                next.StartEnd = (Location, next.StartEnd.P2);
-                next.GetAdjacentPoints().next?.PreparePoint();
-            }
-            (prev?.TryGetPreviousPoint(2) ?? this)?.RebuildLanes();
-            
-            //RebuildLanes();
-
-            //next?.GetAdjacentPoints().next?.RebuildLanes();
-
-            // TODO this might better be a method of the lanes?
-
-            //double len = 0d;
-            //foreach (var i in Conveyor.LaneIndexes)
-            //{
-            //    if (prev is { })
-            //    {
-            //        len = prev.Lanes[i]?.EndLength ?? 0d;
-            //    }
-            //    var elNode = next?.Lanes[i]?.ElementsNode;
-            //    while (elNode is { })
-            //    {
-            //        var element = elNode.Value;
-            //        element.BeginLength = len;
-            //        len = element.EndLength;
-            //        elNode = elNode.Next;
-            //    }
-            //}
-
-            // This is utterly dirty - the conveyor should be a listener on the point's locations - or rather, all locations...
-            ((ISelectObject)Conveyor).SetSelectionPoints();
-        });
+        set => Func.Setter(ref _Location, value, PointLocationUpdated);
     }
 
     public void RebuildLanes()
@@ -105,6 +124,14 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
         }
 
         ElementsNode.Next?.Value?.RebuildLanes();
+    }
+
+    public void RebuildLanes2()
+    {
+        foreach (var lane in Lanes)
+        {
+            lane?.RebuildArc();
+        }
     }
 
     public void UpdateLengths()
@@ -128,15 +155,15 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
     public LinkedListNode<ConveyorPoint> Node { get; internal set; }
     public LinkedListNode<IPathPart> ElementsNode { get; internal set; }
 
-    public Vector Incoming { get; private set; }
+    public Vector IncomingVector { get; private set; }
     public Vector IncomingNorm { get; private set; }
     public Vector IncomingNormInversed { get; private set; }
 
-    public Vector Outgoing { get; private set; }
+    public Vector OutgoingVector { get; private set; }
     public Vector OutgoingNorm { get; private set; }
 
     public Angle Angle { get; private set; }
-    
+
     public Angle AbsoluteAngle { get; private set; }
 
     public Angle IncomingAngle { get; private set; }
@@ -184,12 +211,12 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
             var prevLocation = ((ConveyorPoint)prevNode.Value).Location;
             var nextLocation = ((ConveyorPoint)nextNode.Value).Location;
 
-            Incoming = Location.Subtract(prevLocation);
-            IncomingNorm = Incoming.Normalize();
+            IncomingVector = new(prevLocation, Location);
+            IncomingNorm = IncomingVector.Normalize();
             IncomingNormInversed = IncomingNorm.Inverse();
 
-            Outgoing = nextLocation.Subtract(Location);
-            OutgoingNorm = Outgoing.Normalize();
+            OutgoingVector = new(Location, nextLocation);
+            OutgoingNorm = OutgoingVector.Normalize();
 
             var dotInX = IncomingNorm.DotProduct(Maths.XAxisV1);
             var dotOutX = OutgoingNorm.DotProduct(Maths.XAxisV1);
@@ -200,7 +227,7 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
             Angle = Maths.AngleBetween(IncomingNormInversed, OutgoingNorm);
             AbsoluteAngle = Math.Abs(Angle.Radians).Radians();
 
-            IsClockwise = Angle.Radians <0;
+            IsClockwise = Angle.Radians < 0;
             IsStraight = Angle.IsStraight;
         }
 

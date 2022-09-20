@@ -10,7 +10,7 @@ namespace AutomationObjectGenerator
 {
     using static AutomationObjectGenerator.Lambdas;
     [Generator]
-    public class Class1 : IIncrementalGenerator
+    public class AutoRootGenerator : IIncrementalGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext initContext)
         {

@@ -20,6 +20,7 @@ public class ConveyorSegment : IConveyorCanvasable, IPathPart, ISelectObject, IR
     }
 
     public Line? DefinitionLine { get; set; }
+
     private TwoPoints _StartEnd;
     public TwoPoints StartEnd 
     {
@@ -39,12 +40,27 @@ public class ConveyorSegment : IConveyorCanvasable, IPathPart, ISelectObject, IR
         });
     }
 
+    public void SetStart(Point point) => Start = point;
+    public void SetEnd(Point point) => End = point;
+
+    public Point Start
+    {
+        get => _StartEnd.P1;
+        set => StartEnd = (value, _StartEnd.P2);
+    }
+
+    public Point End
+    {
+        get => _StartEnd.P2;
+        set => StartEnd = (_StartEnd.P1, value);
+    }
+
     internal (ConveyorPoint? prev, ConveyorPoint? next) GetAdjacentPoints() => (
         ElementsNode.Previous?.Value as ConveyorPoint,
         ElementsNode.Next?.Value as ConveyorPoint
     );
 
-    internal ConveyorPoint? GetPreviousPoint() => ElementsNode.Next?.Value as ConveyorPoint;
+    internal ConveyorPoint? GetPreviousPoint() => ElementsNode.Previous?.Value as ConveyorPoint;
     internal ConveyorPoint? GetNextPoint() => ElementsNode.Next?.Value as ConveyorPoint;
 
     internal ConveyorPoint? TryGetPreviousPoint(int desiredLevel = 0)
@@ -133,6 +149,8 @@ public class ConveyorSegment : IConveyorCanvasable, IPathPart, ISelectObject, IR
     {
         ElementsNode.Next?.Value?.RebuildLanes();
     }
+
+    public void RebuildLanes2() { }
 
     public void UpdateLengths()
     {

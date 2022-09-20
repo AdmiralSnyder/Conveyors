@@ -379,9 +379,9 @@ public partial class MainWindow
         }
     }
 
-    private List<Ellipse> MoveCircles = new();
+    private readonly List<Ellipse> MoveCircles = new();
 
-    private List<Shape> MoveShapes = new();
+    private readonly List<Shape> MoveShapes = new();
 
     private bool _IsRunning;
     public bool IsRunning
