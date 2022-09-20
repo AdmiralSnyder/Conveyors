@@ -1,9 +1,8 @@
 ﻿using System.Windows.Controls;
 
-namespace WpfApp1;
+namespace UILib;
 
 public class CanvasInfo
 {
     public Canvas Canvas { get; set; }
-    public ConveyorShapeProvider ShapeProvider { get; set; }
 }

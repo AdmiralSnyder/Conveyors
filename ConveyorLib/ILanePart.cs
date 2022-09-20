@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace WpfApp1;
+namespace ConveyorLib;
 
 public interface ILanePart
 {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CoreLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -13,8 +14,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using UILib;
 
-namespace WpfApp1
+namespace ConveyorApp
 {
     /// <summary>
     /// Interaction logic for PropertyGrid.xaml

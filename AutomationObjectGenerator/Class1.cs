@@ -156,7 +156,7 @@ namespace AutomationObjectGenerator
                     );
             }
 
-            var automationClasses = initContext.SyntaxProvider.ForAttributeWithMetadataName("WpfApp1.Generate2Attribute`1",
+            var automationClasses = initContext.SyntaxProvider.ForAttributeWithMetadataName("ConveyorApp.Generate2Attribute`1",
                 (sn, ct) => true,
                 //!++ TODO do not let the node escape!
                 GetAutomationTypeInfo2);

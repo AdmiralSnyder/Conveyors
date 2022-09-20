@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Collections.Concurrent;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Shapes;
-using System.Windows.Threading;
 
-namespace WpfApp1;
+namespace ConveyorLib;
 
 public class Conveyor : ISelectObject, IRefreshable
 {
@@ -121,7 +113,7 @@ public class Conveyor : ISelectObject, IRefreshable
         }
     }
 
-    public static void AddToCanvas(Conveyor conveyor, CanvasInfo canvasInfo)
+    public static void AddToCanvas(Conveyor conveyor, ConveyorCanvasInfo canvasInfo)
     {
         conveyor.Canvas = canvasInfo.Canvas;
         foreach (var segment in conveyor.Segments)
@@ -138,7 +130,7 @@ public class Conveyor : ISelectObject, IRefreshable
     public Canvas? Canvas;
     public double Speed = 20;
 
-    internal void SpawnItems(ConveyorShapeProvider shapeProvider, bool? firstOnly = null)
+    public void SpawnItems(ConveyorShapeProvider shapeProvider, bool? firstOnly = null)
     {
         foreach (var i in LaneIndexes)
         {

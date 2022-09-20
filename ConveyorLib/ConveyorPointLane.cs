@@ -7,9 +7,9 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using WpfLib;
 
-namespace WpfApp1;
+namespace ConveyorLib;
 
-public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefreshable
+public class ConveyorPointLane : IConveyorCanvasable, ILanePart, ISelectObject, IRefreshable
 {
     public ConveyorPointLane(ConveyorPoint point)
     {
@@ -33,7 +33,7 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
     public ConveyorPoint Point { get; }
     public int Number { get; }
 
-    public void AddToCanvas(CanvasInfo canvasInfo)
+    public void AddToCanvas(ConveyorCanvasInfo canvasInfo)
     {
         Arc = canvasInfo.ShapeProvider.CreateConveyorPointPath(ArcGeometry, IsLeft);
         canvasInfo.Canvas.Children.Add(Arc);
@@ -54,22 +54,9 @@ public class ConveyorPointLane : ICanvasable, ILanePart, ISelectObject, IRefresh
 
     public ISelectObject? SelectionParent => Point;
 
-    struct MyStruct : IDisposable
-    {
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
+    // $.AddConveyor(new V2d[]{(170, 160), (180, 160), (180, 150), (190, 150), (190, 160), (200, 160)}, false, 2); 
     public void RebuildArc()
     {
-        using (MyStruct myStruct2 = new())
-        { 
-        }
-
-        using var myStruct = new MyStruct();
-
         if (Point.IsFirst || Point.IsLast) return;
 
         var prevEnd = ((ConveyorSegmentLane)ElementsNode.Previous.Value).EndPoint;

@@ -1,1 +1,1 @@
-WpfApp1
+ConveyorApp

@@ -4,7 +4,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using WpfLib;
-namespace WpfApp1;
+
+namespace ConveyorLib;
 
 public interface IElementsNode<T>
 {
@@ -21,7 +22,7 @@ public interface IAutomationOutByID
     string ID { get; }
 }
 
-public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNode<IPathPart>, IListNode<ConveyorPoint>, IRefreshable, IAutomationOutByID
+public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IElementsNode<IPathPart>, IListNode<ConveyorPoint>, IRefreshable, IAutomationOutByID
 {
     public string ID => $"{Conveyor.Number}.{Number}";
 
@@ -148,7 +149,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
 
     public ISelectObject? SelectionParent => Conveyor;
 
-    public void AddToCanvas(CanvasInfo canvasInfo)
+    public void AddToCanvas(ConveyorCanvasInfo canvasInfo)
     {
         PointCircle = canvasInfo.ShapeProvider.CreateConveyorPointEllipse(Location, IsFirst, IsLast, IsClockwise, IsStraight);
         PointCircle.Tag = this;
@@ -227,7 +228,7 @@ public class ConveyorPoint : ICanvasable, IPathPart, ISelectObject, IElementsNod
         }
     }
 
-    internal (ConveyorSegment? prev, ConveyorSegment? next) GetAdjacentSegments() => (
+    public (ConveyorSegment? prev, ConveyorSegment? next) GetAdjacentSegments() => (
         ElementsNode.Previous?.Value as ConveyorSegment,
         ElementsNode.Next?.Value as ConveyorSegment
     );

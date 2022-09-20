@@ -6,10 +6,10 @@ using System.Windows.Controls;
 using System.Windows.Shapes;
 using WpfLib;
 
-namespace WpfApp1;
+namespace ConveyorLib;
 
 [DebuggerDisplay($"{"SegLane"} ({{{nameof(ConveyorSegmentLane.DebugText)}}})")]
-public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectObject, IRefreshable
+public class ConveyorSegmentLane : IConveyorCanvasable, ILanePart, IDebugText, ISelectObject, IRefreshable
 {
     public string Text => $"Lane ({DebugText})";
     public ConveyorSegmentLane(int lane, ConveyorSegment segment)
@@ -124,7 +124,7 @@ public class ConveyorSegmentLane : ICanvasable, ILanePart, IDebugText, ISelectOb
 
     private void UpdateEndLength() => EndLength = BeginLength + Length;
 
-    public void AddToCanvas(CanvasInfo canvasInfo)
+    public void AddToCanvas(ConveyorCanvasInfo canvasInfo)
     {
         Line = canvasInfo.ShapeProvider.CreateConveyorSegmentLaneLine(StartEnd);
         Line.Tag = this;

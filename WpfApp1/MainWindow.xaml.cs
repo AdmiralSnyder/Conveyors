@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ConveyorLib;
+using CoreLib;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,9 +15,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using UILib;
 using WpfLib;
 
-namespace WpfApp1;
+namespace ConveyorApp;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
@@ -476,7 +479,7 @@ public partial class MainWindow
         //HAPPY
         //BIRTHDAY
         //RUBY
-        //"""");
+        //""");
 
     private void WriteString(string text) => WriteStrings(text.Split(Environment.NewLine));
 

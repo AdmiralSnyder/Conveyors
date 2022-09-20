@@ -1,4 +1,4 @@
-﻿namespace WpfApp1;
+﻿namespace CoreLib;
 
 public interface IDebugText
 {

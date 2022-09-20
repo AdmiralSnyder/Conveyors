@@ -50,7 +50,9 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\AutomationObjectGenerator\AutomationObjectGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\ConveyorLib\ConveyorLib.csproj" />
 		<ProjectReference Include="..\CoreLib\CoreLib.csproj" />
+		<ProjectReference Include="..\UILib\UILib.csproj" />
 		<ProjectReference Include="..\WpfLib\WpfLib.csproj" />
 	</ItemGroup>
 

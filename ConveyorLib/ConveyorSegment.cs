@@ -4,9 +4,9 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using WpfLib;
 
-namespace WpfApp1;
+namespace ConveyorLib;
 
-public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject, IRefreshable
+public class ConveyorSegment : IConveyorCanvasable, IPathPart, ISelectObject, IRefreshable
 {
     public string Text => $"Segment {Conveyor.Number}.{Number} ({StartEnd})";
 
@@ -95,7 +95,7 @@ public class ConveyorSegment : ICanvasable, IPathPart, ISelectObject, IRefreshab
 
     public ISelectObject? SelectionParent => Conveyor;
 
-    public void AddToCanvas(CanvasInfo canvasInfo)
+    public void AddToCanvas(ConveyorCanvasInfo canvasInfo)
     {
         DefinitionLine = canvasInfo.ShapeProvider.CreateConveyorSegmentLine(StartEnd);
         DefinitionLine.Tag = this;

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace WpfApp1;
+namespace UILib;
 
 public interface ISelectObject : ISelectable
 {

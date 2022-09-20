@@ -7,16 +7,21 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using WpfLib;
 
-namespace WpfApp1;
+namespace ConveyorLib;
 
-public class Item : ISelectObject, IRefreshable
+class ItemTextAdorner : TextAdorner<Item>
+{
+    public ItemTextAdorner(UIElement adornedElement) : base(adornedElement) { }
+}
+
+public class Item : ISelectObject, IRefreshable, ITextAdornable
 {
     public string DebugText => $"Item {Number}";
 
     public string Text => $"Item {Number}";
 
     [ThreadStatic]
-    public static int Num = 0;
+    private static int Num = 0;
 
     public int LaneNumber { get; }
     public Item(Conveyor conveyor, int lane, ConveyorShapeProvider shapeProvider)
@@ -27,7 +32,7 @@ public class Item : ISelectObject, IRefreshable
         Shape.Tag = this;
         Conveyor.Canvas.Children.Add(Shape);
         var layer = AdornerLayer.GetAdornerLayer(Shape);
-        layer.Add(new TextAdorner(Shape));
+        layer.Add(new ItemTextAdorner(Shape));
         AddAge(0);
         Number = Num++;
     }
@@ -94,6 +99,8 @@ public class Item : ISelectObject, IRefreshable
     public Point[] SelectionBoundsPoints { get; } = new Point[1];
 
     public ISelectObject? SelectionParent => null;
+
+    public string AdornmentText => Number.ToString();
 
     private void SetLocation(Point point)
     {
