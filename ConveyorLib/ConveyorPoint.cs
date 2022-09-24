@@ -59,14 +59,22 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
         prev?.SetEnd(Location);
         next?.SetStart(Location);
 
-        prevP?.PreparePoint();
-        nextP?.PreparePoint();
+        bool move = false;
 
-        prevP?.RebuildLanes();
+        if (!move)
+        {
+            prevP?.PreparePoint();
+            nextP?.PreparePoint();
+
+            prevP?.RebuildLanes2();
+        }
+
         
         RebuildLanes2();
-        
-        nextP?.RebuildLanes2();
+        if (!move)
+        {
+            nextP?.RebuildLanes2();
+        }
 
         //if (prev?.GetPreviousPoint() is { } )
         //{

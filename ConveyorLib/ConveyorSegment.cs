@@ -36,6 +36,7 @@ public class ConveyorSegment : IConveyorCanvasable, IPathPart, ISelectObject, IR
             {
                 Lanes[i]?.Rebuild();
             }
+
             ((ISelectObject)this).SetSelectionPoints(StartEnd.P1, StartEnd.P2);
         });
     }

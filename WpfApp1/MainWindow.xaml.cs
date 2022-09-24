@@ -12,6 +12,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -29,13 +30,23 @@ public partial class MainWindow
     {
         ShapeProvider = new() { SelectBehaviour = SelectShapeAction };
         this.DataContext = this;
+
         SelectionManager = new()
         {
             UpdateBoundingBox = ShowSelectionBoundingBox
         };
         InitializeComponent();
+
+
         AutoRoot = ConveyorAutomationObject.CreateAutomationObject(out var context);
         AutoRoot.Init((TheCanvas, ShapeProvider));
+
+        InputContext = new CanvasInputContext()
+        {
+            Canvas = TheCanvas,
+            NotesLabel = NotesLabel,
+            MainWindow = this,
+        };
 
         context.LogAction = s => textEditor2.Dispatcher.Invoke(() => textEditor2.AppendText(s + Environment.NewLine));
         ScriptRunner.InitializeScriptingEnvironment(AutoRoot, Dispatcher, RunB);
@@ -72,7 +83,7 @@ public partial class MainWindow
         {
             if (SelectionManager.HierarchicalSelection)
             {
-                SelectionManager.SelectedObject = selectObject.FindPredecessorInPath(oldSelectedObject);                
+                SelectionManager.SelectedObject = selectObject.FindPredecessorInPath(oldSelectedObject);
             }
             else
             {
@@ -106,173 +117,536 @@ public partial class MainWindow
         TheCanvas.Children.Add(SelectionRect);
     }
 
-    private void AddConveyorB_Click(object sender, RoutedEventArgs e) => InputState = InputState.SelectFirstPoint;
+    private Inputter CurrentInputter;
 
-    private InputState _InputState;
-    private InputState InputState
+    public abstract class Inputter
     {
-        get => _InputState;
-        set
+        public virtual void HandleMouseDown(object sender, MouseButtonEventArgs e) { }
+
+        public virtual void HandleMouseMove(object sender, MouseEventArgs e) { }
+
+        public abstract void Start();
+    }
+
+
+    public abstract class Inputter<TInputter, TInputState, TContext> : Inputter
+        where TInputter : Inputter<TInputter, TInputState, TContext>, new()
+        where TInputState : struct, Enum
+        where TContext : InputContextBase
+    {
+        public TContext Context { get; private set; }
+
+        public static TInputter StartInput(TContext context)
         {
-            _InputState = value;
-            switch (_InputState)
+            return new() { Context = context };
+        }
+
+        private TInputState _InputState;
+        protected TInputState InputState
+        {
+            get => _InputState;
+            set
             {
-                case InputState.SelectFirstPoint:
-                    TheCanvas.Cursor = Cursors.Cross;
-                    Mouse.Capture(TheCanvas);
-                    NotesLabel.Text = "Please select the starting point.";
-                    break;
-                case InputState.SelectLastPoint:
-                    TheCanvas.Cursor = Cursors.Cross;
-                    NotesLabel.Text = "Please select the ending point.";
-                    break;
-                case InputState.None:
-                    TheCanvas.Cursor = Cursors.Arrow;
-                    Mouse.Capture(null);
-                    NotesLabel.Text = "Click around. Have fun!";
-                    break;
+                if (!value.Equals(_InputState))
+                {
+                    var oldValue = _InputState;
+                    _InputState = value;
+                    InputStateChanged(oldValue, value);
+                }
+            }
+        }
+
+        protected virtual void InputStateChanged(TInputState oldValue, TInputState newValue)
+        {
+            InputStateChanged(newValue);
+        }
+
+        protected virtual void InputStateChanged(TInputState newValue)
+        { }
+    }
+
+    public class MoveInputter : Inputter<MoveInputter, MoveInputter.InputStates, CanvasInputContext>
+    {
+        public enum InputStates
+        {
+            None,
+            Move,
+        }
+
+        public override void Start() => InputState = InputStates.Move;
+
+        private readonly List<Ellipse> MoveCircles = new();
+
+        private readonly List<Shape> MoveShapes = new();
+
+        protected override void InputStateChanged(InputStates newValue)
+        {
+            base.InputStateChanged(newValue);
+            if (newValue == InputStates.Move)
+            {
+                foreach (var conveyor in Context.MainWindow.AutoRoot.Conveyors)
+                {
+                    foreach (var point in conveyor.Points)
+                    {
+                        var circle = Context.MainWindow.ShapeProvider.CreatePointMoveCircle(point.Location, MoveCircleClicked);
+                        circle.Tag = point;
+                        Context.Canvas.Children.Add(circle);
+                        MoveCircles.Add(circle);
+                    }
+                }
+            }
+        }
+
+        private void MoveCircleClicked(Shape shape)
+        {
+            if (shape is Ellipse moveCircle && moveCircle.Tag is ConveyorPoint point)
+            {
+                const double size = 5d;
+                var newCircle = new Ellipse()
+                {
+                    Width = size,
+                    Height = size,
+                    Fill = Brushes.Yellow,
+                    Tag = point,
+                };
+                newCircle.SetCenterLocation(point.Location);
+                Context.Canvas.Children.Add(newCircle);
+
+                MoveShapes.Add(newCircle);
+                var (prev, last) = point.GetAdjacentSegments();
+
+                if (prev is { })
+                {
+                    var prevLine = new Line()
+                    {
+                        X1 = prev.StartEnd.P1.X,
+                        Y1 = prev.StartEnd.P1.Y,
+                        X2 = prev.StartEnd.P2.X,
+                        Y2 = prev.StartEnd.P2.Y,
+                        Stroke = Brushes.Yellow,
+                        Tag = point,
+                    };
+                    Context.Canvas.Children.Add(prevLine);
+                    MoveShapes.Add(prevLine);
+                }
+                if (last is { })
+                {
+                    var nextLine = new Line()
+                    {
+                        X1 = last.StartEnd.P2.X,
+                        Y1 = last.StartEnd.P2.Y,
+                        X2 = last.StartEnd.P1.X,
+                        Y2 = last.StartEnd.P1.Y,
+                        Stroke = Brushes.Yellow,
+                        Tag = point,
+                    };
+                    Context.Canvas.Children.Add(nextLine);
+                    MoveShapes.Add(nextLine);
+                }
+            }
+
+            foreach (var circle in MoveCircles)
+            {
+                Context.Canvas.Children.Remove(circle);
+            }
+            MoveCircles.Clear();
+
+            InputState = InputStates.Move;
+        }
+
+
+        public override void HandleMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            base.HandleMouseDown(sender, e);
+
+            if (MoveShapes.FirstOrDefault() is { Tag: ConveyorPoint point })
+            {
+                Context.MainWindow.AutoRoot.MovePoint(point, Context.SnapPoint(Context.GetCanvasPoint(e)));
+            }
+
+            foreach (var shape in MoveShapes)
+            {
+                Context.Canvas.Children.Remove(shape);
+            }
+            MoveShapes.Clear();
+        }
+
+        public override void HandleMouseMove(object sender, MouseEventArgs e)
+        {
+            base.HandleMouseMove(sender, e);
+
+            if (MoveShapes.Any())
+            {
+                var point = Context.GetCanvasPoint(e);
+
+                point = Context.SnapPoint(point);
+                foreach (var shape in MoveShapes)
+                {
+                    if (shape is Ellipse ellipse)
+                    {
+                        ellipse.SetCenterLocation(point);
+                    }
+                    if (shape is Line line)
+                    {
+                        Context.SetLineEnd(line, point);
+                    }
+                }
             }
         }
     }
 
-    private readonly Stack<Line> TempLines = new();
-    private Point? PanPoint;
-    private Point PanValue = new();
-    
+    public class ConveyorInputter : Inputter<ConveyorInputter, ConveyorInputter.InputStates, CanvasInputContext>
+    {
+        public enum InputStates
+        {
+            None,
+            SelectFirstPoint,
+            SelectLastPoint,
+        }
+        public override void Start() => InputState = InputStates.SelectFirstPoint;
+
+        protected override void InputStateChanged(InputStates newValue)
+        {
+            base.InputStateChanged(newValue);
+
+            switch (newValue)
+            {
+                case InputStates.SelectFirstPoint:
+                    Context.SetCursor(Cursors.Cross);
+                    Context.UserNotes = "Please select the starting point.";
+                    Context.CaptureMouse();
+                    break;
+                case InputStates.SelectLastPoint:
+                    Context.SetCursor(Cursors.Cross);
+                    Context.UserNotes = "Please select the ending point.";
+                    break;
+            }
+        }
+
+        public override void HandleMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            base.HandleMouseDown(sender, e);
+
+            var modifier = Keyboard.Modifiers;
+            var isShiftPressed = modifier.HasFlag(ModifierKeys.Shift);
+            switch (InputState)
+            {
+                case InputStates.SelectFirstPoint:
+                    switch (AddPoint())
+                    {
+                        case ActionResults.Continue:
+                        case ActionResults.Finish:
+                            InputState = InputStates.SelectLastPoint;
+                            break;
+                        case ActionResults.Abort:
+                        case ActionResults.AbortAll:
+                            AbortAll();
+                            break;
+                    }
+                    break;
+                case InputStates.SelectLastPoint:
+                    switch (AddPoint())
+                    {
+                        case ActionResults.Continue:
+                            break;
+                        case ActionResults.Finish:
+                            Finish();
+                            break;
+                        case ActionResults.Abort:
+                            Abort(true);
+                            break;
+                        case ActionResults.AbortAll:
+                            AbortAll();
+                            break;
+                    }
+                    break;
+            }
+
+            void Abort(bool abortAllIfEmpty = false)
+            {
+                if (TempLines.TryPop(out var last))
+                {
+                    Context.Canvas.Children.Remove(last);
+                }
+                if (TempLines.TryPeek(out last))
+                {
+                    Context.SetLineEnd(last, Context.SnapPoint(Context.GetCanvasPoint(e)));
+                }
+                else
+                {
+                    if (abortAllIfEmpty)
+                    {
+                        InputState = InputStates.None;
+                    }
+                }
+            }
+
+            void AbortAll()
+            {
+                foreach (var line in TempLines)
+                {
+                    Context.Canvas.Children.Remove(line);
+                }
+                TempLines.Clear();
+                InputState = InputStates.None;
+            }
+
+            ActionResults AddPoint()
+            {
+                if (e.ChangedButton == MouseButton.Right) return isShiftPressed
+                    ? ActionResults.AbortAll
+                    : ActionResults.Abort;
+
+                var point = Context.SnapPoint(Context.GetCanvasPoint(e));
+                TempLines.Push(Context.AddLine(point, point)); // das ist geschummelt, damit ich nicht umständlich Zustände speichern muss
+
+                return isShiftPressed ? ActionResults.Continue : ActionResults.Finish;
+            }
+
+            void Finish()
+            {
+                Point lastPoint = (double.NaN, double.NaN);
+                List<Point> points = new();
+                foreach (var line in TempLines.Reverse())
+                {
+                    Context.Canvas.Children.Remove(line);
+                    line.Stroke = Brushes.Red;
+                    if (line.X1 != line.X2 || line.Y1 != line.Y2)
+                    {
+                        AddPoint((line.X1, line.Y1));
+                        AddPoint((line.X2, line.Y2));
+                    }
+                }
+
+                void AddPoint(Point p)
+                {
+                    if (p != lastPoint)
+                    {
+                        points.Add(p);
+                    }
+                    lastPoint = p;
+                }
+
+                // TODO reverse?
+
+
+                TempLines.Clear();
+
+                InputState = InputStates.None;
+
+                Context.MainWindow.AutoRoot.AddConveyor(points, Context.MainWindow.IsRunning, int.TryParse(Context.MainWindow.LanesCountTB.Text, out var lanesCnt) ? Math.Max(lanesCnt, 1) : 1);
+            }
+        }
+
+        private readonly Stack<Line> TempLines = new();
+
+        public override void HandleMouseMove(object sender, MouseEventArgs e)
+        {
+            base.HandleMouseMove(sender, e);
+
+            if (InputState != InputStates.None)
+            {
+                if (TempLines.TryPeek(out var tl))
+                {
+                    var point = Context.GetCanvasPoint(e);
+
+                    Context.SetLineEnd(tl, Context.SnapPoint(point));
+                }
+            }
+        }
+    }
+
+    public class CanvasInputContext : InputContextBase
+    {
+        public Canvas Canvas { get; set; }
+        public TextBlock NotesLabel { get; set; }
+
+        public override void SetCursor(Cursor cursor)
+        {
+            Canvas.Cursor = cursor;
+        }
+
+        public override void CaptureMouse()
+        {
+            if (Canvas is { })
+            {
+                Mouse.Capture(Canvas);
+            }
+        }
+        protected override void UserNotesChanged()
+        {
+            base.UserNotesChanged();
+            if (NotesLabel is { })
+            {
+                NotesLabel.Text = UserNotes;
+            }
+        }
+
+        protected override bool HandleMouseDownPanning(MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle && PanPoint is null)
+            {
+                PanPoint = GetWindowPoint(e);
+                PanValue = new(MainWindow.CanvasTranslateTransform.X, MainWindow.CanvasTranslateTransform.Y);
+                return true;
+            }
+            return false;
+        }
+
+        protected override bool HandleMouseMovePanning(MouseEventArgs e)
+        {
+            if (e.MiddleButton == MouseButtonState.Pressed && PanPoint.HasValue)
+            {
+                var diff = GetWindowPoint(e) - PanPoint.Value;
+
+                MainWindow.CanvasTranslateTransform.X = PanValue.X + diff.X;
+                MainWindow.CanvasTranslateTransform.Y = PanValue.Y + diff.Y;
+                return true;
+            }
+            return false;
+        }
+
+        private Point? PanPoint;
+        private Point PanValue = new();
+        private Point GetWindowPoint(MouseEventArgs e) => e.GetPosition(MainWindow);
+        public Point GetCanvasPoint(MouseEventArgs e) => e.GetPosition(Canvas);
+        public int SnapGridWidth { get; set; }
+        public bool SnapToGrid { get; set; }
+
+        public Point SnapPoint(Point point) => SnapPoint(point, SnapToGrid && !Keyboard.IsKeyDown(Key.LeftAlt));
+        public Point SnapPoint(Point point, bool snap) => snap ? SnapPoint(point, snap, SnapGridWidth) : point;
+        public Point SnapPoint(Point point, bool snap, int snapGridWidth) => snap ? ((int)((point.X + snapGridWidth / 2) / snapGridWidth) * snapGridWidth, (int)((point.Y + snapGridWidth / 2) / snapGridWidth) * snapGridWidth) : point;
+
+        public void SetLineEnd(Line line, Point point)
+        {
+            line.X2 = point.X;
+            line.Y2 = point.Y;
+        }
+
+        public Line AddLine(Point from, Point to)
+        {
+            var line = MainWindow.ShapeProvider.CreateConveyorPositioningLine(((Point)from, (Point)to));
+            Canvas.Children.Add(line);
+            return line;
+        }
+
+        protected override bool HandleMouseUpPanning(MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle)
+            {
+                PanPoint = null;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private CanvasInputContext InputContext;
+
+    public abstract class InputContextBase
+    {
+        public MainWindow MainWindow { get; set; }
+
+        public abstract void SetCursor(Cursor cursor);
+
+        private string? _UserNotes;
+        public string UserNotes
+        {
+            get => _UserNotes;
+            set
+            {
+                _UserNotes = value;
+                UserNotesChanged();
+            }
+        }
+
+        public virtual void CaptureMouse() { }
+
+        protected virtual void UserNotesChanged() { }
+
+        internal void HandleMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (HandleMouseDownPanning(e)) return;
+
+            if (MainWindow.CurrentInputter is { } ci)
+            {
+                ci.HandleMouseDown(sender, e);
+            }
+        }
+
+        protected abstract bool HandleMouseDownPanning(MouseButtonEventArgs e);
+
+        protected abstract bool HandleMouseMovePanning(MouseEventArgs e);
+
+        internal void HandleMouseMove(object sender, MouseEventArgs e)
+        {
+            if (HandleMouseMovePanning(e)) return;
+
+            if (MainWindow.CurrentInputter is { } ci)
+            {
+                ci.HandleMouseMove(sender, e);
+            }
+        }
+
+        internal void HandleMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (HandleMouseUpPanning(e)) return;
+        }
+
+        protected abstract bool HandleMouseUpPanning(MouseButtonEventArgs e);
+    }
+
+    public class PointInputter : Inputter<PointInputter, PointInputter.InputStates, CanvasInputContext>
+    {
+        public enum InputStates
+        {
+            None,
+            SelectPoint,
+        }
+
+        public override void Start() => InputState = InputStates.SelectPoint;
+    }
+
+    private void AddConveyorB_Click(object sender, RoutedEventArgs e)
+    {
+        (CurrentInputter = ConveyorInputter.StartInput(this.InputContext)).Start();
+    }
+
+    private void AddPointB_Click(object sender, RoutedEventArgs e)
+    {
+        (CurrentInputter = PointInputter.StartInput(this.InputContext)).Start();
+    }
+
+    //private InputState _InputState;
+    //private InputState InputState
+    //{
+    //    get => _InputState;
+    //    set
+    //    {
+    //        _InputState = value;
+    //        switch (_InputState)
+    //        {
+    //            case InputState.SelectFirstPoint:
+    //                TheCanvas.Cursor = Cursors.Cross;
+    //                Mouse.Capture(TheCanvas);
+    //                NotesLabel.Text = "Please select the starting point.";
+    //                break;
+    //            case InputState.SelectLastPoint:
+    //                TheCanvas.Cursor = Cursors.Cross;
+    //                NotesLabel.Text = "Please select the ending point.";
+    //                break;
+    //            case InputState.None:
+    //                TheCanvas.Cursor = Cursors.Arrow;
+    //                Mouse.Capture(null);
+    //                NotesLabel.Text = "Click around. Have fun!";
+    //                break;
+    //        }
+    //    }
+    //}
+
     private void TheCanvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.ChangedButton == MouseButton.Middle && PanPoint is null)
-        {
-            PanPoint = GetWindowPoint(e);
-            PanValue = new(CanvasTranslateTransform.X, CanvasTranslateTransform.Y);
-            return;
-        }
-
-        var modifier = Keyboard.Modifiers;
-        var isShiftPressed = modifier.HasFlag(ModifierKeys.Shift);
-        switch (InputState)
-        {
-            case InputState.None: return;
-            case InputState.SelectFirstPoint:
-                switch (AddPoint())
-                {
-                    case ActionResults.Continue:
-                    case ActionResults.Finish:
-                        InputState = InputState.SelectLastPoint;
-                        break;
-                    case ActionResults.Abort:
-                    case ActionResults.AbortAll:
-                        AbortAll();
-                        break;
-                }
-                break;
-            case InputState.SelectLastPoint:
-                switch (AddPoint())
-                {
-                    case ActionResults.Continue:
-                        break;
-                    case ActionResults.Finish:
-                        Finish();
-                        break;
-                    case ActionResults.Abort:
-                        Abort(true);
-                        break;
-                    case ActionResults.AbortAll:
-                        AbortAll();
-                        break;
-                }
-                break;
-            case InputState.MovePoint:
-                {
-                    if (MoveShapes.FirstOrDefault() is { Tag: ConveyorPoint point })
-                    {
-                        AutoRoot.MovePoint(point, SnapPoint(GetCanvasPoint(e)));
-                    }
-                    InputState = InputState.None;
-
-                    foreach (var shape in MoveShapes)
-                    {
-                        TheCanvas.Children.Remove(shape);
-                    }
-                    MoveShapes.Clear();
-                    break;
-                }
-        }
-
-        void Abort(bool abortAllIfEmpty = false)
-        {
-            if (TempLines.TryPop(out var last))
-            {
-                TheCanvas.Children.Remove(last);
-            }
-            if (TempLines.TryPeek(out last))
-            {
-                SetLineEnd(last, SnapPoint(GetCanvasPoint(e)));
-            }
-            else
-            {
-                if (abortAllIfEmpty)
-                {
-                    InputState = InputState.None;
-                }
-            }
-        }
-
-        void AbortAll()
-        {
-            foreach (var line in TempLines)
-            {
-                TheCanvas.Children.Remove(line);
-            }
-            TempLines.Clear();
-            InputState = InputState.None;
-        }
-
-        ActionResults AddPoint()
-        {
-            if (e.ChangedButton == MouseButton.Right) return isShiftPressed
-                ? ActionResults.AbortAll
-                : ActionResults.Abort;
-
-            var point = SnapPoint(GetCanvasPoint(e));
-            TempLines.Push(AddLine(point, point)); // das ist geschummelt, damit ich nicht umständlich Zustände speichern muss
-
-            return isShiftPressed ? ActionResults.Continue : ActionResults.Finish;
-        }
-
-        void Finish()
-        {
-            Point lastPoint = (double.NaN, double.NaN);
-            List<Point> points = new();
-            foreach (var line in TempLines.Reverse())
-            {
-                TheCanvas.Children.Remove(line);
-                line.Stroke = Brushes.Red;
-                if (line.X1 != line.X2 || line.Y1 != line.Y2)
-                {
-                    AddPoint((line.X1, line.Y1));
-                    AddPoint((line.X2, line.Y2));
-                }
-            }
-
-            void AddPoint(Point p)
-            {
-                if (p != lastPoint)
-                {
-                    points.Add(p);
-                }
-                lastPoint = p;
-            }
-
-            // TODO reverse?
-
-
-            TempLines.Clear();
-
-            InputState = InputState.None;
-
-            AutoRoot.AddConveyor(points, IsRunning, int.TryParse(LanesCountTB.Text, out var lanesCnt) ? Math.Max(lanesCnt, 1) : 1);
-        }
+        InputContext.HandleMouseDown(sender, e);
     }
 
     //private void OnPropertyChanged(string propertyName)
@@ -285,65 +659,12 @@ public partial class MainWindow
 
 
     private ConveyorShapeProvider ShapeProvider;
-    public Line AddLine(Point from, Point to)
-    {
-        var line = ShapeProvider.CreateConveyorPositioningLine(((Point)from, (Point)to));
-        TheCanvas.Children.Add(line);
-        return line;
-    }
-
-    private void SetLineEnd(Line line, Point point)
-    {
-        line.X2 = point.X;
-        line.Y2 = point.Y;
-    }
-
-    private Point GetWindowPoint(MouseEventArgs e) => e.GetPosition(this);
-    private Point GetCanvasPoint(MouseEventArgs e) => e.GetPosition(TheCanvas);
-
-    public bool SnapToGrid { get; set; } = true;
 
     private void TheCanvas_MouseMove(object sender, MouseEventArgs e)
     {
-        if (e.MiddleButton == MouseButtonState.Pressed && PanPoint.HasValue)
-        {
-            var diff = GetWindowPoint(e) - PanPoint.Value;
-
-            CanvasTranslateTransform.X = PanValue.X + diff.X;
-            CanvasTranslateTransform.Y = PanValue.Y + diff.Y;
-        }
-
-        if (InputState == InputState.MovePoint && MoveShapes.Any())
-        {
-            var point = GetCanvasPoint(e);
-
-            point = SnapPoint(point);
-            foreach (var shape in MoveShapes)
-            {
-                if (shape is Ellipse ellipse)
-                {
-                    ellipse.SetCenterLocation(point);
-                }
-                if (shape is Line line)
-                {
-                    SetLineEnd(line, point);
-                }
-            }
-        }
-        else if (InputState != InputState.None)
-        {
-            if (TempLines.TryPeek(out var tl))
-            {
-                var point = GetCanvasPoint(e);
-
-                SetLineEnd(tl, SnapPoint(point));
-            }
-        }
+        InputContext.HandleMouseMove(sender, e);
     }
-
-    private Point SnapPoint(Point point) => SnapPoint(point, SnapToGrid && !Keyboard.IsKeyDown(Key.LeftAlt));
-    private Point SnapPoint(Point point, bool snap) => snap ? SnapPoint(point, snap, SnapGridWidth) : point;
-    private Point SnapPoint(Point point, bool snap, int snapGridWidth) => snap ? ((int)((point.X + snapGridWidth / 2) / snapGridWidth) * snapGridWidth, (int)((point.Y + snapGridWidth / 2) / snapGridWidth) * snapGridWidth) : point;
+    
 
     // TODO put the zoom functionality into a behaviour
     private void TheCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -365,10 +686,8 @@ public partial class MainWindow
 
     private void TheCanvas_MouseUp(object sender, MouseButtonEventArgs e)
     {
-        if (e.ChangedButton == MouseButton.Middle)
-        {
-            PanPoint = null;
-        }
+
+        InputContext.HandleMouseUp(sender, e);
     }
 
     private void PutItemB_Click(object sender, RoutedEventArgs e)
@@ -378,10 +697,6 @@ public partial class MainWindow
             conveyor.SpawnItems(ShapeProvider, FirstOnlyCB.IsChecked);
         }
     }
-
-    private readonly List<Ellipse> MoveCircles = new();
-
-    private readonly List<Shape> MoveShapes = new();
 
     private bool _IsRunning;
     public bool IsRunning
@@ -397,75 +712,10 @@ public partial class MainWindow
     private void MovePointB_Click(object sender, RoutedEventArgs e)
     {
         RunningCB.IsChecked = false;
-
-        foreach (var conveyor in AutoRoot.Conveyors)
-        {
-            foreach (var point in conveyor.Points)
-            {
-                var circle = ShapeProvider.CreatePointMoveCircle(point.Location, MoveCircleClicked);
-                circle.Tag = point;
-                TheCanvas.Children.Add(circle);
-                MoveCircles.Add(circle);
-            }
-        }
+        (CurrentInputter = MoveInputter.StartInput(this.InputContext)).Start();
     }
 
-    private void MoveCircleClicked(Shape shape)
-    {
-        if (shape is Ellipse moveCircle && moveCircle.Tag is ConveyorPoint point)
-        {
-            const double size = 5d;
-            var newCircle = new Ellipse()
-            {
-                Width = size,
-                Height = size,
-                Fill = Brushes.Yellow,
-                Tag = point,
-            };
-            newCircle.SetCenterLocation(point.Location);
-            TheCanvas.Children.Add(newCircle);
-
-            MoveShapes.Add(newCircle);
-            var (prev, last) = point.GetAdjacentSegments();
-
-            if (prev is { })
-            {
-                var prevLine = new Line()
-                {
-                    X1 = prev.StartEnd.P1.X,
-                    Y1 = prev.StartEnd.P1.Y,
-                    X2 = prev.StartEnd.P2.X,
-                    Y2 = prev.StartEnd.P2.Y,
-                    Stroke = Brushes.Yellow,
-                    Tag = point,
-                };
-                TheCanvas.Children.Add(prevLine);
-                MoveShapes.Add(prevLine);
-            }
-            if (last is { })
-            {
-                var nextLine = new Line()
-                {
-                    X1 = last.StartEnd.P2.X,
-                    Y1 = last.StartEnd.P2.Y,
-                    X2 = last.StartEnd.P1.X,
-                    Y2 = last.StartEnd.P1.Y,
-                    Stroke = Brushes.Yellow,
-                    Tag = point,
-                };
-                TheCanvas.Children.Add(nextLine);
-                MoveShapes.Add(nextLine);
-            }
-        }
-
-        foreach (var circle in MoveCircles)
-        {
-            TheCanvas.Children.Remove(circle);
-        }
-        MoveCircles.Clear();
-
-        InputState = InputState.MovePoint;
-    }
+    
 
     private void SelectB_Click(object sender, RoutedEventArgs e) => SelectionManager.ToggleSelectMode();
 
@@ -475,11 +725,11 @@ public partial class MainWindow
     private ScriptRunner ScriptRunner = new();
 
     private void HappyBirthdayRubyB_Click(object sender, RoutedEventArgs e) => WriteString("R");
-        //WriteString("""
-        //HAPPY
-        //BIRTHDAY
-        //RUBY
-        //""");
+    //WriteString("""
+    //HAPPY
+    //BIRTHDAY
+    //RUBY
+    //""");
 
     private void WriteString(string text) => WriteStrings(text.Split(Environment.NewLine));
 
@@ -496,7 +746,7 @@ public partial class MainWindow
             {
                 foreach (var strokecoords in charCoords)
                 {
-                    AutoRoot.AddConveyor(strokecoords.Scale(scaling + yOffset).Add((xOffset * 60 * (1+ (yOffset * 0.2))  + 40, yOffset * 90 + 40)), true, yOffset + 2);
+                    AutoRoot.AddConveyor(strokecoords.Scale(scaling + yOffset).Add((xOffset * 60 * (1 + (yOffset * 0.2)) + 40, yOffset * 90 + 40)), true, yOffset + 2);
                 }
                 xOffset++;
             }
@@ -504,14 +754,6 @@ public partial class MainWindow
             yOffset++;
         }
     }
-}
-
-public enum InputState
-{
-    None,
-    SelectFirstPoint,
-    SelectLastPoint,
-    MovePoint,
 }
 
 public enum ActionResults

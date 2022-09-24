@@ -9,7 +9,8 @@ using WpfLib;
 
 namespace ConveyorLib;
 
-public class ConveyorPointLane : IConveyorCanvasable, ILanePart, ISelectObject, IRefreshable
+[DebuggerDisplay($"{"PointLane"} ({{{nameof(ConveyorPointLane.DebugText)}}})")]
+public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISelectObject, IRefreshable
 {
     public ConveyorPointLane(ConveyorPoint point)
     {
@@ -21,7 +22,9 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, ISelectObject, 
     public double BeginLength { get; set; }
     public double Length { get; private set; }
     public double EndLength => BeginLength + Length;
-    public string Text => $"PointLane {Point.Conveyor.Number}.{Point.Number}.{Lane} ({Length:2})";
+
+    public string DebugText => $"{Point.Conveyor.Number}.{Point.Number}.{Lane} ({Length:2})";
+    public string Text => $"PointLane {DebugText}";
     public Path? Arc { get; private set; }
     public int Lane { get; internal set; }
 
@@ -48,7 +51,6 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, ISelectObject, 
 
     private TwoPoints ArcStartEnd { get; set; }
     private PathGeometry ArcGeometry { get; set; } = new();
-    private double ArcAngleRad { get; set; }
 
     public Point[] SelectionBoundsPoints { get; } = new Point[2];
 
@@ -80,8 +82,11 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, ISelectObject, 
         }
         else if (Point.LaneStrategy == PointLaneStrategies.Curve)
         {
-            Vector oStart = Point.Location.Subtract(prevEnd);
+            Vector oStart = new(prevEnd, Point.Location);
             var radius = oStart.Length();
+
+            //var radius = ConveyorSegment.LineDistance / 2;
+
             //Vector oEnd = nextStart.Subtract(Point.Location);
             //var oStartNorm = oStart.Normalize(oStartLen);
             //var oEndNorm = oEnd.Normalize();
@@ -159,7 +164,16 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, ISelectObject, 
                     var end = P2;
                     var CrossStart = start - cross;
                     var CrossEnd = end - cross;
-                    var ActStart = (start - CrossStart) - CrossEnd;
+                    bool x = true;
+                    Point ActStart = default;
+                    if (x)
+                    {
+                        ActStart = (start - CrossStart) - CrossEnd;
+                    }
+                    else
+                    {
+                        ActStart = CrossEnd;
+                    }
                     var ActEnd = (end - CrossStart) - CrossEnd;
 
                     ArcGeometry.Figures.Add(new()
@@ -178,7 +192,6 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, ISelectObject, 
                         nextSegLane.StartPoint = ActEnd;
                     }
                 }
-                //}
             }
             else
             {
