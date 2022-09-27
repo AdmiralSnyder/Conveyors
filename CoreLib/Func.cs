@@ -15,6 +15,13 @@ public class EventArgs<T> : EventArgs
 
 public static class Func
 {
+
+    public static T Modify<T>(this T obj, Action<T> modifyAction)
+    {
+        modifyAction(obj);
+        return obj;
+    }
+
     public static void Setter<T>(ref T backingField, T value, Action<T> onChangeAction)
     {
         if (!object.Equals(backingField, value))

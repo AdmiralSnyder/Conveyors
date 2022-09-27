@@ -60,7 +60,7 @@
                       IsChecked="{Binding SelectionManager.SelectMode}" />
             <TextBox Name="LanesCountTB" Text="2" ToolTip="Lanes Count" />
             <TextBox Name="GridWidth" Width="30"
-                     Text="{Binding Path=SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}"
+                     Text="{Binding Path=InputContext.SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}"
                      ToolTip="Grid Width" />
             <Button Name="HappyBirthdayRubyB" Content="Happy Birthday Ruby" Click="HappyBirthdayRubyB_Click" />
         </StackPanel>

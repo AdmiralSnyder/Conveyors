@@ -6,24 +6,26 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Shapes;
 
-namespace WpfLib
+namespace WpfLib;
+
+public class ShapeProvider
 {
-    public class ShapeProvider
+    public static Action<Shape> SelectBehaviour { get; private set; }
+    public void RegisterSelectBehaviour(Action<Shape> selectBehaviour) => SelectBehaviour = selectBehaviour;
+
+    protected Line CreateLine(TwoPoints points) => new Line()
+        .SetLocation(points)
+        .WithSelectBehaviour();
+}
+
+public static class ShapeProviderFunc
+{
+    public static T WithSelectBehaviour<T>(this T shape) where T : Shape
     {
-        public Action<Shape> SelectBehaviour { get; set; }
-
-        protected Line CreateLine(TwoPoints points)
+        if (ShapeProvider.SelectBehaviour is { } sb)
         {
-            var line = new Line();
-            line.SetLocation(points);
-            
-            return WithSelectBehaviour(line);
+            shape.ApplyMouseBehaviour(sb);
         }
-
-        protected T WithSelectBehaviour<T>(T shape) where T : Shape
-        {
-            shape.ApplyMouseBehaviour(SelectBehaviour);
-            return shape;
-        }
+        return shape;
     }
 }

@@ -14,17 +14,20 @@ namespace ConveyorLib;
 
 public class ConveyorShapeProvider : ShapeProvider
 {
-    public Shape CreatePoint(Point point)
+    public Ellipse CreateTempPoint(Point point) => new Ellipse()
     {
-        var result = new Ellipse()
-        {
-            Width = 3,
-            Height = 3,
-            Fill = Brushes.Magenta,
-        };
-        result.SetCenterLocation(point);
-        return WithSelectBehaviour(result);
-    }
+        Width = 3,
+        Height = 3,
+        Fill = Brushes.Magenta,
+    }.SetCenterLocation(point);
+
+    public Shape CreatePoint(Point point)=> new Ellipse()
+    {
+        Width = 3,
+        Height = 3,
+        Fill = Brushes.Magenta,
+    }.SetCenterLocation(point).WithSelectBehaviour();
+    
 
     public Line CreateConveyorPositioningLine(TwoPoints points)
     {
@@ -50,40 +53,26 @@ public class ConveyorShapeProvider : ShapeProvider
         return line;
     }
 
-    public Ellipse CreateConveyorPointEllipse(Point point, bool isFirst, bool isLast, bool isClockwise, bool isStraight)
+
+    public Ellipse CreateConveyorPointEllipse(Point point, bool isFirst, bool isLast, bool isClockwise, bool isStraight, double size = 4d) => new Ellipse()
     {
-        const double Size = 4d;
-        var result = new Ellipse()
-        {
-            Width = Size,
-            Height = Size,
-            Fill
-            = isLast ? Brushes.Red
-            : isFirst ? Brushes.Cyan
-            : isClockwise ? Brushes.Purple
-            : isStraight ? Brushes.Peru
-            : Brushes.Blue,
-        };
-        result.SetCenterLocation(point);
-        return WithSelectBehaviour(result);
-    }
+        Width = size,
+        Height = size,
+        Fill
+        = isLast ? Brushes.Red
+        : isFirst ? Brushes.Cyan
+        : isClockwise ? Brushes.Purple
+        : isStraight ? Brushes.Peru
+        : Brushes.Blue,
+    }.SetCenterLocation(point).WithSelectBehaviour();
 
-    public Path CreateConveyorPointPath(PathGeometry geometry, bool isLeft)
+
+    public Path CreateConveyorPointPath(PathGeometry geometry, bool isLeft) => new Path()
     {
-        Path arc = new()
-        {
-            Data = geometry,
-            Stroke = isLeft ? Brushes.Plum : Brushes.Tomato,
-        };
+        Data = geometry,
+        Stroke = isLeft ? Brushes.Plum : Brushes.Tomato,
+    }.WithSelectBehaviour();
 
-
-        return WithSelectBehaviour(arc);
-    }
-
-    public Line CreateConveyorPointLine()
-    {
-        return null;
-    }
 
     public Ellipse CreatePointMoveCircle(Point location, Action<Shape> leftClickAction)
     {
@@ -106,9 +95,4 @@ public class ConveyorShapeProvider : ShapeProvider
     private const double ItemSize = 3;
 
     public Ellipse CreateConveyorItemEllipse() => new() { Width = ItemSize, Height = ItemSize, Fill = Brushes.Blue };
-
-    //private static Result_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-    //{
-    //    CursorChanger
-    //}
 }

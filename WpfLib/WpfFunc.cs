@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CoreLib;
+using System;
 
 namespace WpfLib;
 
@@ -12,7 +13,7 @@ public static class WpfFunc
         Canvas.SetTop(shape, location.Y);
     }
 
-    public static void SetLocation(this Line line, TwoPoints points)
+    public static Line SetLocation(this Line line, TwoPoints points)
     {
         if (points.P1.X != line.X1)
         {
@@ -31,8 +32,10 @@ public static class WpfFunc
             line.Y2 = points.P2.Y;
         }
 
+        return line;
     }
 
-    public static void SetCenterLocation(this Shape shape, Point location) => shape.SetLocation(location.Subtract((shape.Width / 2, shape.Height / 2)));
+    public static TShape SetCenterLocation<TShape>(this TShape shape, Point location)
+        where TShape : Shape => shape.Modify(s => s.SetLocation(location.Subtract((s.Width / 2, s.Height / 2))));
 
 }
