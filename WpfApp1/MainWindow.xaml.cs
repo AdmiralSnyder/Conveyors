@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -136,7 +137,7 @@ public partial class MainWindow
     {
         public TContext Context { get; private set; }
 
-        public static TInputter StartInput(TContext context)
+        public static TInputter StartInput3(TContext context)
         {
             return new() { Context = context };
         }
@@ -316,9 +317,16 @@ public partial class MainWindow
                     Context.UserNotes = "Please select the starting point.";
                     Context.CaptureMouse();
                     break;
+
                 case InputStates.SelectLastPoint:
                     Context.SetCursor(Cursors.Cross);
                     Context.UserNotes = "Please select the ending point.";
+                    break;
+
+                case InputStates.None:
+                    Context.SetCursor(Cursors.Arrow);
+                    Context.ReleaseMouseCapture();
+                    Context.UserNotes = "Click around. Have fun!";
                     break;
             }
         }
@@ -473,6 +481,9 @@ public partial class MainWindow
                 Mouse.Capture(Canvas);
             }
         }
+
+        public override void ReleaseMouseCapture() => Mouse.Capture(null);
+
         protected override void UserNotesChanged()
         {
             base.UserNotesChanged();
@@ -539,6 +550,18 @@ public partial class MainWindow
             }
             return false;
         }
+
+        protected override void HandleMouseDownVirtual(MouseButtonEventArgs e)
+        {
+            base.HandleMouseDownVirtual(e);
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                var point = GetCanvasPoint(e);
+                DoLeftMouseButtonClicked(new(point));
+            }
+
+        }
+
     }
 
     private CanvasInputContext InputContext;
@@ -561,6 +584,7 @@ public partial class MainWindow
         }
 
         public virtual void CaptureMouse() { }
+        public virtual void ReleaseMouseCapture() { }
 
         protected virtual void UserNotesChanged() { }
 
@@ -572,7 +596,11 @@ public partial class MainWindow
             {
                 ci.HandleMouseDown(sender, e);
             }
+
+            HandleMouseDownVirtual(e);
         }
+
+        protected virtual void HandleMouseDownVirtual(MouseButtonEventArgs e) { }
 
         protected abstract bool HandleMouseDownPanning(MouseButtonEventArgs e);
 
@@ -582,10 +610,24 @@ public partial class MainWindow
         {
             if (HandleMouseMovePanning(e)) return;
 
+            MouseMovedInCanvas?.Invoke(sender, e);
+
             if (MainWindow.CurrentInputter is { } ci)
             {
                 ci.HandleMouseMove(sender, e);
             }
+        }
+
+        public event MouseEventHandler MouseMovedInCanvas;
+
+        //public event MouseButtonEventHandler LeftMouseButtonClicked;
+        //public event MouseButtonEventHandler RightMouseButtonClicked;
+        //public event MouseButtonEventHandler MouseWheelClicked;
+
+        public event EventHandler<EventArgs<Point>> LeftMouseButtonClicked;
+        protected void DoLeftMouseButtonClicked(Point point)
+        {
+            LeftMouseButtonClicked?.Invoke(this, new(point));
         }
 
         internal void HandleMouseUp(object sender, MouseButtonEventArgs e)
@@ -594,6 +636,17 @@ public partial class MainWindow
         }
 
         protected abstract bool HandleMouseUpPanning(MouseButtonEventArgs e);
+
+    }
+
+    public class CircleInputter1 : Inputter<CircleInputter1, CircleInputter1.InputStates, CanvasInputContext>
+    {
+        public enum InputStates
+        {
+            SelectCenterPoint,
+            SelectCircumferencePoint,
+        }
+        public override void Start() => InputState = InputStates.SelectCenterPoint;
     }
 
     public class PointInputter : Inputter<PointInputter, PointInputter.InputStates, CanvasInputContext>
@@ -604,17 +657,74 @@ public partial class MainWindow
             SelectPoint,
         }
 
-        public override void Start() => InputState = InputStates.SelectPoint;
+        public Point Result { get; set; }
+
+        public override void Start()
+        {
+            Context.LeftMouseButtonClicked += Context_LeftMouseButtonClicked;
+            InputState = InputStates.SelectPoint;
+        }
+
+        public void Complete()
+        {
+            Context.LeftMouseButtonClicked -= Context_LeftMouseButtonClicked;
+            TaskCompletionSource.SetResult(Result);
+        }
+
+        private void Context_LeftMouseButtonClicked(object? sender, EventArgs<Vector> e)
+        {
+            Result = e.Data;
+            Complete();
+        }
+
+        private TaskCompletionSource<Point?> TaskCompletionSource;
+
+        public Task<Point?> StartAsync()
+        {
+            Start();
+            TaskCompletionSource = new();
+            return TaskCompletionSource.Task;
+        }
+
+        public static Task<Point?> StartInput(CanvasInputContext context)
+        {
+            var inputter = StartInput3(context);
+            return inputter.StartAsync();
+        }
+    }
+
+
+
+    private async void AddPointB_Click(object sender, RoutedEventArgs e)
+    {
+        if (await PointInputter.StartInput(this.InputContext) is { } point)
+        {
+            AddPoint(point);
+        }
+    }
+
+    private Shape AddPoint(Point point)
+    {
+        var pointShape = ShapeProvider.CreatePoint(point);
+        TheCanvas.Children.Add(pointShape);
+        return pointShape;
     }
 
     private void AddConveyorB_Click(object sender, RoutedEventArgs e)
     {
-        (CurrentInputter = ConveyorInputter.StartInput(this.InputContext)).Start();
+        (CurrentInputter = ConveyorInputter.StartInput3(this.InputContext)).Start();
     }
 
-    private void AddPointB_Click(object sender, RoutedEventArgs e)
+    private TInputter AddInputter<TInputter>(TInputter inputter) where TInputter : Inputter
     {
-        (CurrentInputter = PointInputter.StartInput(this.InputContext)).Start();
+        CurrentInputter = inputter;
+        return inputter;
+    }
+
+
+    private void AddCircleB_Click(object sender, RoutedEventArgs e)
+    {
+        (CurrentInputter = CircleInputter1.StartInput3(this.InputContext)).Start();
     }
 
     //private InputState _InputState;
@@ -712,7 +822,7 @@ public partial class MainWindow
     private void MovePointB_Click(object sender, RoutedEventArgs e)
     {
         RunningCB.IsChecked = false;
-        (CurrentInputter = MoveInputter.StartInput(this.InputContext)).Start();
+        (CurrentInputter = MoveInputter.StartInput3(this.InputContext)).Start();
     }
 
     

@@ -51,6 +51,7 @@
             </StackPanel.Resources>
             <Button Name="AddConveyorB" Content="Add" Click="AddConveyorB_Click" ToolTip="Add Conveyor" />
             <Button Name="AddPointB" Content="+" Click="AddPointB_Click" ToolTip="Add Point" />
+            <Button Name="AddCircleB" Content="+" Click="AddCircleB_Click" ToolTip="Add Circle by Center+Circ Point" />
             <CheckBox Name="RunningCB" Content="Running" Checked="RunningCB_Click" Unchecked="RunningCB_Click" />
             <Button Name="PutItemB" Content="Put" Click="PutItemB_Click" ToolTip="Put Items" />
             <CheckBox Name="FirstOnlyCB" Content="FirstOnly" />

@@ -14,6 +14,18 @@ namespace ConveyorLib;
 
 public class ConveyorShapeProvider : ShapeProvider
 {
+    public Shape CreatePoint(Point point)
+    {
+        var result = new Ellipse()
+        {
+            Width = 3,
+            Height = 3,
+            Fill = Brushes.Magenta,
+        };
+        result.SetCenterLocation(point);
+        return WithSelectBehaviour(result);
+    }
+
     public Line CreateConveyorPositioningLine(TwoPoints points)
     {
         var line = CreateLine(points);
