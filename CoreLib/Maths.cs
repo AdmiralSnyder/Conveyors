@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Ink;
 
 namespace CoreLib.Maths;
 
@@ -263,5 +264,52 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
 
     public static bool VectorsAreParallel(Vector v1, Vector v2) => v1.Angle() == v2.Angle();
 
-    public static bool VectorsAreInverseParallel(Vector v1, Vector v2) => ((v1.Angle()- v2.Angle()).Degrees / 180.0) is { } offset && double.IsOddInteger(offset);
+    public static bool VectorsAreInverseParallel(Vector v1, Vector v2) => ((v1.Angle() - v2.Angle()).Degrees / 180.0) is { } offset && double.IsOddInteger(offset);
+
+    public static bool GetCircleInfo((Vector Point1, Vector Point2, Vector Point3) info, out (Vector Center, double Radius) circInfo)
+    {
+        var x1 = info.Point1.X;
+        var x2 = info.Point2.X;
+        var x3 = info.Point3.X;
+        var y1 = info.Point1.Y;
+        var y2 = info.Point2.Y;
+        var y3 = info.Point3.Y;
+
+        var z1 = x1 * x1 + y1 * y1;
+        var z2 = x2 * x2 + y2 * y2;
+        var z3 = x3 * x3 + y3 * y3;
+
+        var A = Determinant(1, 1, 1, y1, y2, y3, z1, z2, z3);
+        var B = Determinant(x1, x2, x3, 1, 1, 1, z1, z2, z3);
+        var C = Determinant(x1, x2, x3, y1, y2, y3, 1, 1, 1);
+        var D = Determinant(x1, x2, x3, y1, y2, y3, z1, z2, z3);
+
+        if (C == 0)
+        {
+            circInfo = default;
+            return false;
+        }
+
+        var xC = -A / (2 * C);
+        var yC = -B / (2 * C);
+
+        var rSquared = (A * A + B * B + 4 * C * D) / (4 * C * C);
+        var r = Math.Sqrt(rSquared);
+
+        circInfo = ((xC, yC), r);
+        return true;
+    }
+
+    public static double Determinant(
+        double a, double b, double c,
+        double d, double e, double f,
+        double g, double h, double i)
+    => a * Determinant(e, f, h, i) - b * Determinant(d, f, g, i) + c * Determinant(d, e, g, h);
+
+    public static double Determinant(
+        double a, double b, 
+        double c, double d) 
+    => a * d - b * c;
+
+
 }

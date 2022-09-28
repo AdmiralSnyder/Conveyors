@@ -27,7 +27,13 @@ public class ConveyorShapeProvider : ShapeProvider
         Height = 3,
         Fill = Brushes.Magenta,
     }.SetCenterLocation(point).WithSelectBehaviour();
-    
+
+    public Shape CreateCircle(Point center, double radius) => new Ellipse()
+    {
+        Width = radius * 2 + 1,
+        Height = radius * 2 + 1,
+        Stroke = Brushes.Magenta,
+    }.SetCenterLocation(center).WithSelectBehaviour();
 
     public Line CreateConveyorPositioningLine(TwoPoints points)
     {

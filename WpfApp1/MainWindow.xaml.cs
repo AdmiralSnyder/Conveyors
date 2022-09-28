@@ -104,12 +104,8 @@ public partial class MainWindow
 
     private async void AddPointB_Click(object sender, RoutedEventArgs e)
     {
-        //var plih = ShowPointerLocationInputHelper.Create(InputContext);
-        //plih.StartAsync();
-
         if ((await PointInputter.StartInput(InputContext, ShowPointerLocationInputHelper.Create(InputContext))).IsSuccess(out var point))
         {
-            //plih.Complete();
             AddPoint(point);
         }
     }
@@ -121,36 +117,44 @@ public partial class MainWindow
         return pointShape;
     }
 
+    private Shape AddCircle(Point center, double radius)
+    {
+        var circleShape = ShapeProvider.CreateCircle(center, radius);
+        TheCanvas.Children.Add(circleShape);
+        return circleShape;
+    }
+
     private void AddConveyorB_Click(object sender, RoutedEventArgs e)
     {
         (CurrentInputter = ConveyorInputter.Create(InputContext)).Start();
     }
 
-    private TInputter AddInputter<TInputter>(TInputter inputter) where TInputter : Inputter
+    private async void AddCircle1B_Click(object sender, RoutedEventArgs e)
     {
-        CurrentInputter = inputter;
-        return inputter;
+        if ((await CircleInputter1.StartInput(InputContext)).IsSuccess(out var info))
+        {
+            AddCircle(info.Center, info.Radius);
+        }
     }
 
-
-    private async void AddCircleB_Click(object sender, RoutedEventArgs e)
+    private async void AddCircle2B_Click(object sender, RoutedEventArgs e)
     {
-        await ShowPointerLocationInputHelper.Create(InputContext).StartAsyncVirtual();
-        //(CurrentInputter = CircleInputter1.StartInput3(this.InputContext)).Start();
+        if ((await CircleInputter2.StartInput(InputContext)).IsSuccess(out var info))
+        {
+            if (Maths.GetCircleInfo(info, out var circInfo))
+            {
+                AddCircle(circInfo.Center, circInfo.Radius);
+            }
+        }
     }
 
-    private void TheCanvas_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-        InputContext.HandleMouseDown(sender, e);
-    }
+    private void TheCanvas_MouseDown(object sender, MouseButtonEventArgs e) => InputContext.HandleMouseDown(sender, e);
 
     internal ConveyorShapeProvider ShapeProvider { get; set; }
 
-    private void TheCanvas_MouseMove(object sender, MouseEventArgs e)
-    {
-        InputContext.HandleMouseMove(sender, e);
-    }
-    
+    private void TheCanvas_MouseMove(object sender, MouseEventArgs e) => InputContext.HandleMouseMove(sender, e);
+
+    private void TheCanvas_MouseUp(object sender, MouseButtonEventArgs e) => InputContext.HandleMouseUp(sender, e);
 
     // TODO put the zoom functionality into a behaviour
     private void TheCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -170,11 +174,6 @@ public partial class MainWindow
         }
     }
 
-    private void TheCanvas_MouseUp(object sender, MouseButtonEventArgs e)
-    {
-
-        InputContext.HandleMouseUp(sender, e);
-    }
 
     private void PutItemB_Click(object sender, RoutedEventArgs e)
     {

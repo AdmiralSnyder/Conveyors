@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Shapes;
@@ -89,6 +90,13 @@ public class CanvasInputContext : InputContextBase
         return line;
     }
 
+    public Shape AddPoint(Point point)
+    {
+        var pointShape = MainWindow.ShapeProvider.CreatePoint(point);
+        Canvas.Children.Add(pointShape);
+        return pointShape;
+    }
+
     protected override bool HandleMouseUpPanning(MouseButtonEventArgs e)
     {
         if (e.ChangedButton == MouseButton.Middle)
@@ -115,4 +123,8 @@ public class CanvasInputContext : InputContextBase
 
     }
 
+    internal void RemoveShape(Shape centerPointShape)
+    {
+        Canvas.Children.Remove(centerPointShape);
+    }
 }
