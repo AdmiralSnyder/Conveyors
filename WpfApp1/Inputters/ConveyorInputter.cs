@@ -152,7 +152,7 @@ public class ConveyorInputter : Inputter<ConveyorInputter, IEnumerable<Point>, C
             TempLines.Clear();
 
             InputState = InputStates.None;
-
+            
             Context.MainWindow.AutoRoot.AddConveyor(points, Context.MainWindow.IsRunning, int.TryParse(Context.MainWindow.LanesCountTB.Text, out var lanesCnt) ? Math.Max(lanesCnt, 1) : 1);
         }
     }
