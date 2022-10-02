@@ -13,6 +13,7 @@ namespace ConveyorApp.Inputters
 
         public static InputResult<T> Success<T>(T result) => new(result);
 
+        public static Task<InputResult<T>> SuccessTask<T>(T result) => Task.FromResult(Success(result));
     }
 
     public class FailureInputResult

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace CoreLib;
 
+public struct Unit
+{ }
+
 public class EventArgs<T> : EventArgs
 {
     public T Data { get; set; }

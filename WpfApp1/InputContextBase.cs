@@ -9,15 +9,25 @@ using System.Windows.Input;
 
 namespace ConveyorApp;
 
-public abstract class InputStage
+public class InputStage
 {
-    public virtual async Task Invoke() { await Task.Yield(); }
-    public abstract bool IsSuccess();
+    public virtual async Task Invoke(InputStage? input) => throw new NotImplementedException("Needs to be overridden");
+    public virtual bool IsSuccess() => false;
+    public InputStage() => Name = "IS" + Cnt++;
+    public string? Name { get; set; }
+
+    private static int Cnt = 0;
+
+    public static readonly InputStage<InitialInputState> Initial = new() { Output = InitialInputState.Instance };
+
+    public object? NextInput { get; set; }
 }
 
-public abstract class InputStage<TOutput> : InputStage
+public class InputStage<TOutput> : InputStage
 {
     public InputResult<TOutput> Output { get; set; }
+
+    //public string SimpleStageType => typeof(InputStage<TOutput>).FullName;
 }
 
 public class InputStage<TInput, TOutput> : InputStage<TOutput>
@@ -26,7 +36,19 @@ public class InputStage<TInput, TOutput> : InputStage<TOutput>
     
     public Func<TInput, Task<InputResult<TOutput>>> StageFunc { get; set; }
 
-    public override async Task Invoke() => Output = await StageFunc(Input);
+    public override async Task Invoke(InputStage? input)
+    {
+        if (input?.NextInput is TInput lastOutput)
+        {
+            Input = lastOutput;
+        }
+        var result = await StageFunc(Input);
+        Output = result;
+        if (result.IsSuccess(out var resResult))
+        {
+            NextInput = new Pair<TInput, TOutput>() { First = Input, Second = resResult };
+        }
+    }
 
     public override bool IsSuccess() => Output.Success;
 }
@@ -39,54 +61,58 @@ public class InputEntryBase
 public class BlankInputEntry : InputEntryBase
 {
     public BlankInputEntry(InputManager manager) => InputManager = manager;
-    public InputEntry<InitialInputState, T> Then<T>(Func<InitialInputState, Task<InputResult<T>>> thenFunc)
+    public InputEntry<InitialInputState, Pair<InitialInputState, T>> Then<T>(Func<InitialInputState, Task<InputResult<T>>> thenFunc, string? name = null)
     {
-        InputManager.AddStage(thenFunc);
-        InputEntry<InitialInputState, T> newState = new () { InputManager = InputManager };
+        InputManager.AddStage(thenFunc, name);
+        InputEntry<InitialInputState, Pair<InitialInputState, T>> newState = new () { InputManager = InputManager };
         return newState;
     }
 }
 
-public class With<TIn, TOut>
+public class Pair<TFirst, TSecond>
 {
-    public TIn Input { get; set; }
-    public TOut Output { get; set; }
+    public TFirst First { get; set; }
+    public TSecond Second { get; set; }
 }
 
-public static class WithFunc
+public static class PairFunc
 {
-    public static (T1 Item1, T2 Item2) Flatten<T1, T2>(this With<T1, T2> with) => (with.Input, with.Output);
-    public static bool Flatten<T1, T2>(this With<T1, T2> with, out (T1 Item1, T2 Item2) flattened)
+    public static (T1 Item1, T2 Item2) Flatten<T1, T2>(this Pair<T1, T2> with) => (with.First, with.Second);
+    public static bool Flatten<T1, T2>(this Pair<T1, T2> with, out (T1 Item1, T2 Item2) flattened)
     {
-        flattened = (with.Input, with.Output);
+        flattened = (with.First, with.Second);
         return true;
     }
 
-    public static (T1 Item1, T2 Item2, T3 Item3) Flatten2<T1, T2, T3>(this With<With<T1, T2>, T3> with) => (with.Input.Input, with.Input.Output, with.Output);
+    public static (T1 Item1, T2 Item2, T3 Item3) Flatten<T1, T2, T3>(this Pair<Pair<Pair<InitialInputState, T1>, T2>, T3> with) => (with.First.First.Second, with.First.Second, with.Second);
+    public static (T1 Item1, T2 Item2, T3 Item3) Flatten2<T1, T2, T3>(this Pair<Pair<T1, T2>, T3> with) => (with.First.First, with.First.Second, with.Second);
 
-    public static bool Flatten2<T1, T2, T3>(this With<With<T1, T2>, T3> with, out (T1 Item1, T2 Item2, T3 Item3) flattened)
+    public static bool Flatten2<T1, T2, T3>(this Pair<Pair<T1, T2>, T3> with, out (T1 Item1, T2 Item2, T3 Item3) flattened)
     {
-        flattened = (with.Input.Input, with.Input.Output, with.Output);
+        flattened = (with.First.First, with.First.Second, with.Second);
         return true;
     }
 }
 
-public class InitialInputState : InputState
-{ }
+public class InitialInputState : InputState 
+{
+    public static readonly InitialInputState Instance = new();
+}
 public class InputState { }
 
 public class InputEntry<TIn, TOut> : InputEntryBase
 {
-    public InputEntry<TOut, With<TOut, TNext>> Then<TNext>(Func<TOut, Task<InputResult<TNext>>> thenFunc)
+    public InputEntry<TOut, Pair<TOut, TNext>> Then<TNext>(Func<TOut, Task<InputResult<TNext>>> thenFunc, string? name = null)
     {
-        InputManager.AddStage(thenFunc);
-        InputEntry<TOut, With<TOut, TNext>> newState = new() { InputManager = InputManager };
+        InputManager.AddStage(thenFunc, name);
+        InputEntry<TOut, Pair<TOut, TNext>> newState = new() { InputManager = InputManager };
         return newState;
     }
 
-    internal async Task<InputResult<TOut>> Do()
+    internal async Task<InputResult<TResult>> Do<TResult>(Func<TOut, Task<InputResult<TResult>>> doFunc)
     {
-        var result = await InputManager.Run<TOut>();
+        InputManager.AddStage(doFunc);
+        var result = await InputManager.Run<TResult>();
         return result;
     }
 }
@@ -104,20 +130,20 @@ public class InputManager
         return blankEntry;
     }
 
-    public void AddStage<TInput, T>(Func<TInput, Task<InputResult<T>>> stageFunc)
+    public void AddStage<TInput, T>(Func<TInput, Task<InputResult<T>>> stageFunc, string? name = null)
     {
-        Stages.Enqueue(new InputStage<TInput, T>() { StageFunc = stageFunc });
+        Stages.Enqueue(new InputStage<TInput, T>() { StageFunc = stageFunc, Name = name });
     }
 
     internal async Task<InputResult<T>> Run<T>()
     {
-        InputStage lastStage = null;
+        InputStage lastStage = InputStage.Initial;
         while(true)
         {
             if (Stages.Any())
             {
                 var stage = Stages.Dequeue();
-                await stage.Invoke();
+                await stage.Invoke(lastStage);
                 if (stage.IsSuccess())
                 {
                     DoneStages.Enqueue(stage);

@@ -118,6 +118,13 @@ public abstract class Inputter<TThis, TResult, TContext> : InputterBase<TThis, T
         Complete();
     }
 
+    public override void Abort()
+    {
+        TaskCompletionSource.SetResult(InputResult.Failure);
+
+        base.Abort();
+    }
+
     public override void Complete()
     {
         base.Complete();

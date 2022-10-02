@@ -1,38 +1,24 @@
-﻿using System.Threading.Tasks;
+﻿using CoreLib;
+using System.Threading.Tasks;
 
 namespace ConveyorApp.Inputters;
 
+/// <summary>
+/// lets the user input the three points that will be used to create a circle
+/// </summary>
 class CircleInputter2 : Inputter<CircleInputter2, (Point Point1, Point Point2, Point Point3), CanvasInputContext>
 {
-    public override async Task<InputResult<(Point Point1, Point Point2, Point Point3)>> StartAsyncVirtual()
-    {
-        var result = await InputManager.Blank()
-            .Then(async _ => await PointInputter.StartInput(Context, ShowPointerLocationInputHelper.Create(Context)))
-            .Then(async ctx => await PointInputter.StartInput(Context, ShowPointerLocationInputHelper.Create(Context)))
-            .Then(async ctx => await PointInputter.StartInput(Context, ShowPointerLocationInputHelper.Create(Context)))
-            .Do();
-
-        if (result.IsSuccess(out var points) && points.Flatten2(out var allPoints))
-        {
-            return InputResult.Success((allPoints.Item1, allPoints.Item2, allPoints.Item1));
-        }
-
-        //if ((await PointInputter.StartInput(Context, ShowPointerLocationInputHelper.Create(Context))).IsSuccess(out var point1))
-        //{
-        //    var point1Shape = Context.AddPoint(point1);
-        //    if ((await PointInputter.StartInput(Context, ShowPointerLocationInputHelper.Create(Context))).IsSuccess(out var point2))
-        //    {
-        //        var point2Shape = Context.AddPoint(point2);
-        //        if ((await PointInputter.StartInput(Context, ShowPointerLocationInputHelper.Create(Context))).IsSuccess(out var point3))
-        //        {
-        //            Context.RemoveShape(point1Shape);
-        //            Context.RemoveShape(point2Shape);
-
-        //            return InputResult.Success((point1, point2, point3));
-        //        }
-        //    }
-        //}
-
-        return InputResult.Failure;
-    }
+    public override async Task<InputResult<(Point Point1, Point Point2, Point Point3)>> StartAsyncVirtual() 
+    => await InputManager.Blank()
+        .Then(async _ => await PointInputter.StartInput(Context, 
+            ShowMouseLocationInputHelper.Create(Context)))
+        .Then(async ctx => await PointInputter.StartInput(Context, 
+            ShowMouseLocationInputHelper.Create(Context),
+            FixedPointInputHelper.Create(Context, ctx.Second)))
+        .Then(async ctx => await PointInputter.StartInput(Context, 
+            ShowMouseLocationInputHelper.Create(Context),
+            FixedPointInputHelper.Create(Context, ctx.First.Second),
+            FixedPointInputHelper.Create(Context, ctx.Second),
+            ShowThreePointCircleOnMouseLocationInputHelper.Create(Context, ctx.First.Second, ctx.Second)))
+        .Do(ctx => InputResult.SuccessTask(ctx.Flatten()));
 }

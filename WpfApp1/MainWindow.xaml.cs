@@ -104,7 +104,7 @@ public partial class MainWindow
 
     private async void AddPointB_Click(object sender, RoutedEventArgs e)
     {
-        if ((await PointInputter.StartInput(InputContext, ShowPointerLocationInputHelper.Create(InputContext))).IsSuccess(out var point))
+        if ((await PointInputter.StartInput(InputContext, ShowMouseLocationInputHelper.Create(InputContext))).IsSuccess(out var point))
         {
             AddPoint(point);
         }
