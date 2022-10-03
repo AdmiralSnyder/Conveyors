@@ -9,7 +9,7 @@ using ConveyorApp.Inputters;
 
 namespace ConveyorApp.Inputters;
 
-public class MoveInputter : Inputter<MoveInputter, Vector, MoveInputter.InputStates, CanvasInputContext>
+public class MoveInputter : StatefulInputter<MoveInputter, Vector, MoveInputter.InputStates, CanvasInputContext>
 {
     public enum InputStates
     {

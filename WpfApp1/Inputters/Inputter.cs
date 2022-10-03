@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CoreLib;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -21,7 +22,15 @@ public abstract class InputterBase<TThis, TContext, TTask> : Inputter
     where TThis : InputterBase<TThis, TContext, TTask>, new()
     where TContext : InputContextBase
 {
-    public TContext Context { get; private set; }
+    private TContext _Context;
+
+    public TContext Context 
+    {
+        get => _Context;
+        private set => Func.Setter(ref _Context, value, ContextAssigned);
+    }
+
+    protected virtual void ContextAssigned() { }
     
     public static TThis Create(TContext context) => new() { Context = context };
 
@@ -139,8 +148,17 @@ public abstract class Inputter<TThis, TResult, TContext> : InputterBase<TThis, T
     }
 }
 
-public abstract class Inputter<TThis, TResult, TInputState, TContext> : Inputter<TThis, TResult, TContext>
-    where TThis : Inputter<TThis, TResult, TInputState, TContext>, new()
+public abstract class Inputter<TThis, TResult, TContext, THelpers> : Inputter<TThis, TResult, TContext>
+    where TThis : Inputter<TThis, TResult, TContext, THelpers>, new()
+    where TContext : InputContextBase
+    where THelpers : InputHelpers<TContext>, new()
+{
+    public THelpers Helpers { get; private set; }
+    protected override void ContextAssigned() => Helpers = new() { Context = Context };
+}
+
+public abstract class StatefulInputter<TThis, TResult, TInputState, TContext> : Inputter<TThis, TResult, TContext>
+    where TThis : StatefulInputter<TThis, TResult, TInputState, TContext>, new()
     where TInputState : struct, Enum
     where TContext : InputContextBase
 {

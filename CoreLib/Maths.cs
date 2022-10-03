@@ -101,7 +101,6 @@ public static class Maths
     public static Vector To(this Point from, Point to) => new TwoPoints(from, to).Vector();
 
     public static double Length(this Vector vect) => Math.Sqrt(vect.X * vect.X + vect.Y * vect.Y);
-
     public static double Length(this TwoPoints startEnd) => Length(startEnd.Vector());
     public static Vector Normalize(this Vector vect) => vect.Divide(vect.Length());
     public static Vector Normalize(this Vector vect, double length) => vect.Divide(length);
@@ -150,7 +149,10 @@ public static class Maths
         Quadrants.Two => ((point.Y, -point.X), Angle.Plus90),
         Quadrants.Three => (point.Inverse(), Angle.Plus180),
         Quadrants.Four => ((-point.Y, point.X), Angle.Plus270),
+        _ => throw new NotImplementedException(),
     };
+
+    public static Point GetMidPoint(Point point1, Point point2) => point1 + (point2 - point1).Divide(2);
 
     public enum Quadrants
     {
@@ -265,6 +267,21 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
     public static bool VectorsAreParallel(Vector v1, Vector v2) => v1.Angle() == v2.Angle();
 
     public static bool VectorsAreInverseParallel(Vector v1, Vector v2) => ((v1.Angle() - v2.Angle()).Degrees / 180.0) is { } offset && double.IsOddInteger(offset);
+
+    public static bool GetCircleInfoByDiameter((Vector Point1, Vector Point2) info, out (Vector Center, double Radius) circInfo)
+    {
+        if (info.Point1 == info.Point2)
+        {
+            circInfo = default;
+            return false;
+        }
+        else
+        {
+            var radiusV = (info.Point2 - info.Point1).Divide(2);
+            circInfo = (info.Point1 + radiusV, radiusV.Length());
+            return true;
+        }
+    }
 
     public static bool GetCircleInfo((Vector Point1, Vector Point2, Vector Point3) info, out (Vector Center, double Radius) circInfo)
     {

@@ -84,6 +84,8 @@ public static class PairFunc
         return true;
     }
 
+    public static (T1 Item1, T2 Item2) Flatten<T1, T2>(this Pair<Pair<InitialInputState, T1>, T2> with) => (with.First.Second, with.Second);
+
     public static (T1 Item1, T2 Item2, T3 Item3) Flatten<T1, T2, T3>(this Pair<Pair<Pair<InitialInputState, T1>, T2>, T3> with) => (with.First.First.Second, with.First.Second, with.Second);
     public static (T1 Item1, T2 Item2, T3 Item3) Flatten2<T1, T2, T3>(this Pair<Pair<T1, T2>, T3> with) => (with.First.First, with.First.Second, with.Second);
 
@@ -149,7 +151,11 @@ public class InputManager
                     DoneStages.Enqueue(stage);
                     lastStage = stage;
                 }
+                else
+                {
                 // TODO else retry depending on strategy
+                    return InputResult.Failure;
+                }
             }
             else break;
         }

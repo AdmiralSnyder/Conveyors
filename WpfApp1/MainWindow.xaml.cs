@@ -129,22 +129,20 @@ public partial class MainWindow
         (CurrentInputter = ConveyorInputter.Create(InputContext)).Start();
     }
 
-    private async void AddCircle1B_Click(object sender, RoutedEventArgs e)
+    private async void AddCircleCenterRadiusB_Click(object sender, RoutedEventArgs e)
     {
-        if ((await CircleInputter1.StartInput(InputContext)).IsSuccess(out var info))
+        if ((await CircleCenterRadiusInputter.StartInput(InputContext)).IsSuccess(out var info))
         {
             AddCircle(info.Center, info.Radius);
         }
     }
 
-    private async void AddCircle2B_Click(object sender, RoutedEventArgs e)
+    private async void AddCircle3PointsB_Click(object sender, RoutedEventArgs e)
     {
-        if ((await CircleInputter2.StartInput(InputContext)).IsSuccess(out var info))
+        if ((await CircleThreePointsInputter.StartInput(InputContext)).IsSuccess(out var info)
+            && Maths.GetCircleInfo(info, out var circInfo))
         {
-            if (Maths.GetCircleInfo(info, out var circInfo))
-            {
-                AddCircle(circInfo.Center, circInfo.Radius);
-            }
+            AddCircle(circInfo.Center, circInfo.Radius);
         }
     }
 
@@ -207,7 +205,7 @@ public partial class MainWindow
 
     private async void RunB_Click(object sender, RoutedEventArgs e) => await ScriptRunner.RunScript(textEditor.Text);
 
-    private ScriptRunner ScriptRunner = new();
+    private readonly ScriptRunner ScriptRunner = new();
 
     private void HappyBirthdayRubyB_Click(object sender, RoutedEventArgs e) => WriteString("R");
     //WriteString("""
@@ -237,6 +235,15 @@ public partial class MainWindow
             }
 
             yOffset++;
+        }
+    }
+
+    private async void AddCircle2PointsB_Click(object sender, RoutedEventArgs e)
+    {
+        if ((await CircleDiameterInputter.StartInput(InputContext)).IsSuccess(out var info)
+            && Maths.GetCircleInfoByDiameter(info, out var circInfo))
+        {
+            AddCircle(circInfo.Center, circInfo.Radius);
         }
     }
 }

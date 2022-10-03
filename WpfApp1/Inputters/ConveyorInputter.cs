@@ -7,7 +7,7 @@ using System.Windows.Shapes;
 
 namespace ConveyorApp.Inputters;
 
-public class ConveyorInputter : Inputter<ConveyorInputter, IEnumerable<Point>, ConveyorInputter.InputStates, CanvasInputContext>
+public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<Point>, ConveyorInputter.InputStates, CanvasInputContext>
 {
     public enum InputStates
     {

@@ -35,6 +35,13 @@ public class ConveyorShapeProvider : ShapeProvider
         Stroke = Brushes.Magenta,
     }.SetCenterLocation(center).WithSelectBehaviour();
 
+    public Line CreateTempLine(TwoPoints points)
+    {
+        var line = CreateLine(points);
+        line.Stroke = Brushes.Magenta;
+        return line;
+    }
+
     public Line CreateConveyorPositioningLine(TwoPoints points)
     {
         var line = CreateLine(points);
