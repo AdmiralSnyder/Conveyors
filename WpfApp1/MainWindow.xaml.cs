@@ -119,6 +119,30 @@ public partial class MainWindow
         TheCanvas.Children.Add(PickRect);
     }
 
+
+    private void ShowPickBoundingBox(ISelectObject? selectObject)
+    {
+        if (PickRect is not null)
+        {
+            TheCanvas.Children.Remove(PickRect);
+        }
+        if (selectObject is null) return;
+
+        var boundingRect = Maths.GetBoundingRectTopLeftSize(selectObject.SelectionBoundsPoints);
+        PickRect = new()
+        {
+            Width = boundingRect.P2.X + 8,
+            Height = boundingRect.P2.Y + 8,
+            Stroke = Brushes.Chartreuse,
+            StrokeDashArray = new(new[] { 4d, 4d }),
+            SnapsToDevicePixels = true,
+            RadiusX = 2,
+            RadiusY = 2,
+        };
+        PickRect.SetLocation(boundingRect.P1.Subtract((4, 4)));
+        TheCanvas.Children.Add(PickRect);
+    }
+
     private Rectangle SelectionRect;
 
     private void ShowSelectionBoundingBox(ISelectObject? selectObject)
