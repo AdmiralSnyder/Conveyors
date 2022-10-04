@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using UILib;
 
 namespace ConveyorApp;
 
@@ -232,6 +233,13 @@ public abstract class InputContextBase
     //public event MouseButtonEventHandler MouseWheelClicked;
 
     public event EventHandler Abort;
+
+    public event EventHandler<EventArgs<ISelectObject>> ObjectPicked;
+
+    protected void DoObjectPicked(ISelectObject pickedObject)
+    {
+        ObjectPicked?.Invoke(this, new(pickedObject));
+    }
 
     protected void DoAbort() => Abort?.Invoke(this, EventArgs.Empty);
 

@@ -35,6 +35,12 @@ public partial class MainWindow
         {
             UpdateBoundingBox = ShowSelectionBoundingBox
         };
+
+        PickManager = new()
+        {
+            UpdateBoundingBox = ShowPickBoundingBox
+        };
+
         InitializeComponent();
 
 
@@ -55,22 +61,62 @@ public partial class MainWindow
 
     public IGeneratedConveyorAutomationObject AutoRoot { get; }
 
+    public PickManager PickManager { get; set; }
+
     public SelectionManager SelectionManager { get; set; }
 
     private void SelectShapeAction(Shape shape)
     {
-        var oldSelectedObject = SelectionManager.SelectedObject;
-        if (SelectionManager.SelectMode && shape.Tag is ISelectObject selectObject)
+        var oldSelectedObject = SelectionManager.ChosenObject;
+
+        if (shape.Tag is ISelectObject selectObject)
         {
-            if (SelectionManager.HierarchicalSelection)
+            if (PickManager.IsActive)
             {
-                SelectionManager.SelectedObject = selectObject.FindPredecessorInPath(oldSelectedObject);
+                if (PickManager.QueryCanPickObject(selectObject))
+                {
+                    PickManager.ChosenObject = selectObject;
+                }
             }
-            else
+            else if (SelectionManager.IsActive)
             {
-                SelectionManager.SelectedObject = selectObject;
+                if (SelectionManager.HierarchicalSelection)
+                {
+                    SelectionManager.ChosenObject = selectObject.FindPredecessorInPath(oldSelectedObject);
+                }
+                else
+                {
+                    SelectionManager.ChosenObject = selectObject;
+                }
             }
+
+            
         }
+    }
+    private Rectangle PickRect;
+
+
+    private void ShowPickBoundingBox(ISelectObject? selectObject)
+    {
+        if (PickRect is not null)
+        {
+            TheCanvas.Children.Remove(PickRect);
+        }
+        if (selectObject is null) return;
+
+        var boundingRect = Maths.GetBoundingRectTopLeftSize(selectObject.SelectionBoundsPoints);
+        PickRect = new()
+        {
+            Width = boundingRect.P2.X + 8,
+            Height = boundingRect.P2.Y + 8,
+            Stroke = Brushes.Chartreuse,
+            StrokeDashArray = new(new[] { 4d, 4d }),
+            SnapsToDevicePixels = true,
+            RadiusX = 2,
+            RadiusY = 2,
+        };
+        PickRect.SetLocation(boundingRect.P1.Subtract((4, 4)));
+        TheCanvas.Children.Add(PickRect);
     }
 
     private Rectangle SelectionRect;
@@ -198,7 +244,7 @@ public partial class MainWindow
         (CurrentInputter = MoveInputter.Create(this.InputContext)).Start();
     }
 
-    
+
 
     private void SelectB_Click(object sender, RoutedEventArgs e) => SelectionManager.ToggleSelectMode();
 
@@ -246,12 +292,197 @@ public partial class MainWindow
             AddCircle(circInfo.Center, circInfo.Radius);
         }
     }
-}
 
-public enum ActionResults
-{
-    Continue,
-    Finish,
-    Abort,
-    AbortAll,
+    private async void AddLineB_Click(object sender, RoutedEventArgs e)
+    {
+        if ((await LineInputter.Create(InputContext).StartAsync()).IsSuccess(out var points))
+        {
+            AutoRoot.AddLine(points);
+        }
+    }
+
+    private async void AddFilletB_Click(object sender, RoutedEventArgs e)
+    {
+        if ((await SelectLineInputter.Create(InputContext).StartAsync()).IsSuccess(out var line1))
+        {
+            if ((await SelectLineInputter.Create(InputContext).StartAsync()).IsSuccess(out var line2))
+            {
+                var angle = Maths.AngleBetween(line1.Vector, line2.Vector);
+
+                if (Maths.GetCrossingPoint((line1.ReferencePoint1, line1.ReferencePoint2), (line2.ReferencePoint1, line2.ReferencePoint2), out var crossingPoint))
+                {
+                    AddPoint(crossingPoint);
+
+                    var radius = 25d;
+
+                    var tangent = Math.Tan(angle.CounterAngle().Radians / 2);
+
+                    // tan alpha = a / b
+                    // tan alpha * b = a
+                    var a = tangent * radius;
+                    var unitVector1 = line1.Vector.Normalize();
+                    var start1 = crossingPoint + unitVector1.Multiply(a);
+
+                    var unitVector2 = line2.Vector.Normalize();
+                    var start2 = crossingPoint + unitVector2.Multiply(a);
+
+                    //AddPoint(start1);
+                    //AddPoint(start2);
+
+
+                    bool largeArc = false;
+                    SweepDirection swDir = SweepDirection.Clockwise;
+
+                    var pg = new PathGeometry();
+
+                    pg.Figures.Add(new()
+                    {
+                        StartPoint = start1,
+                        Segments = { new ArcSegment(start2, new(radius, radius), 0, largeArc, swDir, true) }
+                    });
+
+                    var shape = ShapeProvider.CreateCircleSectorArc(pg, true);
+                    TheCanvas.Children.Add(shape);
+
+                    //AddCircle(crossingPoint, radius);
+
+                }
+
+
+                //Vector oStart = new(prevEnd, Point.Location);
+                //var radius = oStart.Length();
+
+                ////var radius = ConveyorSegment.LineDistance / 2;
+
+                ////Vector oEnd = nextStart.Subtract(Point.Location);
+                ////var oStartNorm = oStart.Normalize(oStartLen);
+                ////var oEndNorm = oEnd.Normalize();
+                ////var dotProd = oStartNorm.DotProduct(oEndNorm);
+
+                //bool clockwise = !Point.IsClockwise;
+
+                //// TODO correctly calculate the inside property.
+                //Inside = IsLeft == clockwise;
+
+                //var (largeArg, swDir) = (clockwise, IsLeft) switch
+                //{
+                //    // TODO inside
+                //    (true, true) => (false, SweepDirection.Counterclockwise), // left turn, left side, bad
+                //    (true, false) => (false, SweepDirection.Counterclockwise),  // right turn, right side, bad
+                //                                                                // outside
+                //    (false, true) => (false, SweepDirection.Clockwise), // right turn, left side, good
+                //    (false, false) => (false, SweepDirection.Clockwise), // left turn, right side, good
+                //};
+
+                //if (Inside)
+                //{
+                //    var previousSegmentLane = (ConveyorSegmentLane)ElementsNode.Previous.Value;
+                //    var P1 = previousSegmentLane.StartPoint;
+                //    var P2 = previousSegmentLane.EndPoint;
+
+                //    var nextSegmentLane = (ConveyorSegmentLane)ElementsNode.Next.Value;
+                //    var R1 = nextSegmentLane.StartPoint;
+                //    var R2 = nextSegmentLane.EndPoint;
+
+                //    //if (previousSegmentLane.Length == 0 || nextSegmentLane.Length == 0 || Maths.VectorsAreParallel(new(P1, P2), new(R1, R2)) || Maths.VectorsAreInverseParallel(new(P1, P2), new(R1, R2)))
+                //    //{
+                //    //    if (ElementsNode.Previous?.Value is ConveyorSegmentLane prevSegLane)
+                //    //    {
+                //    //        prevSegLane.EndPoint = P2;
+                //    //    }
+
+                //    //    if (ElementsNode.Next?.Value is ConveyorSegmentLane nextSegLane)
+                //    //    {
+                //    //        nextSegLane.StartPoint = R1;
+                //    //    }
+                //    //}
+                //    //else
+                //    //{
+                //    var yr1 = R1.Y;
+                //    var xp = P2.X - P1.X;
+                //    var yp1 = P1.Y;
+                //    var xr1 = R1.X;
+                //    var yp = P2.Y - P1.Y;
+                //    var xp1 = P1.X;
+                //    var xr = R2.X - R1.X;
+                //    var yr = R2.Y - R1.Y;
+                //    var quotient = (xr * yp - yr * xp);
+                //    if (quotient == 0)
+                //    {
+                //        if (ElementsNode.Previous?.Value is ConveyorSegmentLane prevSegLane)
+                //        {
+                //            prevSegLane.EndPoint = P2;
+                //        }
+
+                //        if (ElementsNode.Next?.Value is ConveyorSegmentLane nextSegLane)
+                //        {
+                //            nextSegLane.StartPoint = R1;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        var sr = (yr1 * xp - yp1 * xp - xr1 * yp + xp1 * yp) / quotient; // TODO what happens if zero??
+
+                //        var xq = xr1 + sr * (R2.X - R1.X);
+                //        var yq = yr1 + sr * (R2.Y - R1.Y);
+
+                //        var cross = new Vector(xq, yq);
+                //        var start = R1;
+                //        var end = P2;
+                //        var CrossStart = start - cross;
+                //        var CrossEnd = end - cross;
+                //        bool x = true;
+                //        Point ActStart = default;
+                //        if (x)
+                //        {
+                //            ActStart = (start - CrossStart) - CrossEnd;
+                //        }
+                //        else
+                //        {
+                //            ActStart = CrossEnd;
+                //        }
+                //        var ActEnd = (end - CrossStart) - CrossEnd;
+
+                //        ArcGeometry.Figures.Add(new()
+                //        {
+                //            StartPoint = ActStart,
+                //            Segments = { new ArcSegment(ActEnd, new(radius, radius), Point.Angle.Degrees, largeArg, swDir, true) }
+                //        });
+
+                //        if (ElementsNode.Previous?.Value is ConveyorSegmentLane prevSegLane)
+                //        {
+                //            prevSegLane.EndPoint = ActStart;
+                //        }
+
+                //        if (ElementsNode.Next?.Value is ConveyorSegmentLane nextSegLane)
+                //        {
+                //            nextSegLane.StartPoint = ActEnd;
+                //        }
+                //    }
+                //}
+                //else
+                //{
+                //    ArcGeometry.Figures.Add(new()
+                //    {
+                //        StartPoint = prevEnd,
+                //        Segments = { new ArcSegment(nextStart, new(radius, radius), Point.Angle.Degrees, largeArg, swDir, true) }
+                //    });
+                //}
+
+
+
+                //Length = (Angle.HalfCircle - Point.AbsoluteAngle).Radians * radius;
+
+
+
+
+
+
+                // if (!line1 || line2)
+                //{
+                //    CreateFillet();
+                //}
+            }
+        }
+    }
 }

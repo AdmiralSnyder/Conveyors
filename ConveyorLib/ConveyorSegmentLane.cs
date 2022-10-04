@@ -12,6 +12,7 @@ namespace ConveyorLib;
 public class ConveyorSegmentLane : IConveyorCanvasable, ILanePart, IDebugText, ISelectObject, IRefreshable
 {
     public string Text => $"Lane ({DebugText})";
+
     public ConveyorSegmentLane(int lane, ConveyorSegment segment)
     {
         LaneNumber = lane;

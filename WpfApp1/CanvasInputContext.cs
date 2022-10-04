@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Shapes;
+using UILib;
 
 namespace ConveyorApp;
 
@@ -32,6 +33,18 @@ public class CanvasInputContext : InputContextBase
         if (NotesLabel is { })
         {
             NotesLabel.Text = UserNotes;
+        }
+    }
+
+    public void StartObjectPickingListener() => MainWindow.PickManager.ChosenObjectChanged += PickManager_ChosenObjectChanged;
+
+    public void StopObjectPickingListener() => MainWindow.PickManager.ChosenObjectChanged -= PickManager_ChosenObjectChanged;
+
+    private void PickManager_ChosenObjectChanged(object? sender, CoreLib.EventArgs<UILib.ISelectable> e)
+    {
+        if (e.Data is ISelectObject so)
+        {
+            DoObjectPicked(so);
         }
     }
 

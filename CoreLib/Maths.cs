@@ -328,5 +328,49 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         double c, double d) 
     => a * d - b * c;
 
+    public static double GetSlope(Vector vector) => vector.Y / vector.X;
 
+    /// <summary> y2 - m * x2 </summary>
+    public static double GetOffsetY(Point endPoint, double slope) => endPoint.Y - slope * endPoint.X;
+
+    public static double GetOffsetY(TwoPoints points) => points.P2.Y - GetSlope(points.P2 - points.P1) * points.P2.X;
+
+    public static bool GetCrossingPoint(TwoPoints line1, TwoPoints line2, out Point crossingPoint)
+    {
+        var R1 = line2.P1;
+        var R2 = line2.P2;
+        var P1 = line1.P1;
+        var P2 = line1.P2;
+
+        var yr1 = R1.Y;
+        var xp = P2.X - P1.X;
+        var yp1 = P1.Y;
+        var xr1 = R1.X;
+        var yp = P2.Y - P1.Y;
+        var xp1 = P1.X;
+        var xr = R2.X - R1.X;
+        var yr = R2.Y - R1.Y;
+        var quotient = (xr * yp - yr * xp);
+        if (quotient == 0)
+        {
+            crossingPoint = default;
+            return false;
+        }
+        else
+        {
+            var sr = (yr1 * xp - yp1 * xp - xr1 * yp + xp1 * yp) / quotient; // TODO what happens if zero??
+
+            var xq = xr1 + sr * (R2.X - R1.X);
+            var yq = yr1 + sr * (R2.Y - R1.Y);
+
+            var cross = new Vector(xq, yq);
+            var start = R1;
+            var end = P2;
+            //crossStart = start - cross;
+            //crossEnd = end - cross;
+
+            crossingPoint = cross;
+            return true;
+        }
+    }
 }

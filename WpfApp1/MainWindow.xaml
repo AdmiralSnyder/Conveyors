@@ -49,18 +49,22 @@
                     <Setter Property="Margin" Value="0,0,10,0" />
                 </Style>
             </StackPanel.Resources>
-            <Button Name="AddConveyorB" Content="Add" Click="AddConveyorB_Click" ToolTip="Add Conveyor" />
-            <Button Name="AddPointB" Content="+" Click="AddPointB_Click" ToolTip="Add Point" />
-            <Button Name="AddCircleCenterRadiusB" Content="O1" Click="AddCircleCenterRadiusB_Click" ToolTip="Add Circle by Center+Circ Point" />
+            <Button Name="AddConveyorB" Content="\____/" Click="AddConveyorB_Click" ToolTip="Add Conveyor" />
+            <Button Name="AddPointB" Content="." Click="AddPointB_Click" ToolTip="Add Point" />
+            <Button Name="AddLineB" Content="_" Click="AddLineB_Click" ToolTip="Add Line" />
+            <Button Name="AddFilletB" Content="U" Click="AddFilletB_Click" ToolTip="Add Fillet" />
+            <Button Name="AddCircleCenterRadiusB" Content="O1" Click="AddCircleCenterRadiusB_Click"
+                    ToolTip="Add Circle by Center+Circ Point" />
             <Button Name="AddCircle2PointsB" Content="O2" Click="AddCircle2PointsB_Click"
                     ToolTip="Add Circle by Diameter Points" />
-            <Button Name="AddCircle3PointsB" Content="O3" Click="AddCircle3PointsB_Click" ToolTip="Add Circle by Three Points" />
+            <Button Name="AddCircle3PointsB" Content="O3" Click="AddCircle3PointsB_Click"
+                    ToolTip="Add Circle by Three Points" />
             <CheckBox Name="RunningCB" Content="Running" Checked="RunningCB_Click" Unchecked="RunningCB_Click" />
             <Button Name="PutItemB" Content="Put" Click="PutItemB_Click" ToolTip="Put Items" />
             <CheckBox Name="FirstOnlyCB" Content="FirstOnly" />
             <Button Name="MovePointB" Content="Move" Click="MovePointB_Click" />
             <CheckBox Name="SelectB" Content="Select"
-                      IsChecked="{Binding SelectionManager.SelectMode}" />
+                      IsChecked="{Binding SelectionManager.IsActive}" />
             <TextBox Name="LanesCountTB" Text="2" ToolTip="Lanes Count" />
             <TextBox Name="GridWidth" Width="30"
                      Text="{Binding Path=InputContext.SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}"
@@ -70,10 +74,10 @@
         <TextBlock Name="NotesLabel" Grid.ColumnSpan="2" gu:Cell.Index="2 0" />
         <GridSplitter gu:Cell.Index="1 1" Style="{StaticResource VerticalGridSplitter}" />
         <Grid gu:Cell.Index="1 2" gu:Grid.Layout="20 auto * auto 40, *">
-            <TextBlock gu:Cell.Index="0 0" Text="{Binding Path=SelectionManager.SelectedObject.Text, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
+            <TextBlock gu:Cell.Index="0 0" Text="{Binding Path=SelectionManager.ChosenObject.Text, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
             <GridSplitter Grid.Row="1" Style="{StaticResource HorizontalGridSplitter}" />
             <local:PropertyGrid x:Name="SelectedPG" gu:Cell.Index="2 0"
-                                InspectedObject="{Binding SelectionManager.SelectedObject}" />
+                                InspectedObject="{Binding SelectionManager.ChosenObject}" />
             <GridSplitter Grid.Row="3" Style="{StaticResource HorizontalGridSplitter}" />
             <avalonEdit:TextEditor Name="textEditor2" gu:Cell.Index="4 0" FontFamily="Fira Code" FontSize="5pt" SyntaxHighlighting="C#" />
         </Grid>

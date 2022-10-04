@@ -13,7 +13,7 @@ public class ShapeProvider
     public static Action<Shape> SelectBehaviour { get; private set; }
     public void RegisterSelectBehaviour(Action<Shape> selectBehaviour) => SelectBehaviour = selectBehaviour;
 
-    protected Line CreateLine(TwoPoints points) => new Line()
+    protected Line PrepareLine(TwoPoints points) => new Line()
         .SetLocation(points)
         .WithSelectBehaviour();
 }
