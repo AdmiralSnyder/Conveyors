@@ -122,6 +122,7 @@ public class ShowLineFromToMouseInputHelper : ShowLineFromToInputHelper<ShowLine
     {
         var result = Create(context);
         result.StartPoint = point1;
+        result.EndPoint = point1;
         return result;
     }
 

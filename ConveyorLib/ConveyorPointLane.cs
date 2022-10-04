@@ -97,7 +97,7 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
             // TODO correctly calculate the inside property.
             Inside = IsLeft == clockwise;
 
-            var (largeArg, swDir) = (clockwise, IsLeft) switch
+            var (largeArc, swDir) = (clockwise, IsLeft) switch
             {
                 // TODO inside
                 (true, true) => (false, SweepDirection.Counterclockwise), // left turn, left side, bad
@@ -165,7 +165,7 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
                     var CrossStart = start - cross;
                     var CrossEnd = end - cross;
                     bool x = true;
-                    Point ActStart = default;
+                    Point ActStart;
                     if (x)
                     {
                         ActStart = (start - CrossStart) - CrossEnd;
@@ -179,7 +179,7 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
                     ArcGeometry.Figures.Add(new()
                     {
                         StartPoint = ActStart,
-                        Segments = { new ArcSegment(ActEnd, new(radius, radius), Point.Angle.Degrees, largeArg, swDir, true) }
+                        Segments = { new ArcSegment(ActEnd, new(radius, radius), Point.Angle.Degrees, largeArc, swDir, true) }
                     });
 
                     if (ElementsNode.Previous?.Value is ConveyorSegmentLane prevSegLane)
@@ -198,7 +198,7 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
                 ArcGeometry.Figures.Add(new()
                 {
                     StartPoint = prevEnd,
-                    Segments = { new ArcSegment(nextStart, new(radius, radius), Point.Angle.Degrees, largeArg, swDir, true) }
+                    Segments = { new ArcSegment(nextStart, new(radius, radius), Point.Angle.Degrees, largeArc, swDir, true) }
                 });
             }
 

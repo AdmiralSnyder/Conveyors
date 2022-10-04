@@ -4,7 +4,7 @@ using System.Windows.Controls;
 
 namespace ConveyorLib;
 
-public class Conveyor : ISelectObject, IRefreshable
+public class Conveyor : ISelectObject, IRefreshable, IAppObject<ConveyorAppApplication>
 {
     private static int NextConveyorNumber = 0;
 

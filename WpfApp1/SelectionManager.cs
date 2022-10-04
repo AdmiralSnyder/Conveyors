@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CoreLib;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -9,54 +10,61 @@ using UILib;
 
 namespace ConveyorApp;
 
-public class SelectionManager : IRefreshListener<ISelectable>, INotifyPropertyChanged
+public abstract class ChooseManager : IRefreshListener<ISelectable>, INotifyPropertyChanged
 {
-    public SelectionManager()
-    {
-        RefreshManager<ISelectable>.RegisterRefreshListener(this);
-    }
+    public bool IsActive { get; set; }
 
     public void Notify(ISelectable obj)
     {
-        if (obj is ISelectObject notifyObj && notifyObj == SelectedObject)
+        if (obj is ISelectObject notifyObj && notifyObj == ChosenObject)
         {
             UpdateBoundingBox(notifyObj);
         }
     }
 
-    public bool SelectMode { get; set; }
-
-    public Action<ISelectObject> UpdateBoundingBox { get; set; }
-
-    private ISelectObject _SelectObject;
-    public ISelectObject SelectedObject
+    private ISelectObject _ChosenObject;
+    public ISelectObject ChosenObject
     {
-        get => _SelectObject;
+        get => _ChosenObject;
         set
         {
-            if (_SelectObject != value)
+            if (_ChosenObject != value)
             {
-                if (_SelectObject != null)
+                if (_ChosenObject != null)
                 {
-                    RefreshManager<ISelectable>.UnRegisterObserver(this, _SelectObject);
+                    RefreshManager<ISelectable>.UnRegisterObserver(this, _ChosenObject);
                 }
-                _SelectObject = value;
+                _ChosenObject = value;
                 UpdateBoundingBox(value);
                 RefreshManager<ISelectable>.RegisterObserver(this, value);
-                OnPropertyChanged(nameof(SelectedObject));
+                OnPropertyChanged(nameof(ChosenObject));
+                ChosenObjectChanged?.Invoke(this, new(ChosenObject));
             }
         }
     }
 
+    public event EventHandler<EventArgs<ISelectable>> ChosenObjectChanged;
+
     public event PropertyChangedEventHandler PropertyChanged;
 
-    protected void OnPropertyChanged(string name)
-    {
-        PropertyChanged?.Invoke(this, new(name));
-    }
+    protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new(name));
+
+    public Action<ISelectObject> UpdateBoundingBox { get; set; }
+}
+
+public class PickManager : ChooseManager
+{
+    public Func<ISelectable, bool>? ObjectFilter { get; internal set; }
+
+    public bool QueryCanPickObject(ISelectable selectable) => ObjectFilter(selectable);
+}
+
+public class SelectionManager : ChooseManager
+{
+    public SelectionManager() => RefreshManager<ISelectable>.RegisterRefreshListener(this);
 
     public bool HierarchicalSelection { get; set; } = true;
 
-    public void ToggleSelectMode() => SelectMode = !SelectMode;
+    public void ToggleSelectMode() => IsActive = !IsActive;
 
 }

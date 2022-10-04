@@ -37,14 +37,14 @@ public class ConveyorShapeProvider : ShapeProvider
 
     public Line CreateTempLine(TwoPoints points)
     {
-        var line = CreateLine(points);
+        var line = PrepareLine(points);
         line.Stroke = Brushes.Magenta;
         return line;
     }
 
     public Line CreateConveyorPositioningLine(TwoPoints points)
     {
-        var line = CreateLine(points);
+        var line = PrepareLine(points);
         line.Stroke = Brushes.Black;
         line.StrokeThickness = 2;
         return line;
@@ -52,15 +52,43 @@ public class ConveyorShapeProvider : ShapeProvider
 
     public Line CreateConveyorSegmentLine(TwoPoints points)
     {
-        var line = CreateLine(points);
+        var line = PrepareLine(points);
         line.Stroke = Brushes.Red;
+        line.StrokeThickness = 2;
+        return line;
+    }
+
+    public Line CreateLineSegment(TwoPoints points)
+    {
+        var line = PrepareLine(points);
+        line.Stroke = Brushes.Beige;
+        line.StrokeThickness = 2;
+        return line;
+    }
+
+    public Line CreateLine(TwoPoints points)
+    {
+        var vector = points.P2 - points.P1;
+        var start = points.P1;
+        var end = points.P2;
+        //       -----_-----
+        var len = points.Length();
+        if (len < 1000)
+        {
+            var factor = 1000 / len;
+            start = points.P1 - vector.Multiply(factor);
+            end = points.P2 + vector.Multiply(factor);
+
+        }
+        var line = PrepareLine((start, end));
+        line.Stroke = Brushes.Beige;
         line.StrokeThickness = 2;
         return line;
     }
 
     public Line CreateConveyorSegmentLaneLine(TwoPoints points)
     {
-        var line = CreateLine(points);
+        var line = PrepareLine(points);
         line.Stroke = Brushes.White;
         line.StrokeThickness = 1;
         return line;
@@ -86,6 +114,12 @@ public class ConveyorShapeProvider : ShapeProvider
         Stroke = isLeft ? Brushes.Plum : Brushes.Tomato,
     }.WithSelectBehaviour();
 
+    public Path CreateCircleSectorArc(PathGeometry geometry, bool isLeft) => new Path()
+    {
+        Data = geometry,
+        Stroke = isLeft ? Brushes.Orange : Brushes.Teal,
+        StrokeThickness = 2,
+    }.WithSelectBehaviour();
 
     public Ellipse CreatePointMoveCircle(Point location, Action<Shape> leftClickAction)
     {

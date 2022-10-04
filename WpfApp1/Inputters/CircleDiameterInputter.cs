@@ -12,7 +12,5 @@ class CircleDiameterInputter : Inputter<CircleDiameterInputter, (Point Point1, P
             Helpers.ShowMouseLocation(),
             Helpers.FixedPoint(ctx.Second),
             Helpers.ShowCalculatedPoint(mouse => Maths.GetMidPoint(ctx.Second, mouse))))
-        .Do(ctx => InputResult.SuccessTask(ctx.Flatten()));
-
-    
+        .Do(ctx => InputResult.SuccessTask(ctx.Flatten()));   
 }
