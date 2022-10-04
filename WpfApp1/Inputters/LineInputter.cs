@@ -4,7 +4,7 @@ namespace ConveyorApp.Inputters;
 
 public class LineInputter : Inputter<LineInputter, (Point P1, Point P2), CanvasInputContext, CanvasInputHelpers>
 {
-    public override async Task<InputResult<(Vector, Vector)>> StartAsyncVirtual() 
+    protected override async Task<InputResult<(Vector, Vector)>> StartAsyncVirtual() 
         => await InputManager.Blank()
             .Then(async _ => await PointInputter.StartInput(Context,
                 Helpers.ShowMouseLocation()))

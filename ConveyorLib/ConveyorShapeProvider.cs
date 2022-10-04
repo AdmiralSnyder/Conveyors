@@ -131,8 +131,8 @@ public class ConveyorShapeProvider : ShapeProvider
             Stroke = Brushes.BurlyWood,
             StrokeThickness = 3,
             Fill = Brushes.Transparent,
+            Cursor = Cursors.Hand
         };
-        result.Cursor = Cursors.Hand;
 
         result.ApplyMouseBehaviour(leftClickAction, MouseAction.LeftClick);
         result.SetCenterLocation(location);
@@ -142,4 +142,17 @@ public class ConveyorShapeProvider : ShapeProvider
     private const double ItemSize = 3;
 
     public Ellipse CreateConveyorItemEllipse() => new() { Width = ItemSize, Height = ItemSize, Fill = Brushes.Blue };
+
+    internal Shape CreateFillet(TwoPoints points, double radius)
+    {
+        var pg = new PathGeometry();
+
+        pg.Figures.Add(new()
+        {
+            StartPoint = points.P1,
+            Segments = { new ArcSegment(points.P2, new(radius, radius), 0, false, SweepDirection.Clockwise, true) }
+        });
+
+        return CreateCircleSectorArc(pg, true);
+    }
 }

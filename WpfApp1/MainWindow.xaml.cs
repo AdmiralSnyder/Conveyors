@@ -302,40 +302,11 @@ public partial class MainWindow
 
     private async void AddFilletB_Click(object sender, RoutedEventArgs e)
     {
-        if ((await SelectLineInputter.Create(InputContext).StartAsync()).IsSuccess(out var line1))
+        if ((await FilletInfoInputter.Create(InputContext).StartAsync()).IsSuccess(out var lines))
         {
-            if ((await SelectLineInputter.Create(InputContext).StartAsync()).IsSuccess(out var line2))
+            if (Maths.CreateFilletInfo(lines.Item1.RefPoints, lines.Item2.RefPoints, out var filletInfo))
             {
-                var angle = Maths.AngleBetween(line1.Vector, line2.Vector);
-
-                if (Maths.GetCrossingPoint((line1.ReferencePoint1, line1.ReferencePoint2), (line2.ReferencePoint1, line2.ReferencePoint2), out var crossingPoint))
-                {
-                    AddPoint(crossingPoint);
-
-                    var radius = 25d;
-                    var tangent = Math.Tan(angle.CounterAngle().Radians / 2);
-
-                    var a = tangent * radius;
-                    var unitVector1 = line1.Vector.Normalize();
-                    var start1 = crossingPoint + unitVector1.Multiply(a);
-
-                    var unitVector2 = line2.Vector.Normalize();
-                    var start2 = crossingPoint + unitVector2.Multiply(a);
-
-                    bool largeArc = false;
-                    SweepDirection swDir = SweepDirection.Clockwise;
-
-                    var pg = new PathGeometry();
-
-                    pg.Figures.Add(new()
-                    {
-                        StartPoint = start1,
-                        Segments = { new ArcSegment(start2, new(radius, radius), 0, largeArc, swDir, true) }
-                    });
-
-                    var shape = ShapeProvider.CreateCircleSectorArc(pg, true);
-                    TheCanvas.Children.Add(shape);
-                }
+                AutoRoot.AddFillet(filletInfo.Points, filletInfo.Radius);
             }
         }
     }

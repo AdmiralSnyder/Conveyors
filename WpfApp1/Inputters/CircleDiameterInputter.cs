@@ -4,7 +4,7 @@ namespace ConveyorApp.Inputters;
 
 class CircleDiameterInputter : Inputter<CircleDiameterInputter, (Point Point1, Point Point2), CanvasInputContext, CanvasInputHelpers>
 {
-    public override async Task<InputResult<(Vector Point1, Vector Point2)>> StartAsyncVirtual()
+    protected override async Task<InputResult<(Vector Point1, Vector Point2)>> StartAsyncVirtual()
         => await InputManager.Blank()
         .Then(async _ => await PointInputter.StartInput(Context,
             Helpers.ShowMouseLocation()))

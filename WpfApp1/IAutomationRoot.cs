@@ -37,6 +37,8 @@ public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomatio
     
     Line AddLine(TwoPoints points);
 
+    Fillet AddFillet(TwoPoints points, double radius);
+
     void MovePoint(ConveyorPoint conveyorPoint, Point point);
 
     void OffsetPoint(ConveyorPoint conveyorPoint, Point point);
@@ -76,6 +78,14 @@ public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppAppli
         line.AddToCanvas(CanvasInfo);
         AutomationObjects.Add(line);
         return line;
+    }
+
+    public partial Fillet AddFillet(TwoPoints points, double radius)
+    {
+        var fillet = Fillet.Create(points, radius);
+        fillet.AddToCanvas(CanvasInfo);
+        AutomationObjects.Add(fillet);
+        return fillet;
     }
 
     public partial void MovePoint(ConveyorPoint conveyorPoint, Point point) => conveyorPoint.Location = point;

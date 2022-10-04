@@ -4,7 +4,7 @@ namespace ConveyorApp.Inputters;
 
 public class CircleCenterRadiusInputter : Inputter<CircleCenterRadiusInputter, (Point Center, double Radius), CanvasInputContext, CanvasInputHelpers>
 {
-    public override async Task<InputResult<(Vector Center, double Radius)>> StartAsyncVirtual() 
+    protected override async Task<InputResult<(Vector Center, double Radius)>> StartAsyncVirtual() 
         => await InputManager.Blank()
             .Then(async _ => await PointInputter.StartInput(Context, 
                 Helpers.ShowMouseLocation()))

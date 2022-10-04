@@ -37,7 +37,7 @@ public class SelectLineInputter : Inputter<SelectLineInputter, Line, CanvasInput
         base.CleanupVirtual();
     }
 
-    public override Task<InputResult<Line>> StartAsyncVirtual()
+    protected override Task<InputResult<Line>> StartAsyncVirtual()
     {
         Context.MainWindow.PickManager.IsActive = true;
         Context.MainWindow.PickManager.ObjectFilter = x => x is Line;

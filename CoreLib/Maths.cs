@@ -54,8 +54,8 @@ public class Angle
 
     public override bool Equals(object? obj) => obj is Angle a && a.Degrees == Degrees;
 
-    
-    
+
+
     // TODO maybe improve that HashCode...
     public override int GetHashCode() => HashCode.Combine(typeof(Angle).GetHashCode(), Degrees);
 }
@@ -136,7 +136,7 @@ public static class Maths
         var firstAnglePointInfos = BringInFirstQuadrant(point);
         var firstAngle = firstAnglePointInfos.FirstQuadrantPoint.Angle() + firstAnglePointInfos.CorrectionAngle;
         var totalAngle = firstAngle + angle;
-        
+
         var x2 = Math.Round(Math.Cos(totalAngle.Radians) * r, 7);
         var y2 = Math.Round(Math.Sin(totalAngle.Radians) * r, 7);
 
@@ -324,8 +324,8 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
     => a * Determinant(e, f, h, i) - b * Determinant(d, f, g, i) + c * Determinant(d, e, g, h);
 
     public static double Determinant(
-        double a, double b, 
-        double c, double d) 
+        double a, double b,
+        double c, double d)
     => a * d - b * c;
 
     public static double GetSlope(Vector vector) => vector.Y / vector.X;
@@ -371,6 +371,35 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
 
             crossingPoint = cross;
             return true;
+        }
+    }
+
+    public static bool CreateFilletInfo(TwoPoints line1, TwoPoints line2, out (TwoPoints Points, double Radius) filletInfo)
+    {
+        var vector1 = line1.Vector();
+        var vector2 = line2.Vector();
+        // TODO decide which angle to pick from param
+        var angle = Maths.AngleBetween(vector1, vector2);
+
+        if (Maths.GetCrossingPoint((line1.P1, line1.P2), (line2.P1, line2.P2), out var crossingPoint))
+        {
+            // TODO radius needs to be a param
+            var radius = 25d;
+            var tangent = Math.Tan(angle.CounterAngle().Radians / 2);
+
+            var a = tangent * radius;
+            var unitVector1 = vector1.Normalize();
+            var start1 = crossingPoint + unitVector1.Multiply(a);
+
+            var unitVector2 = vector2.Normalize();
+            var start2 = crossingPoint + unitVector2.Multiply(a);
+            filletInfo = ((start1, start2), radius);
+            return true;
+        }
+        else
+        {
+            filletInfo = default;
+            return false;
         }
     }
 }

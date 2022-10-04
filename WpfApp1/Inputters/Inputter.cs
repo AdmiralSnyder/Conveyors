@@ -36,7 +36,7 @@ public abstract class InputterBase<TThis, TContext, TTask> : Inputter
 
     public override void Start() => AttachEvents();
 
-    public abstract TTask StartAsyncVirtual();
+    protected abstract TTask StartAsyncVirtual();
 
     public override void RunAsync() => StartAsync();
 
@@ -104,7 +104,7 @@ public abstract class Inputter<TThis, TContext> : InputterBase<TThis, TContext, 
         TaskCompletionSource.SetResult();
     }
 
-    public override Task StartAsyncVirtual()
+    protected override Task StartAsyncVirtual()
     {
         Start();
         TaskCompletionSource = new();
@@ -140,7 +140,7 @@ public abstract class Inputter<TThis, TResult, TContext> : InputterBase<TThis, T
         TaskCompletionSource.SetResult(Result);
     }
 
-    public override Task<InputResult<TResult>> StartAsyncVirtual()
+    protected override Task<InputResult<TResult>> StartAsyncVirtual()
     {
         Start();
         TaskCompletionSource = new();
