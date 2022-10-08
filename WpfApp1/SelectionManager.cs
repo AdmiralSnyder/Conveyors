@@ -38,18 +38,20 @@ public abstract class ChooseManager : IRefreshListener<ISelectable>, INotifyProp
                 UpdateBoundingBox(value);
                 RefreshManager<ISelectable>.RegisterObserver(this, value);
                 OnPropertyChanged(nameof(ChosenObject));
-                ChosenObjectChanged?.Invoke(this, new(ChosenObject));
+
+                ChosenObjectChanged?.Invoke(this, new((ChosenObject, MousePosition)));
             }
         }
     }
 
-    public event EventHandler<EventArgs<ISelectable>> ChosenObjectChanged;
+    public event EventHandler<EventArgs<(ISelectable, Point)>> ChosenObjectChanged;
 
     public event PropertyChangedEventHandler PropertyChanged;
 
     protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new(name));
 
     public Action<ISelectObject> UpdateBoundingBox { get; set; }
+    public System.Windows.Point MousePosition { get; internal set; }
 }
 
 public class PickManager : ChooseManager

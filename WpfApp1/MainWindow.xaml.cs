@@ -57,6 +57,8 @@ public partial class MainWindow
         context.LogAction = s => textEditor2.Dispatcher.Invoke(() => textEditor2.AppendText(s + Environment.NewLine));
         ScriptRunner.InitializeScriptingEnvironment(AutoRoot, Dispatcher, RunB);
 
+        DebugHelper.Instance = new ConveyorDebugHelper() { Canvas = TheCanvas, ShapeProvider = ShapeProvider };
+
     }
 
     public IGeneratedConveyorAutomationObject AutoRoot { get; }
@@ -67,12 +69,15 @@ public partial class MainWindow
 
     private void SelectShapeAction(Shape shape)
     {
+        var mousePosition = Mouse.GetPosition(TheCanvas);
+
         var oldSelectedObject = SelectionManager.ChosenObject;
 
         if (shape.Tag is ISelectObject selectObject)
         {
             if (PickManager.IsActive)
             {
+                PickManager.MousePosition = mousePosition;
                 if (PickManager.QueryCanPickObject(selectObject))
                 {
                     PickManager.ChosenObject = selectObject;
@@ -80,6 +85,8 @@ public partial class MainWindow
             }
             else if (SelectionManager.IsActive)
             {
+                SelectionManager.MousePosition = mousePosition;
+
                 if (SelectionManager.HierarchicalSelection)
                 {
                     SelectionManager.ChosenObject = selectObject.FindPredecessorInPath(oldSelectedObject);
@@ -302,9 +309,11 @@ public partial class MainWindow
 
     private async void AddFilletB_Click(object sender, RoutedEventArgs e)
     {
-        if ((await FilletInfoInputter.Create(InputContext).StartAsync()).IsSuccess(out var lines))
+        if ((await FilletInfoInputter.Create(InputContext).StartAsync()).IsSuccess(out var linesWithPoints))
         {
-            if (Maths.CreateFilletInfo(lines.Item1.RefPoints, lines.Item2.RefPoints, out var filletInfo))
+            var point1 = linesWithPoints.LineInfo1.Point;
+            var point2 = linesWithPoints.LineInfo2.Point;
+            if (Maths.CreateFilletInfo(linesWithPoints.LineInfo1.Line.RefPoints, linesWithPoints.LineInfo2.Line.RefPoints, (point1, point2), out var filletInfo))
             {
                 AutoRoot.AddFillet(filletInfo.Points, filletInfo.Radius);
             }

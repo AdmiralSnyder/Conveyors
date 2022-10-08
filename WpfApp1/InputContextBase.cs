@@ -234,11 +234,11 @@ public abstract class InputContextBase
 
     public event EventHandler Abort;
 
-    public event EventHandler<EventArgs<ISelectObject>> ObjectPicked;
+    public event EventHandler<EventArgs<(ISelectObject, Point)>> ObjectPicked;
 
-    protected void DoObjectPicked(ISelectObject pickedObject)
+    protected void DoObjectPicked(ISelectObject pickedObject, Point point)
     {
-        ObjectPicked?.Invoke(this, new(pickedObject));
+        ObjectPicked?.Invoke(this, new((pickedObject, point)));
     }
 
     protected void DoAbort() => Abort?.Invoke(this, EventArgs.Empty);

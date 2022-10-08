@@ -6,7 +6,7 @@ using UILib;
 
 namespace ConveyorApp.Inputters;
 
-public class SelectLineInputter : Inputter<SelectLineInputter, Line, CanvasInputContext>
+public class SelectLineInputter : Inputter<SelectLineInputter, (Line, Point), CanvasInputContext>
 {
     protected override void AttachEvents()
     {
@@ -14,9 +14,9 @@ public class SelectLineInputter : Inputter<SelectLineInputter, Line, CanvasInput
         Context.ObjectPicked += Context_ObjectPicked;
     }
 
-    private void Context_ObjectPicked(object? sender, EventArgs<ISelectObject> e)
+    private void Context_ObjectPicked(object? sender, EventArgs<(ISelectObject, Point)> e)
     {
-        Complete((Line)e.Data);
+        Complete(((Line, Point))e.Data);
     }
 
     private void Context_Abort(object? sender, EventArgs e) { }
@@ -37,7 +37,7 @@ public class SelectLineInputter : Inputter<SelectLineInputter, Line, CanvasInput
         base.CleanupVirtual();
     }
 
-    protected override Task<InputResult<Line>> StartAsyncVirtual()
+    protected override Task<InputResult<(Line, Point)>> StartAsyncVirtual()
     {
         Context.MainWindow.PickManager.IsActive = true;
         Context.MainWindow.PickManager.ObjectFilter = x => x is Line;

@@ -66,6 +66,22 @@ public class ConveyorShapeProvider : ShapeProvider
         return line;
     }
 
+    public Line CreateDebugLineSegment(TwoPoints points)
+    {
+        var line = PrepareLine(points);
+        line.Stroke = Brushes.Magenta;
+        line.StrokeThickness = 1.5;
+        return line;
+    }
+
+    public Line CreateDebugThinLineSegment(TwoPoints points)
+    {
+        var line = PrepareLine(points);
+        line.Stroke = Brushes.Magenta;
+        line.StrokeThickness = 0.5;
+        return line;
+    }
+
     public Line CreateLine(TwoPoints points)
     {
         var vector = points.P2 - points.P1;

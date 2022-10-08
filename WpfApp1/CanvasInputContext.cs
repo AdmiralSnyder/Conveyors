@@ -40,11 +40,11 @@ public class CanvasInputContext : InputContextBase
 
     public void StopObjectPickingListener() => MainWindow.PickManager.ChosenObjectChanged -= PickManager_ChosenObjectChanged;
 
-    private void PickManager_ChosenObjectChanged(object? sender, CoreLib.EventArgs<UILib.ISelectable> e)
+    private void PickManager_ChosenObjectChanged(object? sender, CoreLib.EventArgs<(ISelectable SelObj, Point Point)> e)
     {
-        if (e.Data is ISelectObject so)
+        if (e.Data.SelObj is ISelectObject so)
         {
-            DoObjectPicked(so);
+            DoObjectPicked(so, e.Data.Point);
         }
     }
 

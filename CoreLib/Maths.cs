@@ -27,6 +27,14 @@ public class Angle
     public double Degrees { get; init; }
     public double Radians { get; init; }
     public override string ToString() => $"{Degrees:0.##}° {Radians:0.##}rad";
+
+    public static Angle operator -(Angle @this) => (-@this.Radians).Radians();
+    public static bool operator <(Angle @this, Angle other) => @this.Radians < other.Radians;
+    public static bool operator >(Angle @this, Angle other) => @this.Radians > other.Radians;
+
+    public static bool operator <=(Angle @this, Angle other) => @this.Radians <= other.Radians;
+    public static bool operator >=(Angle @this, Angle other) => @this.Radians >= other.Radians;
+
     public bool IsStraight => Degrees == 180d;
     /// <summary>
     /// Spitzer Winkel
@@ -63,6 +71,38 @@ public class Angle
 
 public static class Maths
 {
+    public static Angle AngleBetween(double ax, double ay, double bx, double by, Vector midVector)
+    {
+        var angleAB = AngleBetween(ax, ay, bx, by);
+        var angle1 = new Vector(ax, ay).CartPosAngle();
+        var midAngle = midVector.CartPosAngle();
+        if (angle1 < midAngle)
+        {
+            midAngle = midAngle - angle1;
+        }    
+        else
+        {
+            midAngle = midAngle + Angle.FullCircle - angle1;
+        }
+        return angleAB;
+    }
+
+    public static Angle PosAngleBetween(double ax, double ay, double bx, double by, Vector midVector)
+    {
+        var aAngle = CartPosAngle((ax, ay));
+        var bAngle = CartPosAngle((bx, by));
+        var midAngle = CartPosAngle(midVector);
+
+        if (aAngle == bAngle) return 0d.Degrees();
+        
+        if (aAngle > bAngle) return (360d.Degrees() - aAngle) + bAngle;
+
+        return bAngle - aAngle;
+    }
+
+    public static Angle CartAngle(this Vector vector) => AngleBetween(0, 1, vector.X, vector.Y);
+    public static Angle CartPosAngle(this Vector vector) => PosAngleBetween(0, 1, vector.X, vector.Y);
+
     public static Angle AngleBetween(double ax, double ay, double bx, double by)
     {
         double sin = ax * by - bx * ay;
@@ -70,7 +110,25 @@ public static class Maths
         return Math.Atan2(sin, cos).Radians();
     }
 
+    public static Angle PosAngleBetween(double ax, double ay, double bx, double by)
+    {
+        double sin = ax * by - bx * ay;
+        double cos = ax * bx + ay * by;
+        var rad = Math.Atan2(sin, cos);
+        if (rad < 0)
+        {
+            rad = double.Pi - rad;
+        }
+        return rad.Radians();
+    }
+
+    public static Angle AngleBetween(Vector a, Vector b, Vector midVector) => AngleBetween(a.X, a.Y, b.X, b.Y, midVector);
+
     public static Angle AngleBetween(Vector a, Vector b) => AngleBetween(a.X, a.Y, b.X, b.Y);
+
+    public static Angle PosAngleBetween(Vector a, Vector b, Vector midVector) => PosAngleBetween(a.X, a.Y, b.X, b.Y, midVector);
+
+    public static Angle PosAngleBetween(Vector a, Vector b) => PosAngleBetween(a.X, a.Y, b.X, b.Y);
 
     public const double OneEightyOverPi = 180d / Math.PI;
     public const double PiOverOneEighty = Math.PI / 180d;
@@ -108,11 +166,13 @@ public static class Maths
     public static Vector Inverse(this Vector vect) => new(-vect.X, -vect.Y);
     public static Vector InverseY(this Vector vect) => new(vect.X, -vect.Y);
 
+    public static Vector Halve(this Vector vect) => vect.Divide(2);
     public static Vector Multiply(this Vector vect, double factor) => (vect.X * factor, vect.Y * factor);
     public static Vector Divide(this Vector vect, double factor) => (vect.X / factor, vect.Y / factor);
     public static Point Subtract(this Point point, Vector vect) => (point.X - vect.X, point.Y - vect.Y);
     public static Point Add(this Point point, Vector vect) => (point.X + vect.X, point.Y + vect.Y);
     public static TwoPoints Add(this TwoPoints twoPoints, Vector vect) => (twoPoints.P1.Add(vect), twoPoints.P2.Add(vect));
+    public static TwoPoints Subtract(this TwoPoints twoPoints, Vector vect) => (twoPoints.P1.Subtract(vect), twoPoints.P2.Subtract(vect));
 
     public static IEnumerable<Point> Add(this IEnumerable<Point> points, Vector vect) => points.Select(p => p.Add(vect));
     public static IEnumerable<Point> Scale(this IEnumerable<Point> points, double factor) => points.Select(p => p.Multiply(factor));
@@ -374,24 +434,53 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         }
     }
 
-    public static bool CreateFilletInfo(TwoPoints line1, TwoPoints line2, out (TwoPoints Points, double Radius) filletInfo)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <image url="../docs/FilletOrientation.png"></image>
+    /// <param name="line1"></param>
+    /// <param name="line2"></param>
+    /// <param name="selectionPoints"></param>
+    /// <param name="filletInfo"></param>
+    /// <returns></returns>
+    public static bool CreateFilletInfo(TwoPoints line1, TwoPoints line2, TwoPoints selectionPoints, out (TwoPoints Points, double Radius) filletInfo)
     {
+        
         var vector1 = line1.Vector();
         var vector2 = line2.Vector();
-        // TODO decide which angle to pick from param
-        var angle = Maths.AngleBetween(vector1, vector2);
+        
+        var selectionMidPoint = selectionPoints.MidPoint();
+        DebugHelper.PutPoint(selectionMidPoint);
+        DebugHelper.PutPoint(selectionPoints.P1);
+        DebugHelper.PutPoint(selectionPoints.P2);
 
+        // TODO decide which angle to pick from param
         if (Maths.GetCrossingPoint((line1.P1, line1.P2), (line2.P1, line2.P2), out var crossingPoint))
         {
+            
+            var unitVector1 = vector1.Normalize();
+            unitVector1 = Maths.OrientVectorTowards(unitVector1, (selectionPoints.P1, crossingPoint));
+
+            DebugHelper.SetOrigin((10, 10));
+
+            DebugHelper.PutVector(vector1);
+            DebugHelper.PutVector(vector2);
+
+            var unitVector2 = vector2.Normalize();
+            unitVector2 = Maths.OrientVectorTowards(unitVector2, (selectionPoints.P2, crossingPoint));
+
+            var angle = Maths.AngleBetween(unitVector1, unitVector2, crossingPoint.To(selectionMidPoint).Normalize());
+            DebugHelper.PutAngle((40, 20), angle);
+
             // TODO radius needs to be a param
             var radius = 25d;
             var tangent = Math.Tan(angle.CounterAngle().Radians / 2);
 
             var a = tangent * radius;
-            var unitVector1 = vector1.Normalize();
-            var start1 = crossingPoint + unitVector1.Multiply(a);
 
-            var unitVector2 = vector2.Normalize();
+            var start1 = crossingPoint + unitVector1.Multiply(a);
+            DebugHelper.PutPoint(start1);
+
             var start2 = crossingPoint + unitVector2.Multiply(a);
             filletInfo = ((start1, start2), radius);
             return true;
@@ -400,6 +489,24 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         {
             filletInfo = default;
             return false;
+        }
+    }
+
+    public static Point MidPoint(this TwoPoints points) => MidPoint(points.P1, points.P2);
+
+    public static Point MidPoint(Point p1, Point p2) => p1.Add(p1.To(p2).Halve());
+
+    public static Vector OrientVectorTowards(Vector vector, TwoPoints fromTo)
+    {
+        var pAdd = fromTo.P1 + vector;
+        var pSub = fromTo.P1 - vector;
+        if ((fromTo.P2 - pAdd).Length() < (fromTo.P2 - pSub).Length())
+        {
+            return vector;
+        }
+        else
+        {
+            return vector.Inverse();
         }
     }
 }

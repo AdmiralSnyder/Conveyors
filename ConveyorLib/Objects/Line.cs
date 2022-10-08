@@ -5,6 +5,10 @@ using System.Windows.Shapes;
 
 namespace ConveyorLib.Objects;
 
+/// <summary>
+/// a thing that smooths out the connection corner of lines.
+/// </summary>
+/// <image url="../../docs/fillet.gif"></image>
 public class Fillet : ConveyorAppApplicationObject<Shape>
 {
     public override string Text => "SomeFillet123";

@@ -8,6 +8,47 @@ namespace ConveyorTests
 
     public class UnitTest1
     {
+        [Theory]
+        [InlineData(1, 0, 0)]
+        [InlineData(1, 1, 45)]
+        [InlineData(0, 1, 90)]
+        [InlineData(-1, 0, 180)]
+        [InlineData(0, -1, 270)]
+        public void AngleOnACircleTest(double x, double y, double angleDeg)
+        {
+            var calcAngle = Maths.PosAngleBetween((1, 0), (x, y));
+            Assert.Equal(angleDeg, calcAngle.Degrees);
+        }
+
+        [Theory]
+        [InlineData(1, 0, 0, 1, 1,1, 90)]
+        [InlineData(1, 0, 0, 1, -1, -1, 270)]
+        [InlineData(1, 0, 1, 1, 1, 2, 45)]
+        [InlineData(1, 1, 1, 1, 1, 1, 0)]
+        [InlineData(1, 1, -1, 1, 0, 1, 90)]
+        [InlineData(1, 1, -1, 0, 0, 1, 135)]
+        [InlineData(1, 1, -1, -1, 0, 1, 180)]
+        [InlineData(1, 1, 1, -1, 0, 1, 270)]
+        public void AngleBetweenVectorTest(double x1, double y1, double x2, double y2, double xBetween, double yBetween, double angleDeg)
+        {
+            var calcAngleBetween = Maths.PosAngleBetween((x1, y1), (x2, y2), (xBetween, yBetween));
+            Assert.Equal(angleDeg, calcAngleBetween.Degrees);
+        }
+
+        [Theory]
+        [InlineData(1, 0, 0, 1, 90)]
+        [InlineData(1, 0, 1, 1, 45)]
+        [InlineData(1, 1, 1, 1, 0)]
+        [InlineData(1, 1, -1, 1, 90)]
+        [InlineData(1, 1, -1, 0, 135)]
+        [InlineData(1, 1, -1, -1, 180)]
+        [InlineData(1, 1, 1, -1, 270)]
+        public void AngleBetweenTest(double x1, double y1, double x2, double y2, double angleDeg)
+        {
+            var angle = Maths.PosAngleBetween(x1, y1, x2, y2);
+            Assert.Equal(angleDeg, angle.Degrees);
+        }
+
         [Theory()]
         [InlineData(10, 10, 20, 20, 30, 30, 180)]
         [InlineData(10, 10, 20, 20, 30, 20, 135)]

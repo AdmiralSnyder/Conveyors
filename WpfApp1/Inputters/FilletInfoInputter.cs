@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace ConveyorApp.Inputters;
 
-internal class FilletInfoInputter : Inputter<FilletInfoInputter, (Line, Line), CanvasInputContext, CanvasInputHelpers>
+internal class FilletInfoInputter : Inputter<FilletInfoInputter, ((Line Line, Point Point) LineInfo1, (Line Line, Point Point) LineInfo2), CanvasInputContext, CanvasInputHelpers>
 {
-    protected override async Task<InputResult<(Line, Line)>> StartAsyncVirtual()
+    protected override async Task<InputResult<((Line Line, Point Point) LineInfo1, (Line Line, Point Point) LineInfo2)>> StartAsyncVirtual()
         => await InputManager.Blank()
             .Then(async _ => await SelectLineInputter.StartInput(Context))
             .Then(async line1 => await SelectLineInputter.StartInput(Context))
