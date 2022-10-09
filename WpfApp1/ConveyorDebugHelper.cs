@@ -31,9 +31,9 @@ namespace ConveyorApp
                 PutLineSegment(((0, 0), vector));
                 Vector arrowHeadLeft = (-5, 5);
                 var angle = vector.CartPosAngle();
-                arrowHeadLeft = arrowHeadLeft.RotateAroundOrigin(-angle);
+                arrowHeadLeft = arrowHeadLeft.RotateAroundOrigin(angle);
                 Vector arrowHeadRight = (-5, -5);
-                arrowHeadRight = arrowHeadRight.RotateAroundOrigin(-angle);
+                arrowHeadRight = arrowHeadRight.RotateAroundOrigin(angle);
 
                 PutLineSegment((vector, vector + arrowHeadLeft));
                 PutLineSegment((vector, vector + arrowHeadRight));

@@ -12,63 +12,6 @@ public static class AngleExtensions
     public static Angle Degrees(this double valueDeg) => new() { Degrees = valueDeg, Radians = Maths.DegToRad(valueDeg) };
     public static Angle Radians(this double valueRad) => new() { Degrees = Maths.RadToDeg(valueRad), Radians = valueRad };
 }
-public class Angle
-{
-
-    public static Angle Zero = 0d.Degrees();
-    public static Angle Minus90 = (-90d).Degrees();
-    public static Angle Minus180 = (-180d).Degrees();
-    public static Angle Minus270 = (-270d).Degrees();
-
-    public static Angle Plus90 = (90d).Degrees();
-    public static Angle Plus180 = (180d).Degrees();
-    public static Angle Plus270 = (270d).Degrees();
-
-    public static Angle FullCircle = 360d.Degrees();
-    public static Angle HalfCircle = 180d.Degrees();
-    public double Degrees { get; init; }
-    public double Radians { get; init; }
-    public override string ToString() => $"{Degrees:0.##}° {Radians:0.##}rad";
-
-    public static Angle operator -(Angle @this) => (-@this.Radians).Radians();
-    public static bool operator <(Angle @this, Angle other) => @this.Radians < other.Radians;
-    public static bool operator >(Angle @this, Angle other) => @this.Radians > other.Radians;
-
-    public static bool operator <=(Angle @this, Angle other) => @this.Radians <= other.Radians;
-    public static bool operator >=(Angle @this, Angle other) => @this.Radians >= other.Radians;
-
-    public bool IsStraight => Degrees == 180d;
-    /// <summary>
-    /// Spitzer Winkel
-    /// </summary>
-    public bool IsAcute => Degrees < 90d;
-    /// <summary>
-    /// Stumpfer Winkel
-    /// </summary>
-    public bool IsObtuse => Degrees > 90d;
-    public bool IsRight => Degrees == 90d;
-    public bool IsReflex => Degrees > 180d && Degrees < 360d;
-    public bool IsNormalized => Degrees < 360d;
-    public bool IsClockwise => Degrees < 0d;
-
-    public Angle CounterAngle() => Radians > 0 ? (Math.PI - Radians).Radians() : (-Math.PI - Radians).Radians();
-
-    public static Angle operator +(Angle a1, Angle a2) => (a1.Radians + a2.Radians).Radians();
-    public static Angle operator -(Angle a1, Angle a2) => (a1.Radians - a2.Radians).Radians();
-
-    public static Angle operator ~(Angle a1) => (-a1.Radians).Radians();
-    public static Angle operator *(Angle a1, double times) => (a1.Radians * times).Radians();
-
-    public static bool operator ==(Angle a1, Angle a2) => a1.Equals(a2);
-    public static bool operator !=(Angle a1, Angle a2) => !a1.Equals(a2);
-
-    public override bool Equals(object? obj) => obj is Angle a && a.Degrees == Degrees;
-
-
-
-    // TODO maybe improve that HashCode...
-    public override int GetHashCode() => HashCode.Combine(typeof(Angle).GetHashCode(), Degrees);
-}
 
 
 public static class Maths
@@ -79,16 +22,20 @@ public static class Maths
         var angle1 = new Vector(ax, ay).CartPosAngle();
         var angle2 = new Vector(bx, by).CartPosAngle();
         Angle negPosAngle1;
+        var midAngle = midVector.CartPosAngle();
         if (angle1 > angle2)
         {
             negPosAngle1 = (-((Angle.FullCircle - angle1).Radians)).Radians();
+            if (midAngle > angle2)
+            {
+                midAngle = (-((Angle.FullCircle - midAngle).Radians)).Radians();
+            }
         }
         else
         {
             negPosAngle1 = angle1;
         }
 
-        var midAngle = midVector.CartPosAngle();
         if (midAngle >= negPosAngle1 && midAngle <= angle2)
         {
             return PosAngleBetween(ax, ay, bx, by);
@@ -128,7 +75,6 @@ public static class Maths
         double sin = ax * by - bx * ay;
         double cos = ax * bx + ay * by;
         var rad = Math.Atan2(sin, cos);
-
         if (rad < 0)
         {
             rad = Math.Tau + rad;
@@ -206,7 +152,7 @@ public static class Maths
 
     public static Point RotateAroundOrigin(this Point point, Angle angle)
     {
-        angle = -angle; // fix for (flipped y axis.
+        angle = angle; // fix for (flipped y axis.
         var r = point.Length();
         var firstAnglePointInfos = BringInFirstQuadrant(point);
         var firstAngle = firstAnglePointInfos.FirstQuadrantPoint.Angle() + firstAnglePointInfos.CorrectionAngle;
@@ -527,15 +473,15 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
             var closestPoint2 = line2.GetClosestPointOnLine(selectionPoints.P2);
             unitVector2 = Maths.OrientVectorTowards(unitVector2, (crossingPoint, closestPoint2));
 
+            var closestPointMidPoint = MidPoint((closestPoint1, closestPoint2));
             //DebugHelper.PutLineSegmentVector((crossingPoint, crossingPoint + unitVector2.Multiply(40)));
 
-            DebugHelper.PutLineSegmentVector((crossingPoint, selectionMidPoint));
+            //DebugHelper.PutLineSegmentVector((crossingPoint, closestPointMidPoint));
 
+            var angle = Maths.AngleBetween(unitVector1, unitVector2, crossingPoint.To(closestPointMidPoint).Normalize());
+            //Debug.WriteLine(angle);
 
-            var angle = Maths.AngleBetween(unitVector1, unitVector2, crossingPoint.To(selectionMidPoint));
-            Debug.WriteLine(angle);
-
-            DebugHelper.PutAngle((20, 20), angle);
+            //DebugHelper.PutAngle((20, 20), angle);
 
             // TODO radius needs to be a param
             var radius = 25d;
@@ -546,13 +492,13 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
             var start1 = crossingPoint + unitVector1.Multiply(a);
             var start2 = crossingPoint + unitVector2.Multiply(a);
 
-            DebugHelper.PutPoint(start1);
-            DebugHelper.PutPoint(start2);
+            //DebugHelper.PutPoint(start1);
+            //DebugHelper.PutPoint(start2);
 
             TwoPoints startPoints = (start1, start2);
             LineDefinition filletVect = new((startPoints.MidPoint(), crossingPoint));
             
-            DebugHelper.PutLineSegmentVector(filletVect.RefPoints);
+            //DebugHelper.PutLineSegmentVector(filletVect.RefPoints);
 
             if (filletVect.IsLeftOfLine(start1))
             {
@@ -576,7 +522,7 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
     {
         var closestPoint = line.GetClosestPointOnLine(point);
         var pointVect = closestPoint.To(point);
-        DebugHelper.PutLineSegmentVector((closestPoint, point));
+        //DebugHelper.PutLineSegmentVector((closestPoint, point));
         return PosAngleBetween(line.Vector, pointVect) < Angle.HalfCircle;
     }
 

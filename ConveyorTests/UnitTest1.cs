@@ -25,15 +25,29 @@ namespace ConveyorTests
         }
 
         [Theory]
+        #region values
         [InlineData(1, 0, 0)]
+        [InlineData(2, 1, 26.57)]
         [InlineData(1, 1, 45)]
+        [InlineData(1, 2, 63.43)]
+        //[InlineData(1, 4, 60)]
         [InlineData(0, 1, 90)]
+        [InlineData(-1, 2, 116.57)]
+        [InlineData(-1, 1, 135)]
+        [InlineData(-2, 1, 153.43)]
         [InlineData(-1, 0, 180)]
+        [InlineData(-2, -1, 206.57)]
+        [InlineData(-1, -1, 225)]
+        [InlineData(-1, -2, 243.43)]
         [InlineData(0, -1, 270)]
+        [InlineData(1, -2, 296.57)]
+        [InlineData(1, -1, 315)]
+        [InlineData(2, -1, 333.43)]
+        #endregion
         public void AngleOnACircleTest(double x, double y, double angleDeg)
         {
             var calcAngle = Maths.PosAngleBetween((1, 0), (x, y));
-            Assert.Equal(angleDeg, calcAngle.Degrees);
+            Assert.Equal(angleDeg, Math.Round(calcAngle.Degrees, 2));
         }
 
         [Theory]
@@ -92,6 +106,7 @@ namespace ConveyorTests
         }
 
         [Theory]
+        [InlineData(15, 0, 0, 15, 0)]
         [InlineData(15, 0, 0, 15, 0)]
         [InlineData(15, 0, 90, 0, 15)]
         [InlineData(15, 0, 180, -15, 0)]
