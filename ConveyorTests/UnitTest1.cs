@@ -9,6 +9,22 @@ namespace ConveyorTests
     public class UnitTest1
     {
         [Theory]
+        [InlineData(1, 1, 10, 10, 12, 12, 1, 1)]
+        [InlineData(1, 1, 10, 10, 9, 9, -1, -1)]
+        public void OrientVectorTowardsTest(double vectX, double vectY, double fromX, double fromY, double toX, double toY, double resultX, double resultY)
+        {
+            Assert.Equal(new Vector(resultX, resultY), Maths.OrientVectorTowards((vectX, vectY), ((fromX, fromY), (toX, toY))));
+        }
+
+        [Theory]
+        [InlineData(0, 0, 1, 1, 0, 1, true)]
+        [InlineData(0, 0, 1, 1, 0, -1, false)]
+        public void IsLeftOfLineTest(double lineX1, double lineY1, double lineX2, double lineY2, double pointX, double pointY, bool result)
+        {
+            Assert.Equal(result, Maths.IsLeftOfLine(new((lineX1, lineY1), (lineX2, lineY2)), (pointX, pointY)));
+        }
+
+        [Theory]
         [InlineData(1, 0, 0)]
         [InlineData(1, 1, 45)]
         [InlineData(0, 1, 90)]
@@ -21,17 +37,18 @@ namespace ConveyorTests
         }
 
         [Theory]
-        [InlineData(1, 0, 0, 1, 1,1, 90)]
+        [InlineData(1, 0, 0, 1, 1, 1, 90)]
         [InlineData(1, 0, 0, 1, -1, -1, 270)]
-        [InlineData(1, 0, 1, 1, 1, 2, 45)]
+        [InlineData(1, 0, 1, 1, 1, 2, 315)]
         [InlineData(1, 1, 1, 1, 1, 1, 0)]
         [InlineData(1, 1, -1, 1, 0, 1, 90)]
         [InlineData(1, 1, -1, 0, 0, 1, 135)]
         [InlineData(1, 1, -1, -1, 0, 1, 180)]
         [InlineData(1, 1, 1, -1, 0, 1, 270)]
+        [InlineData(1, -1, 0, 1, 1, 1, 135)]
         public void AngleBetweenVectorTest(double x1, double y1, double x2, double y2, double xBetween, double yBetween, double angleDeg)
         {
-            var calcAngleBetween = Maths.PosAngleBetween((x1, y1), (x2, y2), (xBetween, yBetween));
+            var calcAngleBetween = Maths.AngleBetween((x1, y1), (x2, y2), (xBetween, yBetween));
             Assert.Equal(angleDeg, calcAngleBetween.Degrees);
         }
 

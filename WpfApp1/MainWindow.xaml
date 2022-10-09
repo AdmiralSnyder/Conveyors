@@ -49,6 +49,7 @@
                     <Setter Property="Margin" Value="0,0,10,0" />
                 </Style>
             </StackPanel.Resources>
+            <Button Name="DebugB" Content="Debug" Click="DebugB_Click" ToolTip="Debug" />
             <Button Name="AddConveyorB" Content="\____/" Click="AddConveyorB_Click" ToolTip="Add Conveyor" />
             <Button Name="AddPointB" Content="." Click="AddPointB_Click" ToolTip="Add Point" />
             <Button Name="AddLineB" Content="_" Click="AddLineB_Click" ToolTip="Add Line" />

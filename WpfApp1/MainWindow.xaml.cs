@@ -257,6 +257,7 @@ public partial class MainWindow
 
     private async void RunB_Click(object sender, RoutedEventArgs e) => await ScriptRunner.RunScript(textEditor.Text);
 
+    
     private readonly ScriptRunner ScriptRunner = new();
 
     private void HappyBirthdayRubyB_Click(object sender, RoutedEventArgs e) => WriteString("R");
@@ -313,10 +314,20 @@ public partial class MainWindow
         {
             var point1 = linesWithPoints.LineInfo1.Point;
             var point2 = linesWithPoints.LineInfo2.Point;
-            if (Maths.CreateFilletInfo(linesWithPoints.LineInfo1.Line.RefPoints, linesWithPoints.LineInfo2.Line.RefPoints, (point1, point2), out var filletInfo))
+            if (Maths.CreateFilletInfo(linesWithPoints.LineInfo1.Line.Definition, linesWithPoints.LineInfo2.Line.Definition, (point1, point2), out var filletInfo))
             {
                 AutoRoot.AddFillet(filletInfo.Points, filletInfo.Radius);
             }
         }
+    }
+
+    private void DebugB_Click(object sender, RoutedEventArgs e)
+    {
+        //[InlineData(1, 1, 1, -1, 0, 1, 270)]
+
+        LineDefinition line1 = new(((30, 30), (50, 60)));
+        DebugHelper.PutLineSegmentVector(line1.RefPoints);
+        LineDefinition line2 = new(line1.ReferencePoint1, line1.Vector.RotateAroundOrigin(30d.Degrees()));
+        DebugHelper.PutLineSegmentVector(line2.RefPoints);
     }
 }

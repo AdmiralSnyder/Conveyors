@@ -12,7 +12,7 @@ namespace ConveyorApp
 {
     internal class ConveyorDebugHelper : IDebugHelper
     {
-        Point Origin = default;
+        public Point Origin { get; set; } = default;
 
         List<Shape> Shapes = new();
         public Canvas Canvas { get; set; }
@@ -29,10 +29,10 @@ namespace ConveyorApp
             if (vector.Length() > 2)
             {
                 PutLineSegment(((0, 0), vector));
-                Vector arrowHeadLeft = (5, 5);
+                Vector arrowHeadLeft = (-5, 5);
                 var angle = vector.CartPosAngle();
                 arrowHeadLeft = arrowHeadLeft.RotateAroundOrigin(-angle);
-                Vector arrowHeadRight = (-5, 5);
+                Vector arrowHeadRight = (-5, -5);
                 arrowHeadRight = arrowHeadRight.RotateAroundOrigin(-angle);
 
                 PutLineSegment((vector, vector + arrowHeadLeft));

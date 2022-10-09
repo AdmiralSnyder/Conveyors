@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Windows.Ink;
 
 namespace CoreLib.Maths;
@@ -73,35 +75,46 @@ public static class Maths
 {
     public static Angle AngleBetween(double ax, double ay, double bx, double by, Vector midVector)
     {
-        var angleAB = AngleBetween(ax, ay, bx, by);
+        //var angleAB = AngleBetween(ax, ay, bx, by);
         var angle1 = new Vector(ax, ay).CartPosAngle();
-        var midAngle = midVector.CartPosAngle();
-        if (angle1 < midAngle)
+        var angle2 = new Vector(bx, by).CartPosAngle();
+        Angle negPosAngle1;
+        if (angle1 > angle2)
         {
-            midAngle = midAngle - angle1;
-        }    
+            negPosAngle1 = (-((Angle.FullCircle - angle1).Radians)).Radians();
+        }
         else
         {
-            midAngle = midAngle + Angle.FullCircle - angle1;
+            negPosAngle1 = angle1;
         }
-        return angleAB;
+
+        var midAngle = midVector.CartPosAngle();
+        if (midAngle >= negPosAngle1 && midAngle <= angle2)
+        {
+            return PosAngleBetween(ax, ay, bx, by);
+        }
+        else
+        {
+            return Angle.FullCircle - PosAngleBetween(ax, ay, bx, by);
+        }
+
     }
 
-    public static Angle PosAngleBetween(double ax, double ay, double bx, double by, Vector midVector)
-    {
-        var aAngle = CartPosAngle((ax, ay));
-        var bAngle = CartPosAngle((bx, by));
-        var midAngle = CartPosAngle(midVector);
+    //public static Angle PosAngleBetween(double ax, double ay, double bx, double by, Vector midVector)
+    //{
+    //    var aAngle = CartPosAngle((ax, ay));
+    //    var bAngle = CartPosAngle((bx, by));
+    //    var midAngle = CartPosAngle(midVector);
 
-        if (aAngle == bAngle) return 0d.Degrees();
-        
-        if (aAngle > bAngle) return (360d.Degrees() - aAngle) + bAngle;
+    //    if (aAngle == bAngle) return 0d.Degrees();
 
-        return bAngle - aAngle;
-    }
+    //    if (aAngle > bAngle) return (360d.Degrees() - aAngle) + bAngle;
 
-    public static Angle CartAngle(this Vector vector) => AngleBetween(0, 1, vector.X, vector.Y);
-    public static Angle CartPosAngle(this Vector vector) => PosAngleBetween(0, 1, vector.X, vector.Y);
+    //    return bAngle - aAngle;
+    //}
+
+    public static Angle CartAngle(this Vector vector) => AngleBetween(1, 0, vector.X, vector.Y);
+    public static Angle CartPosAngle(this Vector vector) => PosAngleBetween(1, 0, vector.X, vector.Y);
 
     public static Angle AngleBetween(double ax, double ay, double bx, double by)
     {
@@ -115,9 +128,10 @@ public static class Maths
         double sin = ax * by - bx * ay;
         double cos = ax * bx + ay * by;
         var rad = Math.Atan2(sin, cos);
+
         if (rad < 0)
         {
-            rad = double.Pi - rad;
+            rad = Math.Tau + rad;
         }
         return rad.Radians();
     }
@@ -126,7 +140,7 @@ public static class Maths
 
     public static Angle AngleBetween(Vector a, Vector b) => AngleBetween(a.X, a.Y, b.X, b.Y);
 
-    public static Angle PosAngleBetween(Vector a, Vector b, Vector midVector) => PosAngleBetween(a.X, a.Y, b.X, b.Y, midVector);
+    //public static Angle PosAngleBetween(Vector a, Vector b, Vector midVector) => PosAngleBetween(a.X, a.Y, b.X, b.Y, midVector);
 
     public static Angle PosAngleBetween(Vector a, Vector b) => PosAngleBetween(a.X, a.Y, b.X, b.Y);
 
@@ -192,6 +206,7 @@ public static class Maths
 
     public static Point RotateAroundOrigin(this Point point, Angle angle)
     {
+        angle = -angle; // fix for (flipped y axis.
         var r = point.Length();
         var firstAnglePointInfos = BringInFirstQuadrant(point);
         var firstAngle = firstAnglePointInfos.FirstQuadrantPoint.Angle() + firstAnglePointInfos.CorrectionAngle;
@@ -388,12 +403,41 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         double c, double d)
     => a * d - b * c;
 
-    public static double GetSlope(Vector vector) => vector.Y / vector.X;
+    public static bool GetSlope(this Vector vector, out double slope)
+    {
+        if (vector.X == 0)
+        {
+            slope = double.NaN;
+            return false;
+        }
+        else
+        {
+            slope = vector.Y / vector.X;
+            return true;
+        }
+    }
+
+    internal static Vector Orthogonal(this Vector vector) => vector.RotateAroundOrigin(Angle.Plus90);
 
     /// <summary> y2 - m * x2 </summary>
     public static double GetOffsetY(Point endPoint, double slope) => endPoint.Y - slope * endPoint.X;
 
-    public static double GetOffsetY(TwoPoints points) => points.P2.Y - GetSlope(points.P2 - points.P1) * points.P2.X;
+    public static bool GetOffsetY(TwoPoints points, out double offsetY)
+    {
+        if (GetSlope(points.P2 - points.P1, out var slope))
+        {
+            offsetY = points.P2.Y - slope * points.P2.X;
+            return true;
+        }
+        else
+        {
+            offsetY = double.NaN;
+            return false;
+        }
+    }
+
+    public static bool GetCrossingPoint(this LineDefinition line1, LineDefinition line2, out Point crossingPoint)
+        => GetCrossingPoint(line1.RefPoints, line2.RefPoints, out crossingPoint);
 
     public static bool GetCrossingPoint(TwoPoints line1, TwoPoints line2, out Point crossingPoint)
     {
@@ -434,6 +478,20 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         }
     }
 
+    public static Point GetClosestPointOnLine(this LineDefinition line, Point point)
+    {
+        if (line.ContainsPoint(point)) return point;
+
+        var orthoVect = line.Vector.Orthogonal();
+        LineDefinition orthoLine = new(point, orthoVect);
+
+        if (line.GetCrossingPoint(orthoLine, out var crossingPoint))
+        {
+            return crossingPoint;
+        }
+        else throw new MathsException($"{nameof(GetCrossingPoint)} should have returned true");
+    }
+
     /// <summary>
     /// 
     /// </summary>
@@ -443,34 +501,41 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
     /// <param name="selectionPoints"></param>
     /// <param name="filletInfo"></param>
     /// <returns></returns>
-    public static bool CreateFilletInfo(TwoPoints line1, TwoPoints line2, TwoPoints selectionPoints, out (TwoPoints Points, double Radius) filletInfo)
+    public static bool CreateFilletInfo(LineDefinition line1, LineDefinition line2, TwoPoints selectionPoints, out (TwoPoints Points, double Radius) filletInfo)
     {
+        // repro for wrong angle 
+        // $.AddLine(((110, 60), (120, 80)));
+        // $.AddLine(((70, 60), (100, 80)))
         
-        var vector1 = line1.Vector();
-        var vector2 = line2.Vector();
-        
+
         var selectionMidPoint = selectionPoints.MidPoint();
         DebugHelper.PutPoint(selectionMidPoint);
         DebugHelper.PutPoint(selectionPoints.P1);
         DebugHelper.PutPoint(selectionPoints.P2);
 
         // TODO decide which angle to pick from param
-        if (Maths.GetCrossingPoint((line1.P1, line1.P2), (line2.P1, line2.P2), out var crossingPoint))
+        if (Maths.GetCrossingPoint(line1, line2, out var crossingPoint))
         {
-            
-            var unitVector1 = vector1.Normalize();
-            unitVector1 = Maths.OrientVectorTowards(unitVector1, (selectionPoints.P1, crossingPoint));
 
-            DebugHelper.SetOrigin((10, 10));
+            var unitVector1 = line1.Vector.Normalize();
+            var closestPoint1 = line1.GetClosestPointOnLine(selectionPoints.P1);
+            unitVector1 = Maths.OrientVectorTowards(unitVector1, (crossingPoint, closestPoint1));
 
-            DebugHelper.PutVector(vector1);
-            DebugHelper.PutVector(vector2);
+            //DebugHelper.PutLineSegmentVector((crossingPoint, crossingPoint + unitVector1.Multiply(40)));
 
-            var unitVector2 = vector2.Normalize();
-            unitVector2 = Maths.OrientVectorTowards(unitVector2, (selectionPoints.P2, crossingPoint));
+            var unitVector2 = line2.Vector.Normalize();
+            var closestPoint2 = line2.GetClosestPointOnLine(selectionPoints.P2);
+            unitVector2 = Maths.OrientVectorTowards(unitVector2, (crossingPoint, closestPoint2));
 
-            var angle = Maths.AngleBetween(unitVector1, unitVector2, crossingPoint.To(selectionMidPoint).Normalize());
-            DebugHelper.PutAngle((40, 20), angle);
+            //DebugHelper.PutLineSegmentVector((crossingPoint, crossingPoint + unitVector2.Multiply(40)));
+
+            DebugHelper.PutLineSegmentVector((crossingPoint, selectionMidPoint));
+
+
+            var angle = Maths.AngleBetween(unitVector1, unitVector2, crossingPoint.To(selectionMidPoint));
+            Debug.WriteLine(angle);
+
+            DebugHelper.PutAngle((20, 20), angle);
 
             // TODO radius needs to be a param
             var radius = 25d;
@@ -479,10 +544,25 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
             var a = tangent * radius;
 
             var start1 = crossingPoint + unitVector1.Multiply(a);
-            DebugHelper.PutPoint(start1);
-
             var start2 = crossingPoint + unitVector2.Multiply(a);
-            filletInfo = ((start1, start2), radius);
+
+            DebugHelper.PutPoint(start1);
+            DebugHelper.PutPoint(start2);
+
+            TwoPoints startPoints = (start1, start2);
+            LineDefinition filletVect = new((startPoints.MidPoint(), crossingPoint));
+            
+            DebugHelper.PutLineSegmentVector(filletVect.RefPoints);
+
+            if (filletVect.IsLeftOfLine(start1))
+            {
+                filletInfo = ((start2, start1), radius);
+            }
+            else
+            {
+                filletInfo = ((start1, start2), radius);
+            }
+
             return true;
         }
         else
@@ -490,6 +570,14 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
             filletInfo = default;
             return false;
         }
+    }
+
+    public static bool IsLeftOfLine(this LineDefinition line, Point point)
+    {
+        var closestPoint = line.GetClosestPointOnLine(point);
+        var pointVect = closestPoint.To(point);
+        DebugHelper.PutLineSegmentVector((closestPoint, point));
+        return PosAngleBetween(line.Vector, pointVect) < Angle.HalfCircle;
     }
 
     public static Point MidPoint(this TwoPoints points) => MidPoint(points.P1, points.P2);
@@ -509,4 +597,55 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
             return vector.Inverse();
         }
     }
+
+    public static bool PointsAreEqual(this TwoPoints twoPoints) => twoPoints.P1 == twoPoints.P2;
+
+    public static bool ContainsPoint(this LineDefinition line, Point point) => line.IsVertical 
+        ? point.X == line.ReferencePoint1.X 
+        : point.Y == line.Slope * point.X + line.OffsetY;
+
+}
+
+public class LineDefinition
+{
+    public LineDefinition(TwoPoints twoPoints)
+    {
+        if (twoPoints.PointsAreEqual()) throw new MathsException("line is degenerated");
+        
+        IsDegenerated = false;
+        bool isVertical = twoPoints.P1.X == twoPoints.P2.X;
+        var vector = twoPoints.P2 - twoPoints.P1;
+        ReferencePoint1 = twoPoints.P1;
+        ReferencePoint2 = twoPoints.P2;
+        RefPoints = twoPoints;
+        Vector = vector;
+        IsVertical = isVertical;
+        Maths.GetSlope(vector, out var slope);
+        Slope = slope;
+        OffsetY = isVertical ? double.NaN : Maths.GetOffsetY(twoPoints.P2, slope);
+    }
+
+    public LineDefinition(Point pointOnLine, Vector lineVector) : this((pointOnLine, pointOnLine + lineVector)) { }
+
+    public Point ReferencePoint1 { get; }
+    public Point ReferencePoint2 { get; }
+
+    public TwoPoints RefPoints { get; }
+    public Vector Vector { get; }
+
+    public bool IsDegenerated { get; }
+    public bool IsVertical { get; }
+    public double Slope { get; }
+    public double OffsetY { get; }
+}
+
+public class MathsException : Exception
+{
+    public MathsException() { }
+
+    public MathsException(string? message) : base(message) { }
+
+    public MathsException(string? message, Exception? innerException) : base(message, innerException) { }
+
+    protected MathsException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 }
