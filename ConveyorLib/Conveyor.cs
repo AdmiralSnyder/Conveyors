@@ -159,10 +159,11 @@ public class Conveyor : ISelectObject, IRefreshable, IAppObject<ConveyorAppAppli
 
     public string Text => nameof(Conveyor);
 
-    public Point[] SelectionBoundsPoints => Points.SelectMany(x => x.SelectionBoundsPoints)
-        .Concat(Segments.SelectMany(x => x.SelectionBoundsPoints))
-        .Concat(SegmentLanes.SelectMany(x => x.SelectMany(y => y.SelectionBoundsPoints))) // TODO use outer lanes only
-        .Concat(PointLanes.SelectMany(x => x.SelectMany(y => y.SelectionBoundsPoints))).ToArray();
+    public Point[] GetSelectionBoundsPoints() => Points.SelectMany(x => x.GetSelectionBoundsPoints())
+        .Concat(Segments.SelectMany(x => x.GetSelectionBoundsPoints()))
+        .Concat(SegmentLanes.SelectMany(x => x.SelectMany(y => y.GetSelectionBoundsPoints()))) // TODO use outer lanes only
+        .Concat(PointLanes.SelectMany(x => x.SelectMany(y => y.GetSelectionBoundsPoints()))).ToArray();
+
 
     public ISelectObject? SelectionParent => null;
 

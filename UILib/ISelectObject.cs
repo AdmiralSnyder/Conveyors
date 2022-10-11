@@ -5,12 +5,12 @@ namespace UILib;
 public interface ISelectObject : ISelectable
 {
     string Text { get; }
-    Point[] SelectionBoundsPoints { get; }
+    Point[] GetSelectionBoundsPoints();
     ISelectObject? SelectionParent { get; }
 
     void SetSelectionPoints(params Point[] points)
     {
-        var boundsPoints = SelectionBoundsPoints;
+        var boundsPoints = GetSelectionBoundsPoints();
         for (int i = 0; i < points.Length; i++)
         {
             boundsPoints[i] = points[i];

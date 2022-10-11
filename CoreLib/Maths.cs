@@ -13,6 +13,36 @@ public static class AngleExtensions
     public static Angle Radians(this double valueRad) => new() { Degrees = Maths.RadToDeg(valueRad), Radians = valueRad };
 }
 
+public static class LineDefinitionExtensions
+{
+    public static bool GetCrossingPoint(this LineDefinition line1, LineDefinition line2, out Point crossingPoint)
+    => Maths.GetCrossingPoint(line1.RefPoints, line2.RefPoints, out crossingPoint);
+    public static Point GetClosestPointOnLine(this LineDefinition line, Point point)
+    {
+        if (line.ContainsPoint(point)) return point;
+
+        var orthoVect = line.Vector.Orthogonal();
+        LineDefinition orthoLine = new(point, orthoVect);
+
+        if (line.GetCrossingPoint(orthoLine, out var crossingPoint))
+        {
+            return crossingPoint;
+        }
+        else throw new MathsException($"{nameof(GetCrossingPoint)} should have returned true");
+    }
+    public static bool IsLeftOfLine(this LineDefinition line, Point point)
+    {
+        var closestPoint = line.GetClosestPointOnLine(point);
+        var pointVect = closestPoint.To(point);
+        //DebugHelper.PutLineSegmentVector((closestPoint, point));
+        return Maths.PosAngleBetween(line.Vector, pointVect) < Angle.HalfCircle;
+    }
+
+    public static bool ContainsPoint(this LineDefinition line, Point point) => line.IsVertical
+        ? point.X == line.ReferencePoint1.X
+        : point.Y == line.Slope * point.X + line.OffsetY;
+}
+
 
 public static class Maths
 {
@@ -382,8 +412,6 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         }
     }
 
-    public static bool GetCrossingPoint(this LineDefinition line1, LineDefinition line2, out Point crossingPoint)
-        => GetCrossingPoint(line1.RefPoints, line2.RefPoints, out crossingPoint);
 
     public static bool GetCrossingPoint(TwoPoints line1, TwoPoints line2, out Point crossingPoint)
     {
@@ -424,19 +452,6 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         }
     }
 
-    public static Point GetClosestPointOnLine(this LineDefinition line, Point point)
-    {
-        if (line.ContainsPoint(point)) return point;
-
-        var orthoVect = line.Vector.Orthogonal();
-        LineDefinition orthoLine = new(point, orthoVect);
-
-        if (line.GetCrossingPoint(orthoLine, out var crossingPoint))
-        {
-            return crossingPoint;
-        }
-        else throw new MathsException($"{nameof(GetCrossingPoint)} should have returned true");
-    }
 
     /// <summary>
     /// 
@@ -460,7 +475,7 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         DebugHelper.PutPoint(selectionPoints.P2);
 
         // TODO decide which angle to pick from param
-        if (Maths.GetCrossingPoint(line1, line2, out var crossingPoint))
+        if (line1.GetCrossingPoint(line2, out var crossingPoint))
         {
 
             var unitVector1 = line1.Vector.Normalize();
@@ -518,13 +533,6 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         }
     }
 
-    public static bool IsLeftOfLine(this LineDefinition line, Point point)
-    {
-        var closestPoint = line.GetClosestPointOnLine(point);
-        var pointVect = closestPoint.To(point);
-        //DebugHelper.PutLineSegmentVector((closestPoint, point));
-        return PosAngleBetween(line.Vector, pointVect) < Angle.HalfCircle;
-    }
 
     public static Point MidPoint(this TwoPoints points) => MidPoint(points.P1, points.P2);
 
@@ -545,44 +553,6 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
     }
 
     public static bool PointsAreEqual(this TwoPoints twoPoints) => twoPoints.P1 == twoPoints.P2;
-
-    public static bool ContainsPoint(this LineDefinition line, Point point) => line.IsVertical 
-        ? point.X == line.ReferencePoint1.X 
-        : point.Y == line.Slope * point.X + line.OffsetY;
-
-}
-
-public class LineDefinition
-{
-    public LineDefinition(TwoPoints twoPoints)
-    {
-        if (twoPoints.PointsAreEqual()) throw new MathsException("line is degenerated");
-        
-        IsDegenerated = false;
-        bool isVertical = twoPoints.P1.X == twoPoints.P2.X;
-        var vector = twoPoints.P2 - twoPoints.P1;
-        ReferencePoint1 = twoPoints.P1;
-        ReferencePoint2 = twoPoints.P2;
-        RefPoints = twoPoints;
-        Vector = vector;
-        IsVertical = isVertical;
-        Maths.GetSlope(vector, out var slope);
-        Slope = slope;
-        OffsetY = isVertical ? double.NaN : Maths.GetOffsetY(twoPoints.P2, slope);
-    }
-
-    public LineDefinition(Point pointOnLine, Vector lineVector) : this((pointOnLine, pointOnLine + lineVector)) { }
-
-    public Point ReferencePoint1 { get; }
-    public Point ReferencePoint2 { get; }
-
-    public TwoPoints RefPoints { get; }
-    public Vector Vector { get; }
-
-    public bool IsDegenerated { get; }
-    public bool IsVertical { get; }
-    public double Slope { get; }
-    public double OffsetY { get; }
 }
 
 public class MathsException : Exception

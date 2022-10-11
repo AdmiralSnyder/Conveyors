@@ -1,6 +1,14 @@
 ﻿namespace ConveyorLib.Objects;
 
-public abstract class CanvasableObject<TCanvasInfo, TCanvas, TApplication, TShape> : ApplicationObject<TApplication>
+public interface ICanAddToCanvas<TCanvasInfo>
+    where TCanvasInfo : ICanvasInfo
+{
+    void AddToCanvas(TCanvasInfo canvasInfo);
+}
+
+
+public abstract class CanvasableObject<TCanvasInfo, TCanvas, TApplication, TShape> 
+    : ApplicationObject<TApplication>, ICanAddToCanvas<TCanvasInfo>
     where TApplication : IApplication
     where TCanvasInfo : CanvasInfo<TCanvas>
     where TCanvas : class

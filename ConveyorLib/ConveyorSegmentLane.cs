@@ -119,7 +119,9 @@ public class ConveyorSegmentLane : IConveyorCanvasable, ILanePart, IDebugText, I
         EndLength = BeginLength + Length;
     }
 
-    public Point[] SelectionBoundsPoints { get; } = new Point[2];
+    private Point[] SelectionBoundsPoints = new Point[2];
+
+    public Point[] GetSelectionBoundsPoints() => SelectionBoundsPoints;
 
     public ISelectObject? SelectionParent => Segment;
 

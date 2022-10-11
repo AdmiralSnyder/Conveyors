@@ -180,7 +180,9 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
     public bool IsClockwise { get; private set; }
     public bool IsStraight { get; private set; }
 
-    public Point[] SelectionBoundsPoints { get; } = new Point[1];
+    private Point[] SelectionBoundsPoints = new Point[1];
+    public Point[] GetSelectionBoundsPoints() => SelectionBoundsPoints;
+
 
     public ISelectObject? SelectionParent => Conveyor;
 

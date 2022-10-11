@@ -1,6 +1,6 @@
 ﻿namespace ConveyorLib;
 
-public interface IAppObject<TApplication>
-    where TApplication : IApplication
-{
-}
+public interface IAppObject
+{ }
+
+public interface IAppObject<TApplication> : IAppObject where TApplication : IApplication { }

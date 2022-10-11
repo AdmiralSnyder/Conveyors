@@ -52,7 +52,9 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
     private TwoPoints ArcStartEnd { get; set; }
     private PathGeometry ArcGeometry { get; set; } = new();
 
-    public Point[] SelectionBoundsPoints { get; } = new Point[2];
+    private Point[] SelectionBoundsPoints = new Point[2];
+    public Point[] GetSelectionBoundsPoints() => SelectionBoundsPoints;
+
 
     public ISelectObject? SelectionParent => Point;
 

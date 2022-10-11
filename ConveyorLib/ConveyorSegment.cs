@@ -108,7 +108,9 @@ public class ConveyorSegment : IConveyorCanvasable, IPathPart, ISelectObject, IR
     public LinkedListNode<ConveyorSegment> Node { get; internal set; }
     public LinkedListNode<IPathPart> ElementsNode { get; internal set; }
 
-    public Point[] SelectionBoundsPoints { get; } = new Point[2];
+    private Point[] SelectionBoundsPoints = new Point[2];
+
+    public Point[] GetSelectionBoundsPoints() => SelectionBoundsPoints;
 
     public ISelectObject? SelectionParent => Conveyor;
 

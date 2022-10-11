@@ -36,10 +36,13 @@
     </Window.Resources>
 
     <Grid gu:Grid.Layout="auto * auto, * auto 130">
-        <StackPanel Grid.ColumnSpan="3" gu:Cell.Index="0 0" Orientation="Horizontal">
+        <StackPanel Grid.ColumnSpan="3" gu:Cell.Index="0 0" Orientation="Vertical">
             <StackPanel.Resources>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Margin" Value="0,0,10,0" />
+                </Style>
+                <Style TargetType="{x:Type StackPanel}">
+                    <Setter Property="Margin" Value="0,2,0,2" />
                 </Style>
                 <Style TargetType="{x:Type CheckBox}">
                     <Setter Property="Margin" Value="0,0,10,0" />
@@ -49,28 +52,42 @@
                     <Setter Property="Margin" Value="0,0,10,0" />
                 </Style>
             </StackPanel.Resources>
-            <Button Name="DebugB" Content="Debug" Click="DebugB_Click" ToolTip="Debug" />
-            <Button Name="AddConveyorB" Content="\____/" Click="AddConveyorB_Click" ToolTip="Add Conveyor" />
-            <Button Name="AddPointB" Content="." Click="AddPointB_Click" ToolTip="Add Point" />
-            <Button Name="AddLineB" Content="_" Click="AddLineB_Click" ToolTip="Add Line" />
-            <Button Name="AddFilletB" Content="U" Click="AddFilletB_Click" ToolTip="Add Fillet" />
-            <Button Name="AddCircleCenterRadiusB" Content="O1" Click="AddCircleCenterRadiusB_Click"
-                    ToolTip="Add Circle by Center+Circ Point" />
-            <Button Name="AddCircle2PointsB" Content="O2" Click="AddCircle2PointsB_Click"
-                    ToolTip="Add Circle by Diameter Points" />
-            <Button Name="AddCircle3PointsB" Content="O3" Click="AddCircle3PointsB_Click"
-                    ToolTip="Add Circle by Three Points" />
-            <CheckBox Name="RunningCB" Content="Running" Checked="RunningCB_Click" Unchecked="RunningCB_Click" />
-            <Button Name="PutItemB" Content="Put" Click="PutItemB_Click" ToolTip="Put Items" />
-            <CheckBox Name="FirstOnlyCB" Content="FirstOnly" />
-            <Button Name="MovePointB" Content="Move" Click="MovePointB_Click" />
-            <CheckBox Name="SelectB" Content="Select"
-                      IsChecked="{Binding SelectionManager.IsActive}" />
-            <TextBox Name="LanesCountTB" Text="2" ToolTip="Lanes Count" />
-            <TextBox Name="GridWidth" Width="30"
-                     Text="{Binding Path=InputContext.SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}"
-                     ToolTip="Grid Width" />
-            <Button Name="HappyBirthdayRubyB" Content="Happy Birthday Ruby" Click="HappyBirthdayRubyB_Click" />
+            <StackPanel Orientation="Horizontal">
+                <Button Name="DebugB" Content="Debug" Click="DebugB_Click" ToolTip="Debug" />
+                <Button Name="AddConveyorB" Content="\____/" Click="AddConveyorB_Click" ToolTip="Add Conveyor" />
+                <Button Name="AddPointB" Content="." Click="AddPointB_Click" ToolTip="Add Point" />
+                <Button Name="AddLineB" Content="―" Click="AddLineB_Click" ToolTip="Add Line" />
+                <Button Name="AddLineSegmentB" Height="20" Click="AddLineSegmentB_Click" ToolTip="Add Line Segment">
+                    <Grid gu:Grid.Layout="*,* *">
+                        <TextBlock Grid.Column="0" Text="⊢" />
+                        <TextBlock Grid.Column="1" Margin="-3,0,0,0" Text="⊣" />
+                    </Grid>
+
+                </Button>
+                <Button Name="AddFilletB" Content="U" Click="AddFilletB_Click" ToolTip="Add Fillet" />
+
+                <Button Name="AddCircleCenterRadiusB" Content="O1" Click="AddCircleCenterRadiusB_Click"
+                        ToolTip="Add Circle by Center+Circ Point" />
+                <Button Name="AddCircle2PointsB" Content="O2" Click="AddCircle2PointsB_Click"
+                        ToolTip="Add Circle by Diameter Points" />
+                <Button Name="AddCircle3PointsB" Content="O3" Click="AddCircle3PointsB_Click"
+                        ToolTip="Add Circle by Three Points" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <CheckBox Name="RunningCB" Content="Running" Checked="RunningCB_Click" Unchecked="RunningCB_Click" />
+                <Button Name="PutItemB" Content="Put" Click="PutItemB_Click" ToolTip="Put Items" />
+                <CheckBox Name="FirstOnlyCB" Content="FirstOnly" />
+                <Button Name="MovePointB" Content="Move" Click="MovePointB_Click" />
+                <CheckBox Name="SelectB" Content="Select"
+                          IsChecked="{Binding SelectionManager.IsActive}" />
+                <TextBox Name="LanesCountTB" Text="2" ToolTip="Lanes Count" />
+                <TextBox Name="GridWidth" Width="30"
+                         Text="{Binding Path=InputContext.SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}"
+                         ToolTip="Grid Width" />
+                <Button Name="HappyBirthdayRubyB" Content="Happy Birthday Ruby" Click="HappyBirthdayRubyB_Click" />
+                <Button Name="SaveContentsB" Content="Save..." Click="SaveB_Click" />
+                <Button Name="LoadContentsB" Content="Load..." Click="LoadB_Click" />
+            </StackPanel>
         </StackPanel>
         <TextBlock Name="NotesLabel" Grid.ColumnSpan="2" gu:Cell.Index="2 0" />
         <GridSplitter gu:Cell.Index="1 1" Style="{StaticResource VerticalGridSplitter}" />

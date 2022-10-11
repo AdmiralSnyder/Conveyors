@@ -110,7 +110,7 @@ public partial class MainWindow
         }
         if (selectObject is null) return;
 
-        var boundingRect = Maths.GetBoundingRectTopLeftSize(selectObject.SelectionBoundsPoints);
+        var boundingRect = Maths.GetBoundingRectTopLeftSize(selectObject.GetSelectionBoundsPoints());
         PickRect = new()
         {
             Width = boundingRect.P2.X + 8,
@@ -135,7 +135,7 @@ public partial class MainWindow
         }
         if (selectObject is null) return;
 
-        var boundingRect = Maths.GetBoundingRectTopLeftSize(selectObject.SelectionBoundsPoints);
+        var boundingRect = Maths.GetBoundingRectTopLeftSize(selectObject.GetSelectionBoundsPoints());
         SelectionRect = new()
         {
             Width = boundingRect.P2.X + 8,
@@ -314,7 +314,7 @@ public partial class MainWindow
         {
             var point1 = linesWithPoints.LineInfo1.Point;
             var point2 = linesWithPoints.LineInfo2.Point;
-            if (Maths.CreateFilletInfo(linesWithPoints.LineInfo1.Line.Definition, linesWithPoints.LineInfo2.Line.Definition, (point1, point2), out var filletInfo))
+            if (Maths.CreateFilletInfo(linesWithPoints.LineInfo1.LineDefinition, linesWithPoints.LineInfo2.LineDefinition, (point1, point2), out var filletInfo))
             {
                 AutoRoot.AddFillet(filletInfo.Points, filletInfo.Radius);
             }
@@ -329,5 +329,24 @@ public partial class MainWindow
         DebugHelper.PutLineSegmentVector(line1.RefPoints);
         LineDefinition line2 = new(line1.ReferencePoint1, line1.Vector.RotateAroundOrigin(30d.Degrees()));
         DebugHelper.PutLineSegmentVector(line2.RefPoints);
+    }
+
+
+    private async void AddLineSegmentB_Click(object sender, RoutedEventArgs e)
+    {
+        if ((await LineInputter.Create(InputContext).StartAsync()).IsSuccess(out var points))
+        {
+            AutoRoot.AddLineSegment(points);
+        }
+    }
+
+    private void SaveB_Click(object sender, RoutedEventArgs e)
+    {
+        AutoRoot.SaveCustom(@"T:\conveyorApp\conveyorApp.json");
+    }
+
+    private void LoadB_Click(object sender, RoutedEventArgs e)
+    {
+        AutoRoot.Load(@"T:\conveyorApp\conveyorApp.json");
     }
 }

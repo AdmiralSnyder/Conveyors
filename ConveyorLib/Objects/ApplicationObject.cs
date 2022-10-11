@@ -5,6 +5,6 @@ public abstract class ApplicationObject<TApplication> : ISelectObject, IRefresha
 {
     public virtual string Text => Name;
     public string Name { get; set; }
-    public virtual Vector[] SelectionBoundsPoints => null;
+    public virtual Vector[] GetSelectionBoundsPoints() => null;
     public virtual ISelectObject? SelectionParent => null;
 }

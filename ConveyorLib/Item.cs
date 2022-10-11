@@ -96,7 +96,8 @@ public class Item : ISelectObject, IRefreshable, ITextAdornable
         set => Func.Setter(ref _Location, value, newValue => Shape.Dispatcher.BeginInvoke(SetLocation, newValue));
     }
 
-    public Point[] SelectionBoundsPoints { get; } = new Point[1];
+    private Point[] SelectionBoundsPoints = new Point[1];
+    public Point[] GetSelectionBoundsPoints() => SelectionBoundsPoints;
 
     public ISelectObject? SelectionParent => null;
 

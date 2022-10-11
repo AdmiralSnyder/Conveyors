@@ -2,7 +2,10 @@
 
 namespace UILib;
 
-public class CanvasInfo<TCanvas>
+public interface ICanvasInfo
+{ }
+
+public class CanvasInfo<TCanvas> : ICanvasInfo
 {
     public TCanvas Canvas { get; set; }
 }

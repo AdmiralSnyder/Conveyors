@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text.Json.Serialization;
 using PointAlias = System.Windows.Point;
 
 
@@ -17,6 +18,8 @@ namespace PointDef
 
         public double X { get; set; }
         public double Y { get; set; }
+        
+        [JsonIgnore]
         public Maths.Quadrants Quadrant => X switch
         {
             < 0 => Y switch

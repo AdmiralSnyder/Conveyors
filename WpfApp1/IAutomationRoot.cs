@@ -8,6 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using WpfLib;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.IO;
+using System.Text.Json.Serialization.Metadata;
 
 namespace ConveyorApp;
 
@@ -36,12 +40,25 @@ public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomatio
     Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes);
     
     Line AddLine(TwoPoints points);
+    LineSegment AddLineSegment(TwoPoints points);
 
+    /// <summary>
+    /// Creates a <see cref="Fillet"/>
+    /// The order of the points defines the direction of the arc.
+    /// </summary>
+    /// <param name="points"></param>
+    /// <param name="radius"></param>
+    /// <returns></returns>
     Fillet AddFillet(TwoPoints points, double radius);
 
     void MovePoint(ConveyorPoint conveyorPoint, Point point);
 
     void OffsetPoint(ConveyorPoint conveyorPoint, Point point);
+
+    bool SaveCustom(string fileName);
+    bool SaveJSON(string fileName);
+
+    bool Load(string fileName);
 }
 
 public interface IAutomationContext
@@ -72,26 +89,130 @@ public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppAppli
         return conv;
     }
 
-    public partial Line AddLine(TwoPoints points)
+    private T AddAppObject<T>(T appObject)
+        where T : IAppObject<ConveyorAppApplication>
     {
-        var line = Line.Create(points);
-        line.AddToCanvas(CanvasInfo);
-        AutomationObjects.Add(line);
-        return line;
+        if (appObject is ICanAddToCanvas<ConveyorCanvasInfo> canvasable)
+        {
+            canvasable.AddToCanvas(CanvasInfo);
+        }
+        AutomationObjects.Add(appObject);
+        return appObject;
     }
 
-    public partial Fillet AddFillet(TwoPoints points, double radius)
-    {
-        var fillet = Fillet.Create(points, radius);
-        fillet.AddToCanvas(CanvasInfo);
-        AutomationObjects.Add(fillet);
-        return fillet;
-    }
+    public partial Line AddLine(TwoPoints points) => AddAppObject(Line.Create(points));
+    public partial LineSegment AddLineSegment(TwoPoints points) => AddAppObject(LineSegment.Create(points));
+
+    public partial Fillet AddFillet(TwoPoints points, double radius) => AddAppObject(Fillet.Create((points, radius)));
 
     public partial void MovePoint(ConveyorPoint conveyorPoint, Point point) => conveyorPoint.Location = point;
 
     public partial void OffsetPoint(ConveyorPoint conveyorPoint, Point point) => conveyorPoint.Location += point;
+
+    public partial bool SaveJSON(string fileName)
+    {
+
+        var json = JsonSerializer.Serialize(AutomationObjects, new JsonSerializerOptions()
+        {
+            TypeInfoResolver = new PolymorphicTypeResolver(),
+        });
+        File.WriteAllText(fileName, json);
+        return true;
+    }
+
+    public partial bool SaveCustom(string fileName)
+    {
+        var storeObjects = AutomationObjects.OfType<IStorable>().Select(StorageManager.Store).ToList();
+        var json = JsonSerializer.Serialize(storeObjects, new JsonSerializerOptions()
+        {
+            IncludeFields = true,
+            TypeInfoResolver = new StorageObjectTypeResolver(),
+        });
+        File.WriteAllText(fileName, json);
+        return true;
+    }
+
+    public partial bool Load(string filename)
+    {
+        var json = File.ReadAllText(filename);
+        var items = JsonSerializer.Deserialize<List<JsonValueStorageObject>>(json, new JsonSerializerOptions { IncludeFields = true });
+        var loadedItems = items.Select(StorageManager.Load);
+        foreach (var item in loadedItems)
+        {
+            AddAppObject(StorageManager.ObjectCreators[item.Type](item));
+        }
+        return true;
+    }
 }
+
+public class PolymorphicTypeResolver : DefaultJsonTypeInfoResolver
+{
+    public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
+    {
+        JsonTypeInfo jsonTypeInfo = base.GetTypeInfo(type, options);
+
+        Type basePointType = typeof(IAppObject);
+        if (jsonTypeInfo.Type.IsInterface && jsonTypeInfo.Type.IsGenericType && basePointType.IsAssignableFrom(jsonTypeInfo.Type))
+        {
+            jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
+            {
+                TypeDiscriminatorPropertyName = "$AppObjectType",
+                IgnoreUnrecognizedTypeDiscriminators = true,
+                UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
+                DerivedTypes =
+                {
+                    new JsonDerivedType(typeof(LineSegment), nameof(LineSegment)),
+                    new JsonDerivedType(typeof(Line), nameof(Line)),
+                }
+            };
+        }
+
+        return jsonTypeInfo;
+    }
+}
+
+public class StorageObjectTypeResolver : DefaultJsonTypeInfoResolver
+{
+
+    private static List<JsonDerivedType> DerivedStorageObjects;
+    public static List<JsonDerivedType> GetDerivedStorageObjects()
+    {
+        if (DerivedStorageObjects is null)
+        {
+            var types = StorageManager.ObjectCreators.Keys;
+            var differentTypes = new HashSet<Type>(types.Select(t => t.BaseType.GenericTypeArguments.Last()));
+            var genericTypes = differentTypes.Select(t => typeof(StorageObject<>).MakeGenericType(t));
+            DerivedStorageObjects = genericTypes.Select(t => new JsonDerivedType(t)).ToList();
+        }
+        return DerivedStorageObjects;
+    }
+
+    public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
+    {
+        JsonTypeInfo jsonTypeInfo = base.GetTypeInfo(type, options);
+        if (jsonTypeInfo.Type == typeof(StorageObject))
+        //Type basePointType = typeof(IAppObject);
+        //if (jsonTypeInfo.Type.IsInterface && jsonTypeInfo.Type.IsGenericType && basePointType.IsAssignableFrom(jsonTypeInfo.Type))
+        {
+            var derivedTypes = GetDerivedStorageObjects();
+            
+            jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
+            {
+                TypeDiscriminatorPropertyName = "$AppObjectType",
+                IgnoreUnrecognizedTypeDiscriminators = true,
+                UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
+            };
+
+            foreach (var derivedType in derivedTypes)
+            {
+                jsonTypeInfo.PolymorphismOptions.DerivedTypes.Add(derivedType);
+            }
+        }
+
+        return jsonTypeInfo;
+    }
+}
+
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Property)]
 public class GeneratedAttribute : Attribute{ }
@@ -110,6 +231,6 @@ public static class CSharpOutputHelpers
     public static string Out(this TwoPoints obj) => $"(({obj.P1.X}, {obj.P1.Y}), ({obj.P2.X}, {obj.P2.Y}))";
 
     public static string Out(this object? obj) => obj?.ToString() ?? "null";
-
+    public static string Out(this string str) => $@"""{str}""";
     public static string Out(this IAutomationOutByID obj) => $@"""{obj.ID}""";
 }

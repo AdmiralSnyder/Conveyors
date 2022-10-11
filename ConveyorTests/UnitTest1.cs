@@ -21,7 +21,7 @@ namespace ConveyorTests
         [InlineData(0, 0, 1, 1, 0, -1, false)]
         public void IsLeftOfLineTest(double lineX1, double lineY1, double lineX2, double lineY2, double pointX, double pointY, bool result)
         {
-            Assert.Equal(result, Maths.IsLeftOfLine(new((lineX1, lineY1), (lineX2, lineY2)), (pointX, pointY)));
+            Assert.Equal(result, LineDefinitionExtensions.IsLeftOfLine(new((lineX1, lineY1), (lineX2, lineY2)), (pointX, pointY)));
         }
 
         [Theory]
