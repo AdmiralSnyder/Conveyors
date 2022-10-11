@@ -136,10 +136,9 @@ public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppAppli
     {
         var json = File.ReadAllText(filename);
         var items = JsonSerializer.Deserialize<List<JsonValueStorageObject>>(json, new JsonSerializerOptions { IncludeFields = true });
-        var loadedItems = items.Select(StorageManager.Load);
-        foreach (var item in loadedItems)
+        foreach (var item in items)
         {
-            AddAppObject(StorageManager.ObjectCreators[item.Type](item));
+            AddAppObject(StorageManager.CreateAppObject(item));
         }
         return true;
     }
@@ -179,7 +178,7 @@ public class StorageObjectTypeResolver : DefaultJsonTypeInfoResolver
     {
         if (DerivedStorageObjects is null)
         {
-            var types = StorageManager.ObjectCreators.Keys;
+            var types = StorageManager.StorableTypes;
             var differentTypes = new HashSet<Type>(types.Select(t => t.BaseType.GenericTypeArguments.Last()));
             var genericTypes = differentTypes.Select(t => typeof(StorageObject<>).MakeGenericType(t));
             DerivedStorageObjects = genericTypes.Select(t => new JsonDerivedType(t)).ToList();
@@ -191,8 +190,6 @@ public class StorageObjectTypeResolver : DefaultJsonTypeInfoResolver
     {
         JsonTypeInfo jsonTypeInfo = base.GetTypeInfo(type, options);
         if (jsonTypeInfo.Type == typeof(StorageObject))
-        //Type basePointType = typeof(IAppObject);
-        //if (jsonTypeInfo.Type.IsInterface && jsonTypeInfo.Type.IsGenericType && basePointType.IsAssignableFrom(jsonTypeInfo.Type))
         {
             var derivedTypes = GetDerivedStorageObjects();
             

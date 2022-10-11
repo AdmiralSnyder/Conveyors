@@ -12,7 +12,8 @@ public abstract class ConveyorAppApplicationObject<TThis, TShape, TSource>
 }
 
 public abstract class ConveyorAppApplicationObject<TThis, TShape, TDefinition, TSource> 
-    : CanvasableObject<ConveyorCanvasInfo, Canvas, ConveyorAppApplication, TShape>, IStorable
+    : CanvasableObject<ConveyorCanvasInfo, Canvas, ConveyorAppApplication, TShape>
+    , IStorable, IStorable<TThis, TSource>
     where TThis : ConveyorAppApplicationObject<TThis, TShape, TDefinition, TSource>, new()
     where TShape : FrameworkElement
     where TDefinition : IDefinition<TSource>, new()
