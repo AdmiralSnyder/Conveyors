@@ -96,7 +96,7 @@ public static class StorageManager
 
         return genericArguments[1];
     }
-
+    
     private static Func<JsonValueStorageObject, TypedStorageObject> CreateDeserializerFunc(Type type)
     {
         var sourceType = GetIStorageSourceType(type);
