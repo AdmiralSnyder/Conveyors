@@ -17,7 +17,11 @@ public class MoveInputter : StatefulInputter<MoveInputter, Vector, MoveInputter.
         Move,
     }
 
-    public override void Start() => InputState = InputStates.Move;
+    public override void Start()
+    {
+        InputState = InputStates.Move;
+        Context.CurrentInputter = this;
+    }
 
     private readonly List<Ellipse> MoveCircles = new();
 

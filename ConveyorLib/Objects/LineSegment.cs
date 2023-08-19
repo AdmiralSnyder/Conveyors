@@ -1,5 +1,6 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Shapes;
+using CoreLib.Definition;
 
 namespace ConveyorLib.Objects;
 

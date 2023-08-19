@@ -6,9 +6,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:mx="clr-namespace:WpfLib.MarkupExtensions;assembly=WpfLib"
         xmlns:system="clr-namespace:System;assembly=mscorlib" Name="TheWindow" Title="MainWindow"
-        Width="614" Height="352" Closing="Window_Closing"
+        Width="792" Height="442" Closing="Window_Closing"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        mc:Ignorable="d">
+        mc:Ignorable="d"
+        PreviewKeyDown="Window_PreviewKeyDown">
 
     <Window.Resources>
         <local:SnapGridConverter x:Key="SnapGridConverter" />
@@ -33,6 +34,10 @@
             <Setter Property="VerticalAlignment" Value="Stretch" />
             <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
+        <Grid x:Key="AddLineSegmentButtonContent" gu:Grid.Layout="*,* *" x:Name="AddLineSegmentButtonContent">
+            <TextBlock Grid.Column="0" Text="⊢" />
+            <TextBlock Grid.Column="1" Margin="-3,0,0,0" Text="⊣" />
+        </Grid>
     </Window.Resources>
 
     <Grid gu:Grid.Layout="auto * auto, * auto 130">
@@ -52,33 +57,16 @@
                     <Setter Property="Margin" Value="0,0,10,0" />
                 </Style>
             </StackPanel.Resources>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Name="ButtonsSP">
                 <Button Name="DebugB" Content="Debug" Click="DebugB_Click" ToolTip="Debug" />
-                <Button Name="AddConveyorB" Content="\____/" Click="AddConveyorB_Click" ToolTip="Add Conveyor" />
-                <Button Name="AddPointB" Content="." Click="AddPointB_Click" ToolTip="Add Point" />
-                <Button Name="AddLineB" Content="―" Click="AddLineB_Click" ToolTip="Add Line" />
-                <Button Name="AddLineSegmentB" Height="20" Click="AddLineSegmentB_Click" ToolTip="Add Line Segment">
-                    <Grid gu:Grid.Layout="*,* *">
-                        <TextBlock Grid.Column="0" Text="⊢" />
-                        <TextBlock Grid.Column="1" Margin="-3,0,0,0" Text="⊣" />
-                    </Grid>
-
-                </Button>
-                <Button Name="AddFilletB" Content="U" Click="AddFilletB_Click" ToolTip="Add Fillet" />
-
-                <Button Name="AddCircleCenterRadiusB" Content="O1" Click="AddCircleCenterRadiusB_Click"
-                        ToolTip="Add Circle by Center+Circ Point" />
-                <Button Name="AddCircle2PointsB" Content="O2" Click="AddCircle2PointsB_Click"
-                        ToolTip="Add Circle by Diameter Points" />
-                <Button Name="AddCircle3PointsB" Content="O3" Click="AddCircle3PointsB_Click"
-                        ToolTip="Add Circle by Three Points" />
+                <Button Name="SelectB" Content="Select" Click="SelectB_Click"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <CheckBox Name="RunningCB" Content="Running" Checked="RunningCB_Click" Unchecked="RunningCB_Click" />
                 <Button Name="PutItemB" Content="Put" Click="PutItemB_Click" ToolTip="Put Items" />
                 <CheckBox Name="FirstOnlyCB" Content="FirstOnly" />
                 <Button Name="MovePointB" Content="Move" Click="MovePointB_Click" />
-                <CheckBox Name="SelectB" Content="Select"
+                <CheckBox Name="SelectCB" Content="Select"
                           IsChecked="{Binding SelectionManager.IsActive}" />
                 <TextBox Name="LanesCountTB" Text="2" ToolTip="Lanes Count" />
                 <TextBox Name="GridWidth" Width="30"
@@ -101,8 +89,7 @@
         </Grid>
         <Grid gu:Cell.Index="1 0" gu:Grid.Layout="* auto auto, *">
             <ScrollViewer gu:Cell.Index="0 0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
-                <Canvas Name="TheCanvas" MouseDown="TheCanvas_MouseDown" MouseMove="TheCanvas_MouseMove"
-                        MouseUp="TheCanvas_MouseUp" MouseWheel="TheCanvas_MouseWheel">
+                <Canvas Name="TheCanvas" MouseWheel="TheCanvas_MouseWheel">
                     <Canvas.Background>
                         <DrawingBrush AlignmentX="Left" AlignmentY="Top" Stretch="None" TileMode="Tile" Viewport="-0.5, -0.5, 10, 10"
                                       ViewportUnits="Absolute">

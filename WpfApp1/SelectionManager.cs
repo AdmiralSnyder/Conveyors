@@ -1,6 +1,5 @@
 ﻿using CoreLib;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -10,9 +9,35 @@ using UILib;
 
 namespace ConveyorApp;
 
+public abstract class ObjectHighlighter
+{
+    private ISelectObject? _SelectObject;
+
+    public ISelectObject? SelectObject 
+    { 
+        get => _SelectObject;
+        set
+        {
+            if (value == null && _SelectObject == null) return;
+            _SelectObject = value;
+            Highlight();
+        }
+    }
+
+    public ObjectHighlightTypes HighlightType { get; set; }
+    protected abstract void Highlight();
+}
+
+public enum ObjectHighlightTypes
+{
+    None,
+    Pick,
+    Select
+}
+
 public abstract class ChooseManager : IRefreshListener<ISelectable>, INotifyPropertyChanged
 {
-    public bool IsActive { get; set; }
+    public bool IsActive { get; protected set; }
 
     public void Notify(ISelectable obj)
     {
@@ -22,51 +47,88 @@ public abstract class ChooseManager : IRefreshListener<ISelectable>, INotifyProp
         }
     }
 
-    private ISelectObject _ChosenObject;
-    public ISelectObject ChosenObject
+    private ISelectObject? _ChosenObject;
+    public ISelectObject? ChosenObject
     {
         get => _ChosenObject;
-        set
+        set => Func.Setter(ref _ChosenObject, value, (oldValue, newValue) =>
         {
-            if (_ChosenObject != value)
-            {
-                if (_ChosenObject != null)
-                {
-                    RefreshManager<ISelectable>.UnRegisterObserver(this, _ChosenObject);
-                }
-                _ChosenObject = value;
+                RefreshManager<ISelectable>.UnRegisterObserver(this, oldValue);
+
                 UpdateBoundingBox(value);
                 RefreshManager<ISelectable>.RegisterObserver(this, value);
                 OnPropertyChanged(nameof(ChosenObject));
 
                 ChosenObjectChanged?.Invoke(this, new((ChosenObject, MousePosition)));
-            }
-        }
+        });
     }
 
-    public event EventHandler<EventArgs<(ISelectable, Point)>> ChosenObjectChanged;
+    public event EventHandler<EventArgs<(ISelectable?, Point)>>? ChosenObjectChanged;
 
-    public event PropertyChangedEventHandler PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new(name));
 
-    public Action<ISelectObject> UpdateBoundingBox { get; set; }
+    public abstract void UpdateBoundingBox(ISelectObject? selectObject);
+
     public System.Windows.Point MousePosition { get; internal set; }
+    public ObjectHighlighter Highlighter { get; protected set; }
+
+    protected ChooseManager(ObjectHighlighter highlighter) => Highlighter = highlighter;
 }
 
-public class PickManager : ChooseManager
+public class InputPickManager : ChooseManager
 {
-    public Func<ISelectable, bool>? ObjectFilter { get; internal set; }
+    public InputPickManager() : base(null) { }
+    private Func<ISelectable, bool>? ObjectFilter { get; set; }
 
-    public bool QueryCanPickObject(ISelectable selectable) => ObjectFilter(selectable);
+    public void Enable(Func<ISelectable, bool> objectFilter)
+    {
+        IsActive = true;
+        ObjectFilter = objectFilter;
+    }
+
+    public void Disable()
+    {
+        ObjectFilter = null;
+        IsActive = false;
+    }
+
+    public bool QueryCanPickObject(ISelectable selectable) => ObjectFilter?.Invoke(selectable) ?? false;
+
+    public override void UpdateBoundingBox(ISelectObject? selectObject)
+    {
+    }
 }
 
-public class SelectionManager : ChooseManager
+public abstract class PickManager : ChooseManager
 {
-    public SelectionManager() => RefreshManager<ISelectable>.RegisterRefreshListener(this);
+    public PickManager(ObjectHighlighter highlighter) : base(highlighter) { }
+
+    private Func<ISelectable, bool>? ObjectFilter { get; set; }
+
+    public void Enable(Func<ISelectable, bool> objectFilter)
+    {
+        IsActive = true;
+        ObjectFilter = objectFilter;
+    }
+
+    public void Disable()
+    {
+        ObjectFilter = null;
+        IsActive = false;
+    }
+
+    public bool QueryCanPickObject(ISelectable selectable) => ObjectFilter?.Invoke(selectable) ?? false;
+}
+
+public abstract class SelectionManager : ChooseManager
+{
+    public SelectionManager(ObjectHighlighter highlighter) 
+        : base(highlighter) 
+        => RefreshManager<ISelectable>.RegisterRefreshListener(this);
 
     public bool HierarchicalSelection { get; set; } = true;
 
     public void ToggleSelectMode() => IsActive = !IsActive;
-
 }

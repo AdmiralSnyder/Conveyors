@@ -34,7 +34,7 @@ public class InputStage<TOutput> : InputStage
 public class InputStage<TInput, TOutput> : InputStage<TOutput>
 {
     public TInput Input { get; set; }
-    
+
     public Func<TInput, Task<InputResult<TOutput>>> StageFunc { get; set; }
 
     public override async Task Invoke(InputStage? input)
@@ -55,7 +55,7 @@ public class InputStage<TInput, TOutput> : InputStage<TOutput>
 }
 
 public class InputEntryBase
-{ 
+{
     public InputManager InputManager { get; set; }
 }
 
@@ -65,7 +65,7 @@ public class BlankInputEntry : InputEntryBase
     public InputEntry<InitialInputState, Pair<InitialInputState, T>> Then<T>(Func<InitialInputState, Task<InputResult<T>>> thenFunc, string? name = null)
     {
         InputManager.AddStage(thenFunc, name);
-        InputEntry<InitialInputState, Pair<InitialInputState, T>> newState = new () { InputManager = InputManager };
+        InputEntry<InitialInputState, Pair<InitialInputState, T>> newState = new() { InputManager = InputManager };
         return newState;
     }
 }
@@ -95,9 +95,16 @@ public static class PairFunc
         flattened = (with.First.First, with.First.Second, with.Second);
         return true;
     }
+
+    public static (T1R Item, T2) Map<T1, T2, T1R>(this (T1, T2) pair, Func<T1, T1R> mapper) => (mapper(pair.Item1), pair.Item2); 
+    public static (T1R Item, T2R) Map<T1, T2, T1R, T2R>(this (T1, T2) pair, Func<T1, T1R> mapper1, Func<T2, T2R> mapper2) => (mapper1(pair.Item1), mapper2(pair.Item2));
+    public static (T1R Item, T2, T3) Map<T1, T2, T3, T1R>(this (T1, T2, T3) pair, Func<T1, T1R> mapper) => (mapper(pair.Item1), pair.Item2, pair.Item3);
+    public static (T1R Item, T2R, T3) Map<T1, T2, T3, T1R, T2R>(this (T1, T2, T3) pair, Func<T1, T1R> mapper1, Func<T2, T2R> mapper2) => (mapper1(pair.Item1), mapper2(pair.Item2), pair.Item3);
+    public static (T1R Item, T2R, T3R) Map<T1, T2, T3, T1R, T2R, T3R>(this (T1, T2, T3) pair, Func<T1, T1R> mapper1, Func<T2, T2R> mapper2, Func<T3, T3R> mapper3) => (mapper1(pair.Item1), mapper2(pair.Item2), mapper3(pair.Item3));
+
 }
 
-public class InitialInputState : InputState 
+public class InitialInputState : InputState
 {
     public static readonly InitialInputState Instance = new();
 }
@@ -141,7 +148,7 @@ public class InputManager
     internal async Task<InputResult<T>> Run<T>()
     {
         InputStage lastStage = InputStage.Initial;
-        while(true)
+        while (true)
         {
             if (Stages.Any())
             {
@@ -154,7 +161,7 @@ public class InputManager
                 }
                 else
                 {
-                // TODO else retry depending on strategy
+                    // TODO else retry depending on strategy
                     return InputResult.Failure;
                 }
             }
@@ -178,6 +185,8 @@ public abstract class InputContextBase
 
     public MainWindow MainWindow { get; set; }
 
+    public Inputter? CurrentInputter { get; set; }
+
     public abstract void SetCursor(Cursor cursor);
 
     private string? _UserNotes;
@@ -200,10 +209,7 @@ public abstract class InputContextBase
     {
         if (HandleMouseDownPanning(e)) return;
 
-        if (MainWindow.CurrentInputter is { } ci)
-        {
-            ci.HandleMouseDown(sender, e);
-        }
+        CurrentInputter?.HandleMouseDown(sender, e);
 
         HandleMouseDownVirtual(e);
     }
@@ -220,10 +226,7 @@ public abstract class InputContextBase
 
         MouseMovedInCanvas?.Invoke(sender, e);
 
-        if (MainWindow.CurrentInputter is { } ci)
-        {
-            ci.HandleMouseMove(sender, e);
-        }
+        CurrentInputter?.HandleMouseMove(sender, e);
     }
 
     public event MouseEventHandler MouseMovedInCanvas;

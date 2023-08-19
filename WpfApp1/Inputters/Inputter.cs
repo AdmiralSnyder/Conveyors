@@ -13,6 +13,7 @@ public abstract class Inputter
     public virtual void HandleMouseMove(object sender, MouseEventArgs e) { }
 
     public abstract void Start();
+
     public abstract void RunAsync();
 
     public abstract void Abort();
@@ -22,11 +23,11 @@ public abstract class InputterBase<TThis, TContext, TTask> : Inputter
     where TThis : InputterBase<TThis, TContext, TTask>, new()
     where TContext : InputContextBase
 {
-    private TContext _Context;
+    private TContext? _Context;
 
     public TContext Context 
     {
-        get => _Context;
+        get => _Context ?? throw new NullReferenceException("Context darf nicht null sein");
         private set => Func.Setter(ref _Context, value, ContextAssigned);
     }
 
@@ -73,7 +74,13 @@ public abstract class InputterBase<TThis, TContext, TTask> : Inputter
         CleanupVirtual();
     }
 
-    protected virtual void CleanupVirtual() { }
+    protected virtual void CleanupVirtual() 
+    {
+        if (Context.CurrentInputter == this)
+        {
+            Context.CurrentInputter = null;
+        }
+    }
 
     protected virtual void AbortVirtual() { }
 
@@ -81,7 +88,7 @@ public abstract class InputterBase<TThis, TContext, TTask> : Inputter
 
     protected virtual void DetachEvents() { }
 
-    private Inputter[] SubInputters { get; set; }
+    private Inputter[]? SubInputters { get; set; }
 
     public static TTask StartInput(TContext context, params Inputter[] subInputters)
     {
@@ -117,7 +124,6 @@ public abstract class Inputter<TThis, TResult, TContext> : InputterBase<TThis, T
     where TContext : InputContextBase
 {
     protected TaskCompletionSource<InputResult<TResult>> TaskCompletionSource { get; set; }
-
 
     public TResult Result { get; protected set; }
 

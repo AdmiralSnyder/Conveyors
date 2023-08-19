@@ -1,5 +1,6 @@
 ﻿using ConveyorLib.Objects;
 using CoreLib;
+using CoreLib.Definition;
 using System;
 using System.Threading.Tasks;
 using UILib;
@@ -17,6 +18,7 @@ public abstract class SelectLineDefinitionInputterBase<TThis, TLineType> : Input
 
     private void Context_ObjectPicked(object? sender, EventArgs<(ISelectObject, Point)> e)
         => Complete((GetLineType((ISelectObject?)e.Data.Item1), e.Data.Item2));
+
     protected virtual TLineType GetLineType(ISelectObject obj) => (TLineType)obj;
 
     private void Context_Abort(object? sender, EventArgs e) { }
@@ -31,8 +33,7 @@ public abstract class SelectLineDefinitionInputterBase<TThis, TLineType> : Input
     {
         Context.StopObjectPickingListener();
 
-        Context.MainWindow.PickManager.IsActive = false;
-        Context.MainWindow.PickManager.ObjectFilter = null;
+        Context.MainWindow.InputPickManager.Disable();
 
         base.CleanupVirtual();
     }
@@ -41,8 +42,7 @@ public abstract class SelectLineDefinitionInputterBase<TThis, TLineType> : Input
 
     protected override Task<InputResult<(TLineType, Point)>> StartAsyncVirtual()
     {
-        Context.MainWindow.PickManager.IsActive = true;
-        Context.MainWindow.PickManager.ObjectFilter = ObjectCanBePicked;
+        Context.MainWindow.InputPickManager.Enable(ObjectCanBePicked);
 
         Context.StartObjectPickingListener();
 

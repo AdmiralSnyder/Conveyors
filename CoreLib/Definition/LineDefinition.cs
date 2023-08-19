@@ -1,18 +1,7 @@
-﻿namespace CoreLib.Maths;
+﻿using PointDef;
 
-public interface IDefinition<TSource>
-{
-    TSource GetSource();
-    void ApplySource(TSource source);
-}
-
-public class SimpleDefinition<TSource> : IDefinition<TSource>
-{
-    public TSource Source { get; set; }
-    public void ApplySource(TSource source) => Source = source;
-
-    public TSource GetSource() => Source;
-}
+namespace CoreLib.Definition;
+using CoreLib.Maths;
 
 public class LineDefinition : IDefinition<TwoPoints>
 {

@@ -1,4 +1,5 @@
-﻿using PointDef.twopoints;
+﻿using CoreLib.Definition;
+using PointDef.twopoints;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
@@ -18,3 +19,4 @@ public class Line : ConveyorAppApplicationObject<Line, Shape, LineDefinition, Tw
 
     protected override Shape GetShape() => CanvasInfo.ShapeProvider.CreateLine(Definition.RefPoints);
 }
+

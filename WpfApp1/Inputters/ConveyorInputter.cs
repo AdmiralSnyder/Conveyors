@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -15,7 +16,13 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
         SelectFirstPoint,
         SelectLastPoint,
     }
-    public override void Start() => InputState = InputStates.SelectFirstPoint;
+
+    public override void Start()
+    {
+        base.Start();
+        InputState = InputStates.SelectFirstPoint;
+        Context.CurrentInputter = this;
+    }
 
     protected override void InputStateChanged(InputStates newValue)
     {
@@ -59,7 +66,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
                         break;
                     case ActionResults.Abort:
                     case ActionResults.AbortAll:
-                        AbortAll();
+                        CancelAll();
                         break;
                 }
                 break;
@@ -72,16 +79,16 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
                         Finish();
                         break;
                     case ActionResults.Abort:
-                        Abort(true);
+                        Cancel(true);
                         break;
                     case ActionResults.AbortAll:
-                        AbortAll();
+                        CancelAll();
                         break;
                 }
                 break;
         }
 
-        void Abort(bool abortAllIfEmpty = false)
+        void Cancel(bool cancelAllIfEmpty = false)
         {
             if (TempLines.TryPop(out var last))
             {
@@ -93,14 +100,15 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
             }
             else
             {
-                if (abortAllIfEmpty)
+                if (cancelAllIfEmpty)
                 {
                     InputState = InputStates.None;
+                    this.Abort();
                 }
             }
         }
 
-        void AbortAll()
+        void CancelAll()
         {
             foreach (var line in TempLines)
             {
@@ -108,6 +116,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
             }
             TempLines.Clear();
             InputState = InputStates.None;
+            this.Abort();
         }
 
         ActionResults AddPoint()
@@ -124,8 +133,8 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
 
         void Finish()
         {
-            Point lastPoint = (double.NaN, double.NaN);
             List<Point> points = new();
+            Point lastPoint = (double.NaN, double.NaN);
             foreach (var line in TempLines.Reverse())
             {
                 Context.Canvas.Children.Remove(line);
@@ -152,8 +161,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
             TempLines.Clear();
 
             InputState = InputStates.None;
-            
-            Context.MainWindow.AutoRoot.AddConveyor(points, Context.MainWindow.IsRunning, int.TryParse(Context.MainWindow.LanesCountTB.Text, out var lanesCnt) ? Math.Max(lanesCnt, 1) : 1);
+            Complete(points);
         }
     }
 

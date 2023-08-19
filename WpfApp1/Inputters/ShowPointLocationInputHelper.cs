@@ -3,33 +3,100 @@ using System;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using UILib;
 using WpfLib;
 
 namespace ConveyorApp.Inputters;
 
-public class ShowThreePointCircleOnMouseLocationInputHelper : ShowShapeInputHelper<ShowThreePointCircleOnMouseLocationInputHelper, Shape>
+public abstract class ShowDynamicCircleInputHelper<TThis> : ShowDynamicShapeInputHelper<TThis>
+    where TThis : ShowDynamicCircleInputHelper<TThis>, new()
 {
     protected override Shape CreateShape() => Context.MainWindow.ShapeProvider.CreateCircle(default, default);
+    protected void UpdateCircle(Point center, double radius)
+    {
+        TmpShape.SetCenterLocation(center);
+        TmpShape.Height = 2 * radius + 1;
+        TmpShape.Width = 2 * radius + 1;
+
+    }
+}
+public abstract class ShowDynamicShapeInputHelper<TThis> : ShowShapeInputHelper<TThis, Shape>
+    where TThis : ShowDynamicShapeInputHelper<TThis>, new()
+{
     protected override void AttachEvents() => Context.MouseMovedInCanvas += Context_MouseMovedInCanvas;
     protected override void DetachEvents() => Context.MouseMovedInCanvas -= Context_MouseMovedInCanvas;
-
-    public Point Point1 { get; set; }
-    public Point Point2 { get; set; }
 
     private void Context_MouseMovedInCanvas(object sender, MouseEventArgs e)
     {
         var point = Context.GetSnappedCanvasPoint(e);
-        if (Maths.GetCircleInfo((Point1, Point2, point), out var circInfo))
+        TmpShape.Visibility = UpdateMousePoint(point)
+            ? System.Windows.Visibility.Visible
+            : System.Windows.Visibility.Hidden;
+    }
+    protected abstract bool UpdateMousePoint(Point point);
+}
+
+public class ShowCircleByRadiusInputHelper : ShowDynamicCircleInputHelper<ShowCircleByRadiusInputHelper>
+{
+    public Point Center { get; set; }
+
+    internal static ShowCircleByRadiusInputHelper Create(CanvasInputContext context, Point point1)
+    {
+        var result = Create(context);
+        result.Center = point1;
+        return result;
+    }
+
+    protected override bool UpdateMousePoint(Vector point)
+    {
+        if (point != Center)
         {
-            TmpShape.Visibility = System.Windows.Visibility.Visible;
-            TmpShape.SetCenterLocation(circInfo.Center);
-            TmpShape.Height = 2 * circInfo.Radius + 1;
-            TmpShape.Width = 2 * circInfo.Radius + 1;
+            UpdateCircle(Center, (Center - point).Length());
+            return true;
         }
-        else
+        else return false;
+    }
+}
+
+
+public class ShowCircleByDiameterInputHelper : ShowDynamicCircleInputHelper<ShowCircleByDiameterInputHelper>
+{
+
+    public Point Point1 { get; set; }
+
+    internal static ShowCircleByDiameterInputHelper Create(CanvasInputContext context, Point point1)
+    {
+        var result = Create(context);
+        result.Point1 = point1;
+        return result;
+    }
+
+    protected override bool UpdateMousePoint(Vector point)
+    {
+        if (Maths.GetCircleInfoByDiameter((Point1, point), out var info, out _))
         {
-            TmpShape.Visibility = System.Windows.Visibility.Hidden;
+            UpdateCircle(info.Center, info.Radius);
+            return true;
         }
+        else return false;
+    }
+}
+
+public class ShowThreePointCircleOnMouseLocationInputHelper : ShowDynamicCircleInputHelper<ShowThreePointCircleOnMouseLocationInputHelper>
+{
+    protected override Shape CreateShape() => Context.MainWindow.ShapeProvider.CreateCircle(default, default);
+
+    public Point Point1 { get; set; }
+    public Point Point2 { get; set; }
+
+    protected override bool UpdateMousePoint(Vector point)
+    {
+        if (Maths.GetCircleInfoByThreePoints((Point1, Point2, point), out var circInfo))
+        {
+            UpdateCircle(circInfo.Center, circInfo.Radius);
+            return true;
+        }
+        else return false;
     }
 
     internal static ShowThreePointCircleOnMouseLocationInputHelper Create(CanvasInputContext context, Point point1, Point point2)
@@ -57,7 +124,7 @@ public abstract class ShowShapeInputHelper<TThis, TShape> : Inputter<TThis, Unit
         Context.Canvas.Children.Remove(_TmpShape);
     }
 
-    private TShape _TmpShape;
+    private TShape? _TmpShape;
 
     protected abstract TShape CreateShape();
 
@@ -82,7 +149,7 @@ where TThis : ShowLineFromToInputHelper<TThis>, new()
 
     protected Point StartPoint
     {
-        get => _StartPoint; 
+        get => _StartPoint;
         set => Func.Setter(ref _StartPoint, value, () =>
         {
             TmpShape.X1 = StartPoint.X;
@@ -136,6 +203,21 @@ public class ShowLineFromToMouseInputHelper : ShowLineFromToInputHelper<ShowLine
     }
 }
 
+public class ShowUserNotesInputHelper : Inputter<ShowUserNotesInputHelper, InputContextBase>
+{
+    public static ShowUserNotesInputHelper Create(InputContextBase context, string userNotes)
+    {
+        context.UserNotes = userNotes;
+        return Create(context);
+    }
+
+    protected override void CleanupVirtual()
+    {
+        base.CleanupVirtual();
+        Context.UserNotes = "";
+    }
+}
+
 public class FixedPointInputHelper : ShowPointInputHelper<FixedPointInputHelper>
 {
     private Point _Location;
@@ -162,6 +244,32 @@ public class ShowMouseLocationInputHelper : ShowPointInputHelper<ShowMouseLocati
     {
         var point = Context.GetSnappedCanvasPoint(e);
         TmpShape.SetCenterLocation(point);
+    }
+}
+
+public class ShowPickedSelectableInputHelper : Inputter<ShowPickedSelectableInputHelper, CanvasInputContext>
+{
+    private CanvasObjectHighlighter? CanvasObjectHighlighter { get; set; }
+    protected override void CleanupVirtual()
+    {
+        base.CleanupVirtual();
+        CanvasObjectHighlighter!.SelectObject = null;
+        CanvasObjectHighlighter = null;
+    }
+
+    //private ISelectObject SelectObject { get; set; }
+
+    //public ISelectObject SelectObject 
+    //{
+    //    get => _SelectObject; 
+    //    set => Func.Setters(ref _SelectObject, value); 
+    //}
+
+    public static ShowPickedSelectableInputHelper Create(CanvasInputContext context, ISelectObject selectObject)
+    {
+        var result = Create(context);
+        result.CanvasObjectHighlighter = CanvasObjectHighlighter.Create(context.Canvas, selectObject);
+        return result;
     }
 }
 

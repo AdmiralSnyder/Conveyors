@@ -17,6 +17,9 @@ using System.Windows.Shapes;
 using UILib;
 using WpfLib;
 using ConveyorApp.Inputters;
+using CoreLib.Definition;
+using System.Windows.Controls;
+using System.Threading.Tasks;
 
 namespace ConveyorApp;
 
@@ -31,17 +34,14 @@ public partial class MainWindow
         ShapeProvider.RegisterSelectBehaviour(SelectShapeAction);
         this.DataContext = this;
 
-        SelectionManager = new()
-        {
-            UpdateBoundingBox = ShowSelectionBoundingBox
-        };
-
-        PickManager = new()
-        {
-            UpdateBoundingBox = ShowPickBoundingBox
-        };
-
         InitializeComponent();
+
+        SelectionManager = new CanvasSelectionManager(TheCanvas);
+        PickManager = new(TheCanvas);
+        InputPickManager = new();
+
+        CreationCommandManager = new();
+
 
 
         AutoRoot = ConveyorAutomationObject.CreateAutomationObject(out var context);
@@ -54,19 +54,37 @@ public partial class MainWindow
             MainWindow = this,
         };
 
-        context.LogAction = s => textEditor2.Dispatcher.Invoke(() => textEditor2.AppendText(s + Environment.NewLine));
+        CreationCommandManager.InputContext = InputContext;
+        CreationCommandManager.AutoRoot = AutoRoot;
+
+        CreationCommandManager.AddCommands(AddActionButton);
+
+        context.LogAction = async s => await textEditor2.Dispatcher.InvokeAsync(() => textEditor2.AppendText(s + Environment.NewLine));
         ScriptRunner.InitializeScriptingEnvironment(AutoRoot, Dispatcher, RunB);
 
         DebugHelper.Instance = new ConveyorDebugHelper() { Canvas = TheCanvas, ShapeProvider = ShapeProvider };
-
     }
 
     public IGeneratedConveyorAutomationObject AutoRoot { get; }
 
-    public PickManager PickManager { get; set; }
+    private void AddActionButton(Func<Task> commandAction, string commandName, string? caption)
+    {
+        var button = new Button() 
+        { 
+            Content = commandName == "Add Line Segment" 
+                ? Resources["AddLineSegmentButtonContent"] 
+                : caption ?? commandName, 
+            ToolTip = commandName };
+        button.Click += async (s, e) => await commandAction(); 
+        ButtonsSP.Children.Add(button);
+    }
 
+    public CreationCommandManager CreationCommandManager { get; set; }
     public SelectionManager SelectionManager { get; set; }
+    public CanvasPickManager PickManager { get; set; }
 
+    public InputPickManager InputPickManager { get; set; }
+    
     private void SelectShapeAction(Shape shape)
     {
         var mousePosition = Mouse.GetPosition(TheCanvas);
@@ -75,7 +93,15 @@ public partial class MainWindow
 
         if (shape.Tag is ISelectObject selectObject)
         {
-            if (PickManager.IsActive)
+            if (InputPickManager.IsActive)
+            {
+                InputPickManager.MousePosition = mousePosition;
+                if (InputPickManager.QueryCanPickObject(selectObject))
+                {
+                    InputPickManager.ChosenObject = selectObject;
+                }
+            }
+            else if (PickManager.IsActive)
             {
                 PickManager.MousePosition = mousePosition;
                 if (PickManager.QueryCanPickObject(selectObject))
@@ -96,115 +122,23 @@ public partial class MainWindow
                     SelectionManager.ChosenObject = selectObject;
                 }
             }
-
-            
         }
     }
-    private Rectangle PickRect;
-
-    private void ShowPickBoundingBox(ISelectObject? selectObject)
-    {
-        if (PickRect is not null)
-        {
-            TheCanvas.Children.Remove(PickRect);
-        }
-        if (selectObject is null) return;
-
-        var boundingRect = Maths.GetBoundingRectTopLeftSize(selectObject.GetSelectionBoundsPoints());
-        PickRect = new()
-        {
-            Width = boundingRect.P2.X + 8,
-            Height = boundingRect.P2.Y + 8,
-            Stroke = Brushes.Chartreuse,
-            StrokeDashArray = new(new[] { 4d, 4d }),
-            SnapsToDevicePixels = true,
-            RadiusX = 2,
-            RadiusY = 2,
-        };
-        PickRect.SetLocation(boundingRect.P1.Subtract((4, 4)));
-        TheCanvas.Children.Add(PickRect);
-    }
-
-    private Rectangle SelectionRect;
-
-    private void ShowSelectionBoundingBox(ISelectObject? selectObject)
-    {
-        if (SelectionRect is not null)
-        {
-            TheCanvas.Children.Remove(SelectionRect);
-        }
-        if (selectObject is null) return;
-
-        var boundingRect = Maths.GetBoundingRectTopLeftSize(selectObject.GetSelectionBoundsPoints());
-        SelectionRect = new()
-        {
-            Width = boundingRect.P2.X + 8,
-            Height = boundingRect.P2.Y + 8,
-            Stroke = Brushes.Moccasin,
-            StrokeDashArray = new(new[] { 1d, 2d }),
-            SnapsToDevicePixels = true,
-            RadiusX = 2,
-            RadiusY = 2,
-        };
-        SelectionRect.SetLocation(boundingRect.P1.Subtract((4, 4)));
-        TheCanvas.Children.Add(SelectionRect);
-    }
-
-    internal Inputter CurrentInputter { get; set; }
 
     public CanvasInputContext InputContext { get; private set; }
 
-    private async void AddPointB_Click(object sender, RoutedEventArgs e)
-    {
-        if ((await PointInputter.StartInput(InputContext, ShowMouseLocationInputHelper.Create(InputContext))).IsSuccess(out var point))
-        {
-            AddPoint(point);
-        }
-    }
+    #region Create Actions
 
-    private Shape AddPoint(Point point)
-    {
-        var pointShape = ShapeProvider.CreatePoint(point);
-        TheCanvas.Children.Add(pointShape);
-        return pointShape;
-    }
+    private async void AddCircleCenterRadiusB_Click(object sender, RoutedEventArgs e) => await CreationCommandManager.AddCircleCenterRadius();
+    private async void AddCircle2PointsB_Click(object sender, RoutedEventArgs e) => await CreationCommandManager.AddCircleTwoPoints();
+    private async void AddCircle3PointsB_Click(object sender, RoutedEventArgs e) => await CreationCommandManager.AddCircleThreePoints();
+    private async void AddLineB_Click(object sender, RoutedEventArgs e) => await CreationCommandManager.AddLine();
+    private async void AddLineSegmentB_Click(object sender, RoutedEventArgs e) => await CreationCommandManager.AddLineSegment();
+    private async void AddPointB_Click(object sender, RoutedEventArgs e) => await CreationCommandManager.AddPoint();
 
-    private Shape AddCircle(Point center, double radius)
-    {
-        var circleShape = ShapeProvider.CreateCircle(center, radius);
-        TheCanvas.Children.Add(circleShape);
-        return circleShape;
-    }
-
-    private void AddConveyorB_Click(object sender, RoutedEventArgs e)
-    {
-        (CurrentInputter = ConveyorInputter.Create(InputContext)).Start();
-    }
-
-    private async void AddCircleCenterRadiusB_Click(object sender, RoutedEventArgs e)
-    {
-        if ((await CircleCenterRadiusInputter.StartInput(InputContext)).IsSuccess(out var info))
-        {
-            AddCircle(info.Center, info.Radius);
-        }
-    }
-
-    private async void AddCircle3PointsB_Click(object sender, RoutedEventArgs e)
-    {
-        if ((await CircleThreePointsInputter.StartInput(InputContext)).IsSuccess(out var info)
-            && Maths.GetCircleInfo(info, out var circInfo))
-        {
-            AddCircle(circInfo.Center, circInfo.Radius);
-        }
-    }
-
-    private void TheCanvas_MouseDown(object sender, MouseButtonEventArgs e) => InputContext.HandleMouseDown(sender, e);
+    #endregion
 
     internal ConveyorShapeProvider ShapeProvider { get; set; }
-
-    private void TheCanvas_MouseMove(object sender, MouseEventArgs e) => InputContext.HandleMouseMove(sender, e);
-
-    private void TheCanvas_MouseUp(object sender, MouseButtonEventArgs e) => InputContext.HandleMouseUp(sender, e);
 
     // TODO put the zoom functionality into a behaviour
     private void TheCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -244,20 +178,15 @@ public partial class MainWindow
 
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) => IsRunning = false;
 
-    private void MovePointB_Click(object sender, RoutedEventArgs e)
+    private async void MovePointB_Click(object sender, RoutedEventArgs e)
     {
         RunningCB.IsChecked = false;
-        (CurrentInputter = MoveInputter.Create(this.InputContext)).Start();
+        await MoveInputter.StartInput(InputContext);
     }
-
-
-
-    private void SelectB_Click(object sender, RoutedEventArgs e) => SelectionManager.ToggleSelectMode();
-
 
     private async void RunB_Click(object sender, RoutedEventArgs e) => await ScriptRunner.RunScript(textEditor.Text);
 
-    
+
     private readonly ScriptRunner ScriptRunner = new();
 
     private void HappyBirthdayRubyB_Click(object sender, RoutedEventArgs e) => WriteString("R");
@@ -291,36 +220,6 @@ public partial class MainWindow
         }
     }
 
-    private async void AddCircle2PointsB_Click(object sender, RoutedEventArgs e)
-    {
-        if ((await CircleDiameterInputter.StartInput(InputContext)).IsSuccess(out var info)
-            && Maths.GetCircleInfoByDiameter(info, out var circInfo))
-        {
-            AddCircle(circInfo.Center, circInfo.Radius);
-        }
-    }
-
-    private async void AddLineB_Click(object sender, RoutedEventArgs e)
-    {
-        if ((await LineInputter.Create(InputContext).StartAsync()).IsSuccess(out var points))
-        {
-            AutoRoot.AddLine(points);
-        }
-    }
-
-    private async void AddFilletB_Click(object sender, RoutedEventArgs e)
-    {
-        if ((await FilletInfoInputter.Create(InputContext).StartAsync()).IsSuccess(out var linesWithPoints))
-        {
-            var point1 = linesWithPoints.LineInfo1.Point;
-            var point2 = linesWithPoints.LineInfo2.Point;
-            if (Maths.CreateFilletInfo(linesWithPoints.LineInfo1.LineDefinition, linesWithPoints.LineInfo2.LineDefinition, (point1, point2), out var filletInfo))
-            {
-                AutoRoot.AddFillet(filletInfo.Points, filletInfo.Radius);
-            }
-        }
-    }
-
     private void DebugB_Click(object sender, RoutedEventArgs e)
     {
         //[InlineData(1, 1, 1, -1, 0, 1, 270)]
@@ -331,22 +230,17 @@ public partial class MainWindow
         DebugHelper.PutLineSegmentVector(line2.RefPoints);
     }
 
+    private void SaveB_Click(object sender, RoutedEventArgs e) => AutoRoot.SaveCustom(@"T:\conveyorApp\conveyorApp.json");
 
-    private async void AddLineSegmentB_Click(object sender, RoutedEventArgs e)
+    private void LoadB_Click(object sender, RoutedEventArgs e) => AutoRoot.Load(@"T:\conveyorApp\conveyorApp.json");
+
+    private void SelectB_Click(object sender, RoutedEventArgs e) => SelectionManager.ToggleSelectMode();
+
+    private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if ((await LineInputter.Create(InputContext).StartAsync()).IsSuccess(out var points))
+        if (e.Key == Key.Escape && SelectionManager.IsActive)
         {
-            AutoRoot.AddLineSegment(points);
+            SelectionManager.ToggleSelectMode();
         }
-    }
-
-    private void SaveB_Click(object sender, RoutedEventArgs e)
-    {
-        AutoRoot.SaveCustom(@"T:\conveyorApp\conveyorApp.json");
-    }
-
-    private void LoadB_Click(object sender, RoutedEventArgs e)
-    {
-        AutoRoot.Load(@"T:\conveyorApp\conveyorApp.json");
     }
 }

@@ -38,9 +38,16 @@ public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomatio
     ConveyorCanvasInfo CanvasInfo { get; }
     
     Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes);
-    
+
+    Circle AddCircleCenterRadius((Point Center, double Radius) centerRadius);
+    Circle AddCircleDiameter((Point Point1, Point Point2) diameter);
+    Circle AddCircleThreePoints((Point Point1, Point Point2, Point Point3) threePoints);
+    //string Blub();
+
     Line AddLine(TwoPoints points);
     LineSegment AddLineSegment(TwoPoints points);
+
+    PointObj AddPoint(Point point);
 
     /// <summary>
     /// Creates a <see cref="Fillet"/>
@@ -100,8 +107,14 @@ public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppAppli
         return appObject;
     }
 
+    public partial Circle AddCircleCenterRadius((Point Center, double Radius) centerRadius) => AddAppObject(Circle.Create(centerRadius));
+    public partial Circle AddCircleDiameter((Point Point1, Point Point2) diameter) => AddAppObject(Circle.Create(diameter));
+    public partial Circle AddCircleThreePoints((Point Point1, Point Point2, Point Point3) threePoints) => AddAppObject(Circle.Create(threePoints));
+
+
     public partial Line AddLine(TwoPoints points) => AddAppObject(Line.Create(points));
     public partial LineSegment AddLineSegment(TwoPoints points) => AddAppObject(LineSegment.Create(points));
+    public partial PointObj AddPoint(Point point) => AddAppObject(PointObj.Create(point));
 
     public partial Fillet AddFillet(TwoPoints points, double radius) => AddAppObject(Fillet.Create((points, radius)));
 

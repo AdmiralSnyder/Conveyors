@@ -3,13 +3,36 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Shapes;
+using CoreLib;
 using UILib;
 
 namespace ConveyorApp;
 
 public class CanvasInputContext : InputContextBase
 {
-    public Canvas Canvas { get; set; }
+    private Canvas _Canvas;
+    public Canvas Canvas 
+    { 
+        get => _Canvas;
+        set => Func.Setter(ref _Canvas, value, RegisterCanvas); 
+    }
+
+    private void RegisterCanvas(Canvas oldCanvas, Canvas newCanvas)
+    {
+        if (oldCanvas is not null)
+        {
+            oldCanvas.MouseDown -= HandleMouseDown;
+            oldCanvas.MouseUp -= HandleMouseUp;
+            oldCanvas.MouseMove -= HandleMouseMove;
+        }
+        if (newCanvas is not null)
+        { 
+            newCanvas.MouseDown += HandleMouseDown;
+            newCanvas.MouseUp += HandleMouseUp;
+            newCanvas.MouseMove += HandleMouseMove;
+        }
+    }
+
     public TextBlock NotesLabel { get; set; }
 
     public override void SetCursor(Cursor cursor)
@@ -36,11 +59,11 @@ public class CanvasInputContext : InputContextBase
         }
     }
 
-    public void StartObjectPickingListener() => MainWindow.PickManager.ChosenObjectChanged += PickManager_ChosenObjectChanged;
+    public void StartObjectPickingListener() => MainWindow.InputPickManager.ChosenObjectChanged += InputPickManager_ChosenObjectChanged;
 
-    public void StopObjectPickingListener() => MainWindow.PickManager.ChosenObjectChanged -= PickManager_ChosenObjectChanged;
+    public void StopObjectPickingListener() => MainWindow.InputPickManager.ChosenObjectChanged -= InputPickManager_ChosenObjectChanged;
 
-    private void PickManager_ChosenObjectChanged(object? sender, CoreLib.EventArgs<(ISelectable SelObj, Point Point)> e)
+    private void InputPickManager_ChosenObjectChanged(object? sender, CoreLib.EventArgs<(ISelectable SelObj, Point Point)> e)
     {
         if (e.Data.SelObj is ISelectObject so)
         {
@@ -133,7 +156,6 @@ public class CanvasInputContext : InputContextBase
         {
             DoAbort();
         }
-
     }
 
     internal void RemoveShape(Shape centerPointShape)

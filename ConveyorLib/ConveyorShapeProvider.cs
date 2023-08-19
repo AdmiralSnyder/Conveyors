@@ -110,7 +110,6 @@ public class ConveyorShapeProvider : ShapeProvider
         return line;
     }
 
-
     public Ellipse CreateConveyorPointEllipse(Point point, bool isFirst, bool isLast, bool isClockwise, bool isStraight, double size = 4d) => new Ellipse()
     {
         Width = size,

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Windows.Ink;
+using CoreLib.Definition;
 
 namespace CoreLib.Maths;
 
@@ -319,22 +321,72 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
 
     public static bool VectorsAreInverseParallel(Vector v1, Vector v2) => ((v1.Angle() - v2.Angle()).Degrees / 180.0) is { } offset && double.IsOddInteger(offset);
 
-    public static bool GetCircleInfoByDiameter((Vector Point1, Vector Point2) info, out (Vector Center, double Radius) circInfo)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool False<T>(out T parameter)
     {
-        if (info.Point1 == info.Point2)
-        {
-            circInfo = default;
-            return false;
-        }
-        else
-        {
-            var radiusV = (info.Point2 - info.Point1).Divide(2);
-            circInfo = (info.Point1 + radiusV, radiusV.Length());
-            return true;
-        }
+        parameter = default!;
+        return false;
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool False<T1, T2>(out T1 parameter1, out T2 parameter2)
+    {
+        parameter1 = default!;
+        parameter2 = default!;
+        return false;
     }
 
-    public static bool GetCircleInfo((Vector Point1, Vector Point2, Vector Point3) info, out (Vector Center, double Radius) circInfo)
+    public static bool GetCircleInfoByCenterRadius((Vector Center, double Radius) centerRadius, out (Vector point1, Vector point2, Vector point3) threePoints)
+    {
+        if (centerRadius.Radius <= 0) return False(out threePoints);
+
+        threePoints = (
+            centerRadius.Center.Add((centerRadius.Radius, 0)),
+            centerRadius.Center.Add((-centerRadius.Radius, 0)),
+            centerRadius.Center.Add((0, centerRadius.Radius))
+            );
+        return true;
+    }
+
+    public static bool GetCircleInfoByDiameter((Vector Point1, Vector Point2) info, out (Vector Center, double Radius) circInfo, out Point thirdPoint)
+    {
+        if (info.Point1 == info.Point2) return False(out circInfo, out thirdPoint);
+
+        var radiusV = (info.Point2 - info.Point1).Divide(2);
+        var radius = radiusV.Length();
+        var center = info.Point1 + radiusV;
+        circInfo = (center, radius);
+        return CalculateCircleThirdPoint(info.Point1, info.Point2, center, radius, out thirdPoint);
+
+    }
+
+    public static bool CalculateCircleThirdPoint(Vector point1, Vector point2, Vector center, double radius, out Vector thirdPoint)
+    {
+        if (radius <= 0)
+        {
+            thirdPoint = default;
+            return false;
+        }
+        thirdPoint = center.Add((radius, 0));
+        if (thirdPoint == point1)
+        {
+            thirdPoint = center.Add((-radius, 0));
+            if (thirdPoint == point2)
+            {
+                thirdPoint = center.Add((0, radius));
+            }
+        }
+        else if (thirdPoint == point2)
+        {
+            thirdPoint = center.Add((-radius, 0));
+            if (thirdPoint == point1)
+            {
+                thirdPoint = center.Add((0, radius));
+            }
+        }
+        return true;
+    }
+
+    public static bool GetCircleInfoByThreePoints((Vector Point1, Vector Point2, Vector Point3) info, out (Vector Center, double Radius) circInfo)
     {
         var x1 = info.Point1.X;
         var x2 = info.Point2.X;
@@ -467,12 +519,12 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         // repro for wrong angle 
         // $.AddLine(((110, 60), (120, 80)));
         // $.AddLine(((70, 60), (100, 80)))
-        
+
 
         var selectionMidPoint = selectionPoints.MidPoint();
-        DebugHelper.PutPoint(selectionMidPoint);
-        DebugHelper.PutPoint(selectionPoints.P1);
-        DebugHelper.PutPoint(selectionPoints.P2);
+        //DebugHelper.PutPoint(selectionMidPoint);
+        //DebugHelper.PutPoint(selectionPoints.P1);
+        //DebugHelper.PutPoint(selectionPoints.P2);
 
         // TODO decide which angle to pick from param
         if (line1.GetCrossingPoint(line2, out var crossingPoint))
@@ -512,7 +564,7 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
 
             TwoPoints startPoints = (start1, start2);
             LineDefinition filletVect = new((startPoints.MidPoint(), crossingPoint));
-            
+
             //DebugHelper.PutLineSegmentVector(filletVect.RefPoints);
 
             if (filletVect.IsLeftOfLine(start1))

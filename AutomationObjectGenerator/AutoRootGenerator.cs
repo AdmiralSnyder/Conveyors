@@ -176,7 +176,7 @@ namespace AutomationObjectGenerator
                         tuple.OK ?
                         $$"""
                     using System.Runtime.CompilerServices;
-
+                    /*{{DeleteMe.Class1.Hello}}^2*/
                     namespace {{tuple.TargetNameSpace}};
 
                     public partial class {{tuple.TargetClassName}} : {{tuple.Interface}}
