@@ -24,7 +24,7 @@ public static class ShapeProviderFunc
     {
         if (ShapeProvider.SelectBehaviour is { } sb)
         {
-            shape.ApplyMouseBehaviour(sb);
+            shape.ApplyMouseBehavior(sb);
         }
         return shape;
     }

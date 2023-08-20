@@ -110,6 +110,7 @@ public class ConveyorShapeProvider : ShapeProvider
         return line;
     }
 
+
     public Ellipse CreateConveyorPointEllipse(Point point, bool isFirst, bool isLast, bool isClockwise, bool isStraight, double size = 4d) => new Ellipse()
     {
         Width = size,
@@ -149,7 +150,7 @@ public class ConveyorShapeProvider : ShapeProvider
             Cursor = Cursors.Hand
         };
 
-        result.ApplyMouseBehaviour(leftClickAction, MouseAction.LeftClick);
+        result.ApplyMouseBehavior(leftClickAction, MouseAction.LeftClick);
         result.SetCenterLocation(location);
         return result;
     }

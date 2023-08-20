@@ -5,7 +5,7 @@ namespace WpfLib;
 
 public static class WpfFunc
 {
-    public static void ApplyMouseBehaviour(this Shape shape, Action<Shape> behaviour, MouseAction mouseAction = MouseAction.LeftClick) => shape.InputBindings.Add(new MouseBinding(new MyCommand<Shape>(behaviour, shape), new(mouseAction)));
+    public static void ApplyMouseBehavior(this Shape shape, Action<Shape> behavior, MouseAction mouseAction = MouseAction.LeftClick) => shape.InputBindings.Add(new MouseBinding(new MyCommand<Shape>(behavior, shape), new(mouseAction)));
 
     public static void SetLocation(this Shape shape, Point location)
     {

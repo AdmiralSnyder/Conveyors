@@ -2,7 +2,6 @@
 using System.Text.Json.Serialization;
 using PointAlias = System.Windows.Point;
 
-
 namespace PointDef
 {
     [DebuggerDisplay($"{nameof(V2d)} ({nameof(V2d.X)}={{{nameof(V2d.X)}}}, {nameof(V2d.Y)}={{{nameof(V2d.Y)}}})")]
