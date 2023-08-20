@@ -34,7 +34,7 @@ public static class RefreshManager<TNotification>
         }
     }
 
-    public static void UnRegisterObjserver(IRefreshListener<TNotification> listener, TNotification obj)
+    public static void UnRegisterObserverNotification(IRefreshListener<TNotification> listener, TNotification obj)
     {
         if (ListenerResolver.TryGetValue(obj, out var listeners))
         {
@@ -64,7 +64,7 @@ public static class RefreshManager<TNotification>
     {
         if (obj is TNotification refreshable)
         {
-            UnRegisterObjserver(listener, refreshable);
+            UnRegisterObserverNotification(listener, refreshable);
         }
     }
 }
