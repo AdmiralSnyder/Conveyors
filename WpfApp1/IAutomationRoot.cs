@@ -242,9 +242,6 @@ public static class CSharpOutputHelpers
         TypeOutputters = new();
 
         Register<double>(d => d.Out());
-
-        ValueTuple<int, int> x = (1, 2);
-
     }
 
     static Dictionary<int, Func<object, string>> ValueTupleResolver = new()

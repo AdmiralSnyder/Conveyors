@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,13 +18,28 @@ public class EventArgs<T> : EventArgs
     public EventArgs(T data) => Data = data;
 }
 
+public abstract class INotifyPropertyChangedImpl : INotifyPropertyChanged
+{
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected internal void OnPropertyChanged([CallerMemberName] string name = "INVALID") => PropertyChanged?.Invoke(this, new(name));
+}
+
 public static class Func
 {
-
     public static T Modify<T>(this T obj, Action<T> modifyAction)
     {
         modifyAction(obj);
         return obj;
+    }
+
+    public static void SetterInpc<T>(this INotifyPropertyChangedImpl obj, ref T backingField, T value, [CallerMemberName] string propertyName = "INVALID")
+    {
+        if (!object.Equals(backingField, value))
+        {
+            backingField = value;
+            obj.OnPropertyChanged(propertyName);
+        }
     }
 
     public static void Setter<T>(ref T backingField, T value, Action<T> onChangeAction)
@@ -31,6 +48,16 @@ public static class Func
         {
             backingField = value;
             onChangeAction(value);
+        }
+    }
+
+    public static void SetterInpc<T>(this INotifyPropertyChangedImpl obj, ref T backingField, T value, Action<T> onChangeAction, [CallerMemberName] string propertyName = "INVALID")
+    {
+        if (!object.Equals(backingField, value))
+        {
+            backingField = value;
+            onChangeAction(value);
+            obj.OnPropertyChanged(propertyName);
         }
     }
 
@@ -44,12 +71,34 @@ public static class Func
         }
     }
 
+    public static void SetterInpc<T>(this INotifyPropertyChangedImpl obj, ref T backingField, T value, Action<T, T> onChangeAction, [CallerMemberName] string propertyName = "INVALID")
+    {
+        var oldValue = backingField;
+
+        if (!object.Equals(backingField, value))
+        {
+            backingField = value;
+            onChangeAction(oldValue, value);
+            obj.OnPropertyChanged(propertyName);
+        }
+    }
+
     public static void Setter<T>(ref T backingField, T value, Action onChangeAction)
     {
         if (!object.Equals(backingField, value))
         {
             backingField = value;
             onChangeAction();
+        }
+    }
+
+    public static void SetterInpc<T>(this INotifyPropertyChangedImpl obj, ref T backingField, T value, Action onChangeAction, [CallerMemberName] string propertyName = "INVALID")
+    {
+        if (!object.Equals(backingField, value))
+        {
+            backingField = value;
+            onChangeAction();
+            obj.OnPropertyChanged(propertyName);
         }
     }
 
@@ -75,7 +124,7 @@ public static class Func
         ['T'] = new Point[][] { new Point[] { (2.5, 0), (2.5, 10) }, new Point[] { (0, 0), (5, 0) } },
         ['D'] = new Point[][] { new Point[] { (0, 10), (0, 0), (4, 0), (5, 2.5), (5, 4.5), (5, 5.5), (5, 7.5), (4.5, 10), (0, 10) } },
         ['U'] = new Point[][] { new Point[] { (0, 0), (0, 8), (2.5, 10), (5, 8), (5, 0) } },
-        [' '] = new Point[][] {  },
+        [' '] = new Point[][] { },
     };
 
     public static IEnumerable<Point[][]> GetTextLocations(string s) => s.Select(c => TextLocations[c]);

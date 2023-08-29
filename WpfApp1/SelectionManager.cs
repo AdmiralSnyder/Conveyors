@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -37,7 +38,7 @@ public enum ObjectHighlightTypes
     Select
 }
 
-public abstract class ChooseObjectManager : IRefreshListener<ISelectable>, INotifyPropertyChanged
+public abstract class ChooseObjectManager : INotifyPropertyChangedImpl, IRefreshListener<ISelectable>
 {
     public bool IsActive 
     {
@@ -67,22 +68,17 @@ public abstract class ChooseObjectManager : IRefreshListener<ISelectable>, INoti
     public ISelectObject? ChosenObject
     {
         get => _ChosenObject;
-        set => Func.Setter(ref _ChosenObject, value, (oldValue, newValue) =>
+        set => this.SetterInpc(ref _ChosenObject, value, (oldValue, newValue) =>
         {
             RefreshManager<ISelectable>.UnRegisterObserver(this, oldValue);
 
             UpdateBoundingBox(value);
             RefreshManager<ISelectable>.RegisterObserver(this, value);
-            OnPropertyChanged(nameof(ChosenObject));
             ChosenObjectChanged?.Invoke(this, new((ChosenObject, MousePosition)));
         });
     }
 
     public event EventHandler<EventArgs<(ISelectable?, Point)>>? ChosenObjectChanged;
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new(name));
 
     public abstract void UpdateBoundingBox(ISelectObject? selectObject);
 
@@ -133,7 +129,7 @@ public abstract class TargetObjectManager : ChooseObjectManager
     public bool QueryCanPickObject(ISelectable selectable) => ObjectFilter?.Invoke(selectable) ?? false;
 }
 
-public abstract class SelectionManager : ChooseObjectManager, INotifyPropertyChanged
+public abstract class SelectionManager : ChooseObjectManager
 {
     public SelectionManager() => RefreshManager<ISelectable>.RegisterRefreshListener(this);
 

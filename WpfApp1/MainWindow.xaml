@@ -146,19 +146,17 @@
                     Click="LoadB_Click"
                     Content="Load..." />
             </StackPanel>
+
         </StackPanel>
         <TextBlock
-            Name="NotesLabel"
             Grid.ColumnSpan="2"
-            gu:Cell.Index="2 0" />
+            gu:Cell.Index="2 0"
+            Text="{Binding ViewModel.StatusBarHelpText}" />
         <GridSplitter gu:Cell.Index="1 1" Style="{StaticResource VerticalGridSplitter}" />
         <Grid gu:Cell.Index="1 2" gu:Grid.Layout="20 auto * auto 40, *">
-            <TextBlock gu:Cell.Index="0 0" Text="{Binding Path=SelectionManager.ChosenObject.Text, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
+            <TextBlock gu:Cell.Index="0 0" Text="{Binding Path=ViewModel.SelectionManager.ChosenObject.Text, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
             <GridSplitter Grid.Row="1" Style="{StaticResource HorizontalGridSplitter}" />
-            <local:PropertyGrid
-                x:Name="SelectedPG"
-                gu:Cell.Index="2 0"
-                InspectedObject="{Binding SelectionManager.ChosenObject}" />
+            <local:PropertyGrid gu:Cell.Index="2 0" InspectedObject="{Binding ViewModel.SelectionManager.ChosenObject}" />
             <GridSplitter Grid.Row="3" Style="{StaticResource HorizontalGridSplitter}" />
             <avalonEdit:TextEditor
                 Name="textEditor2"

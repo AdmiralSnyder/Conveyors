@@ -53,15 +53,15 @@ public class CanvasInputContext : InputContextBase
     protected override void UserNotesChanged()
     {
         base.UserNotesChanged();
-        if (NotesLabel is { })
+        if (ViewModel is { })
         {
-            NotesLabel.Text = UserNotes;
+            ViewModel.StatusBarHelpText = UserNotes;
         }
     }
 
-    public void StartObjectPickingListener() => MainWindow.InputPickManager.ChosenObjectChanged += InputPickManager_ChosenObjectChanged;
+    public void StartObjectPickingListener() => MainWindow.ViewModel.InputPickManager.ChosenObjectChanged += InputPickManager_ChosenObjectChanged;
 
-    public void StopObjectPickingListener() => MainWindow.InputPickManager.ChosenObjectChanged -= InputPickManager_ChosenObjectChanged;
+    public void StopObjectPickingListener() => MainWindow.ViewModel.InputPickManager.ChosenObjectChanged -= InputPickManager_ChosenObjectChanged;
 
     private void InputPickManager_ChosenObjectChanged(object? sender, CoreLib.EventArgs<(ISelectable? SelObj, Point Point)> e)
     {
@@ -108,6 +108,7 @@ public class CanvasInputContext : InputContextBase
 
     public int SnapGridWidth { get; set; } = SnapGridWidthDefault;
     public bool SnapToGrid { get; set; } = true;
+    public MainWindowViewModel ViewModel { get; internal set; }
 
     public Point SnapPoint(Point point) => SnapPoint(point, SnapToGrid && !Keyboard.IsKeyDown(Key.LeftAlt));
     public Point SnapPoint(Point point, bool snap) => snap ? SnapPoint(point, snap, SnapGridWidth) : point;
@@ -121,14 +122,14 @@ public class CanvasInputContext : InputContextBase
 
     public Line AddLine(Point from, Point to)
     {
-        var line = MainWindow.ShapeProvider.CreateConveyorPositioningLine(((Point)from, (Point)to));
+        var line = MainWindow.ViewModel.ShapeProvider.CreateConveyorPositioningLine(((Point)from, (Point)to));
         Canvas.Children.Add(line);
         return line;
     }
 
     public Shape AddPoint(Point point)
     {
-        var pointShape = MainWindow.ShapeProvider.CreatePoint(point);
+        var pointShape = MainWindow.ViewModel.ShapeProvider.CreatePoint(point);
         Canvas.Children.Add(pointShape);
         return pointShape;
     }

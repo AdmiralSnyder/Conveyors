@@ -11,7 +11,7 @@ namespace ConveyorApp.Inputters;
 public abstract class ShowDynamicCircleInputHelper<TThis> : ShowDynamicShapeInputHelper<TThis>
     where TThis : ShowDynamicCircleInputHelper<TThis>, new()
 {
-    protected override Shape CreateShape() => Context.MainWindow.ShapeProvider.CreateCircle(default, default);
+    protected override Shape CreateShape() => Context.MainWindow.ViewModel.ShapeProvider.CreateCircle(default, default);
     protected void UpdateCircle(Point center, double radius)
     {
         TmpShape.SetCenterLocation(center);
@@ -84,7 +84,7 @@ public class ShowCircleByDiameterInputHelper : ShowDynamicCircleInputHelper<Show
 
 public class ShowThreePointCircleOnMouseLocationInputHelper : ShowDynamicCircleInputHelper<ShowThreePointCircleOnMouseLocationInputHelper>
 {
-    protected override Shape CreateShape() => Context.MainWindow.ShapeProvider.CreateCircle(default, default);
+    protected override Shape CreateShape() => Context.MainWindow.ViewModel.ShapeProvider.CreateCircle(default, default);
 
     public Point Point1 { get; set; }
     public Point Point2 { get; set; }
@@ -111,7 +111,7 @@ public class ShowThreePointCircleOnMouseLocationInputHelper : ShowDynamicCircleI
 public abstract class ShowPointInputHelper<TThis> : ShowShapeInputHelper<TThis, Ellipse>
     where TThis : ShowPointInputHelper<TThis>, new()
 {
-    protected override Ellipse CreateShape() => Context.MainWindow.ShapeProvider.CreateTempPoint(default);
+    protected override Ellipse CreateShape() => Context.MainWindow.ViewModel.ShapeProvider.CreateTempPoint(default);
 }
 
 public abstract class ShowShapeInputHelper<TThis, TShape> : Inputter<TThis, Unit, CanvasInputContext>
@@ -169,7 +169,7 @@ where TThis : ShowLineFromToInputHelper<TThis>, new()
         });
     }
 
-    protected override Line CreateShape() => Context.MainWindow.ShapeProvider.CreateTempLine(default);
+    protected override Line CreateShape() => Context.MainWindow.ViewModel.ShapeProvider.CreateTempLine(default);
 }
 
 public class ShowLineFromToFixedInputHelper : ShowLineFromToInputHelper<ShowLineFromToFixedInputHelper>

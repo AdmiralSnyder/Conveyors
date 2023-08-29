@@ -30,43 +30,26 @@ public partial class MainWindow
 {
     public MainWindow()
     {
-        ShapeProvider = new();
-        ShapeProvider.RegisterSelectBehaviour(SelectShapeAction);
-        this.DataContext = this;
+        ViewModel = new() { MainWindow = this};
+        //this.DataContext = ViewModel;
 
-        SelectionManager = new CanvasSelectionManager();
+        ViewModel.ShapeProvider.RegisterSelectBehaviour(SelectShapeAction);
+
         InitializeComponent();
 
-        ((CanvasSelectionManager)SelectionManager).SetCanvas(TheCanvas);
-        PickManager = new();
-        PickManager.SetCanvas(TheCanvas);
+        ViewModel.TheCanvas = TheCanvas;
         
-        InputPickManager = new();
+        ViewModel.CreationCommandManager.AddCommands(AddActionButton);
 
-        CreationCommandManager = new();
+        ScriptRunner.InitializeScriptingEnvironment(ViewModel.AutoRoot, Dispatcher, RunB);
 
-        AutoRoot = ConveyorAutomationObject.CreateAutomationObject(out var context);
-        AutoRoot.Init((TheCanvas, ShapeProvider));
+        ViewModel.LogAction = async s => await textEditor2.Dispatcher.InvokeAsync(() => textEditor2.AppendText(s + Environment.NewLine));
 
-        InputContext = new CanvasInputContext()
-        {
-            Canvas = TheCanvas,
-            NotesLabel = NotesLabel,
-            MainWindow = this,
-        };
 
-        CreationCommandManager.InputContext = InputContext;
-        CreationCommandManager.AutoRoot = AutoRoot;
-
-        CreationCommandManager.AddCommands(AddActionButton);
-
-        context.LogAction = async s => await textEditor2.Dispatcher.InvokeAsync(() => textEditor2.AppendText(s + Environment.NewLine));
-        ScriptRunner.InitializeScriptingEnvironment(AutoRoot, Dispatcher, RunB);
-
-        DebugHelper.Instance = new ConveyorDebugHelper() { Canvas = TheCanvas, ShapeProvider = ShapeProvider };
+        DebugHelper.Instance = new ConveyorDebugHelper() { Canvas = TheCanvas, ShapeProvider = ViewModel.ShapeProvider };
     }
 
-    public IGeneratedConveyorAutomationObject AutoRoot { get; }
+    public MainWindowViewModel ViewModel { get; set; }
 
     private void AddActionButton(Func<Task> commandAction, string commandName, string? caption)
     {
@@ -80,13 +63,7 @@ public partial class MainWindow
         ButtonsSP.Children.Add(button);
     }
 
-    public CreationCommandManager CreationCommandManager { get; set; }
-
-    public SelectionManager SelectionManager { get; set; }
-
-    public CanvasPickManager PickManager { get; set; }
-
-    public InputPickManager InputPickManager { get; set; }
+    
     
     private void SelectShapeAction(Shape shape)
     {
@@ -94,52 +71,50 @@ public partial class MainWindow
 
         if (shape.Tag is ISelectObject selectObject)
         {
-            if (InputPickManager.IsActive)
+            if (ViewModel.InputPickManager is { IsActive : true} inpMgr)
             {
-                InputPickManager.MousePosition = mousePosition;
-                if (InputPickManager.QueryCanPickObject(selectObject))
+                inpMgr.MousePosition = mousePosition;
+                if (inpMgr.QueryCanPickObject(selectObject))
                 {
-                    InputPickManager.ChosenObject = selectObject;
+                    inpMgr.ChosenObject = selectObject;
                 }
             }
-            else if (PickManager?.IsActive ?? false)
+            else if (ViewModel.PickManager is { IsActive: true } pickMgr)
             {
-                PickManager.MousePosition = mousePosition;
-                if (PickManager.QueryCanPickObject(selectObject))
+                pickMgr.MousePosition = mousePosition;
+                if (pickMgr.QueryCanPickObject(selectObject))
                 {
-                    PickManager.ChosenObject = selectObject;
+                    pickMgr.ChosenObject = selectObject;
                 }
             }
-            else if (SelectionManager.IsActive)
+            else if (ViewModel.SelectionManager is { IsActive: true } selMgr)
             {
-                SelectionManager.MousePosition = mousePosition;
+                selMgr.MousePosition = mousePosition;
 
-                if (SelectionManager.HierarchicalSelection)
+                if (selMgr.HierarchicalSelection)
                 {
-                    SelectionManager.ChosenObject = selectObject.FindPredecessorInPath(SelectionManager.ChosenObject);
+                    selMgr.ChosenObject = selectObject.FindPredecessorInPath(selMgr.ChosenObject);
                 }
                 else
                 {
-                    SelectionManager.ChosenObject = selectObject;
+                    selMgr.ChosenObject = selectObject;
                 }
             }
         }
     }
 
-    public CanvasInputContext InputContext { get; private set; }
-
     #region Create Actions
 
-    private async void AddCircleCenterRadiusB_Click(object sender, RoutedEventArgs e) => await CreationCommandManager.AddCircleCenterRadius();
-    private async void AddCircle2PointsB_Click(object sender, RoutedEventArgs e) => await CreationCommandManager.AddCircleTwoPoints();
-    private async void AddCircle3PointsB_Click(object sender, RoutedEventArgs e) => await CreationCommandManager.AddCircleThreePoints();
-    private async void AddLineB_Click(object sender, RoutedEventArgs e) => await CreationCommandManager.AddLine();
-    private async void AddLineSegmentB_Click(object sender, RoutedEventArgs e) => await CreationCommandManager.AddLineSegment();
-    private async void AddPointB_Click(object sender, RoutedEventArgs e) => await CreationCommandManager.AddPoint();
+    private async void AddCircleCenterRadiusB_Click(object sender, RoutedEventArgs e) => await ViewModel.CreationCommandManager.AddCircleCenterRadius();
+    private async void AddCircle2PointsB_Click(object sender, RoutedEventArgs e) => await ViewModel.CreationCommandManager.AddCircleTwoPoints();
+    private async void AddCircle3PointsB_Click(object sender, RoutedEventArgs e) => await ViewModel.CreationCommandManager.AddCircleThreePoints();
+    private async void AddLineB_Click(object sender, RoutedEventArgs e) => await ViewModel.CreationCommandManager.AddLine();
+    private async void AddLineSegmentB_Click(object sender, RoutedEventArgs e) => await ViewModel.CreationCommandManager.AddLineSegment();
+    private async void AddPointB_Click(object sender, RoutedEventArgs e) => await ViewModel.CreationCommandManager.AddPoint();
 
     #endregion
 
-    internal ConveyorShapeProvider ShapeProvider { get; set; }
+    
 
     // TODO put the zoom functionality into a behavior
     private void TheCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -162,9 +137,9 @@ public partial class MainWindow
 
     private void PutItemB_Click(object sender, RoutedEventArgs e)
     {
-        foreach (var conveyor in AutoRoot.Conveyors)
+        foreach (var conveyor in ViewModel.AutoRoot.Conveyors)
         {
-            conveyor.SpawnItems(ShapeProvider, FirstOnlyCB.IsChecked);
+            conveyor.SpawnItems(ViewModel.ShapeProvider, FirstOnlyCB.IsChecked);
         }
     }
 
@@ -172,7 +147,7 @@ public partial class MainWindow
     public bool IsRunning
     {
         get => _IsRunning;
-        set => Func.Setter(ref _IsRunning, value, isRunning => AutoRoot.Conveyors.ForEach(c => c.IsRunning = isRunning));
+        set => Func.Setter(ref _IsRunning, value, isRunning => ViewModel.AutoRoot.Conveyors.ForEach(c => c.IsRunning = isRunning));
     }
 
     private void RunningCB_Click(object sender, RoutedEventArgs e) => IsRunning = RunningCB.IsChecked ?? false;
@@ -182,7 +157,7 @@ public partial class MainWindow
     private async void MovePointB_Click(object sender, RoutedEventArgs e)
     {
         RunningCB.IsChecked = false;
-        await MoveInputter.StartInput(InputContext);
+        await MoveInputter.StartInput(ViewModel.InputContext);
     }
 
     private async void RunB_Click(object sender, RoutedEventArgs e) => await ScriptRunner.RunScript(textEditor.Text);
@@ -212,7 +187,7 @@ public partial class MainWindow
             {
                 foreach (var strokecoords in charCoords)
                 {
-                    AutoRoot.AddConveyor(strokecoords.Scale(scaling + yOffset).Add((xOffset * 60 * (1 + (yOffset * 0.2)) + 40, yOffset * 90 + 40)), true, yOffset + 2);
+                    ViewModel.AutoRoot.AddConveyor(strokecoords.Scale(scaling + yOffset).Add((xOffset * 60 * (1 + (yOffset * 0.2)) + 40, yOffset * 90 + 40)), true, yOffset + 2);
                 }
                 xOffset++;
             }
@@ -231,17 +206,17 @@ public partial class MainWindow
         DebugHelper.PutLineSegmentVector(line2.RefPoints);
     }
 
-    private void SaveB_Click(object sender, RoutedEventArgs e) => AutoRoot.SaveCustom(@"T:\conveyorApp\conveyorApp.json");
+    private void SaveB_Click(object sender, RoutedEventArgs e) => ViewModel.AutoRoot.SaveCustom(@"T:\conveyorApp\conveyorApp.json");
 
-    private void LoadB_Click(object sender, RoutedEventArgs e) => AutoRoot.Load(@"T:\conveyorApp\conveyorApp.json");
+    private void LoadB_Click(object sender, RoutedEventArgs e) => ViewModel.AutoRoot.Load(@"T:\conveyorApp\conveyorApp.json");
 
-    private void SelectB_Click(object sender, RoutedEventArgs e) => SelectionManager.ToggleSelectMode();
+    private void SelectB_Click(object sender, RoutedEventArgs e) => ViewModel.SelectionManager.ToggleSelectMode();
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Escape && SelectionManager.IsActive)
+        if (e.Key == Key.Escape && ViewModel.SelectionManager.IsActive)
         {
-            SelectionManager.ToggleSelectMode();
+            ViewModel.SelectionManager.ToggleSelectMode();
         }
     }
 }
