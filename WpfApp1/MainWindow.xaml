@@ -1,15 +1,23 @@
-﻿<Window x:Class="ConveyorApp.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:gu="https://github.com/JohanLarsson/Gu.Wpf" xmlns:local="clr-namespace:ConveyorApp"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:mx="clr-namespace:WpfLib.MarkupExtensions;assembly=WpfLib"
-        xmlns:system="clr-namespace:System;assembly=mscorlib" Name="TheWindow" Title="MainWindow"
-        Width="792" Height="442" Closing="Window_Closing"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        mc:Ignorable="d"
-        PreviewKeyDown="Window_PreviewKeyDown">
+﻿<Window
+    x:Class="ConveyorApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:gu="https://github.com/JohanLarsson/Gu.Wpf"
+    xmlns:local="clr-namespace:ConveyorApp"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mx="clr-namespace:WpfLib.MarkupExtensions;assembly=WpfLib"
+    xmlns:scg="clr-namespace:System.Collections.Generic;assembly=netstandard"
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
+    Name="TheWindow"
+    Title="MainWindow"
+    Width="792"
+    Height="442"
+    Closing="Window_Closing"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    PreviewKeyDown="Window_PreviewKeyDown"
+    mc:Ignorable="d">
 
     <Window.Resources>
         <local:SnapGridConverter x:Key="SnapGridConverter" />
@@ -17,31 +25,46 @@
         <Brush x:Key="BackgroundColor">green</Brush>
         <system:Double x:Key="SplitterSize">5</system:Double>
 
+        <x:Array x:Key="KEKSELIST" Type="system:String">
+            <system:String>Hallo</system:String>
+            <system:String>Welt</system:String>
+        </x:Array>
         <Style x:Key="CommonGridSplitter" TargetType="{x:Type GridSplitter}">
             <Setter Property="Background" Value="{StaticResource SplitterColor}" />
         </Style>
-        <Style x:Key="HorizontalGridSplitter"
-               BasedOn="{StaticResource CommonGridSplitter}"
-               TargetType="{x:Type GridSplitter}">
+        <Style
+            x:Key="HorizontalGridSplitter"
+            BasedOn="{StaticResource CommonGridSplitter}"
+            TargetType="{x:Type GridSplitter}">
             <Setter Property="Height" Value="{StaticResource SplitterSize}" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
-        <Style x:Key="VerticalGridSplitter"
-               BasedOn="{StaticResource CommonGridSplitter}"
-               TargetType="{x:Type GridSplitter}">
+        <Style
+            x:Key="VerticalGridSplitter"
+            BasedOn="{StaticResource CommonGridSplitter}"
+            TargetType="{x:Type GridSplitter}">
             <Setter Property="Width" Value="{StaticResource SplitterSize}" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
             <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
-        <Grid x:Key="AddLineSegmentButtonContent" gu:Grid.Layout="*,* *" x:Name="AddLineSegmentButtonContent">
+        <Grid
+            x:Key="AddLineSegmentButtonContent"
+            x:Name="AddLineSegmentButtonContent"
+            gu:Grid.Layout="*,* *">
             <TextBlock Grid.Column="0" Text="⊢" />
-            <TextBlock Grid.Column="1" Margin="-3,0,0,0" Text="⊣" />
+            <TextBlock
+                Grid.Column="1"
+                Margin="-3,0,0,0"
+                Text="⊣" />
         </Grid>
     </Window.Resources>
 
     <Grid gu:Grid.Layout="auto * auto, * auto 130">
-        <StackPanel Grid.ColumnSpan="3" gu:Cell.Index="0 0" Orientation="Vertical">
+        <StackPanel
+            Grid.ColumnSpan="3"
+            gu:Cell.Index="0 0"
+            Orientation="Vertical">
             <StackPanel.Resources>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Margin" Value="0,0,10,0" />
@@ -57,42 +80,107 @@
                     <Setter Property="Margin" Value="0,0,10,0" />
                 </Style>
             </StackPanel.Resources>
-            <StackPanel Orientation="Horizontal" Name="ButtonsSP">
-                <Button Name="DebugB" Content="Debug" Click="DebugB_Click" ToolTip="Debug" />
-                <Button Name="SelectB" Content="Select" Click="SelectB_Click"/>
+            <StackPanel Name="ButtonsSP" Orientation="Horizontal">
+                <Button
+                    Name="DebugB"
+                    Click="DebugB_Click"
+                    Content="Debug"
+                    ToolTip="Debug" />
+                <Button
+                    Name="SelectB"
+                    Click="SelectB_Click"
+                    Content="Select" />
+                <ItemsControl
+                    MinWidth="0"
+                    d:ItemsSource="{x:Static local:CreationCommandManager.CommandLabels}"
+                    d:MinWidth="50"
+                    d:Visibility="Visible"
+                    Visibility="Hidden">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Background="green" Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <CheckBox Name="RunningCB" Content="Running" Checked="RunningCB_Click" Unchecked="RunningCB_Click" />
-                <Button Name="PutItemB" Content="Put" Click="PutItemB_Click" ToolTip="Put Items" />
+                <CheckBox
+                    Name="RunningCB"
+                    Checked="RunningCB_Click"
+                    Content="Running"
+                    Unchecked="RunningCB_Click" />
+                <Button
+                    Name="PutItemB"
+                    Click="PutItemB_Click"
+                    Content="Put"
+                    ToolTip="Put Items" />
                 <CheckBox Name="FirstOnlyCB" Content="FirstOnly" />
-                <Button Name="MovePointB" Content="Move" Click="MovePointB_Click" />
-                <CheckBox Name="SelectCB" Content="Select"
-                          IsChecked="{Binding SelectionManager.IsActive}" />
-                <TextBox Name="LanesCountTB" Text="2" ToolTip="Lanes Count" />
-                <TextBox Name="GridWidth" Width="30"
-                         Text="{Binding Path=InputContext.SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}"
-                         ToolTip="Grid Width" />
-                <Button Name="HappyBirthdayRubyB" Content="Happy Birthday Ruby" Click="HappyBirthdayRubyB_Click" />
-                <Button Name="SaveContentsB" Content="Save..." Click="SaveB_Click" />
-                <Button Name="LoadContentsB" Content="Load..." Click="LoadB_Click" />
+                <Button
+                    Name="MovePointB"
+                    Click="MovePointB_Click"
+                    Content="Move" />
+                <TextBox
+                    Name="LanesCountTB"
+                    Text="2"
+                    ToolTip="Lanes Count" />
+                <TextBox
+                    Name="GridWidth"
+                    Width="30"
+                    Text="{Binding Path=InputContext.SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}"
+                    ToolTip="Grid Width" />
+                <Button
+                    Name="HappyBirthdayRubyB"
+                    Click="HappyBirthdayRubyB_Click"
+                    Content="Happy Birthday Ruby" />
+                <Button
+                    Name="SaveContentsB"
+                    Click="SaveB_Click"
+                    Content="Save..." />
+                <Button
+                    Name="LoadContentsB"
+                    Click="LoadB_Click"
+                    Content="Load..." />
             </StackPanel>
         </StackPanel>
-        <TextBlock Name="NotesLabel" Grid.ColumnSpan="2" gu:Cell.Index="2 0" />
+        <TextBlock
+            Name="NotesLabel"
+            Grid.ColumnSpan="2"
+            gu:Cell.Index="2 0" />
         <GridSplitter gu:Cell.Index="1 1" Style="{StaticResource VerticalGridSplitter}" />
         <Grid gu:Cell.Index="1 2" gu:Grid.Layout="20 auto * auto 40, *">
             <TextBlock gu:Cell.Index="0 0" Text="{Binding Path=SelectionManager.ChosenObject.Text, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
             <GridSplitter Grid.Row="1" Style="{StaticResource HorizontalGridSplitter}" />
-            <local:PropertyGrid x:Name="SelectedPG" gu:Cell.Index="2 0"
-                                InspectedObject="{Binding SelectionManager.ChosenObject}" />
+            <local:PropertyGrid
+                x:Name="SelectedPG"
+                gu:Cell.Index="2 0"
+                InspectedObject="{Binding SelectionManager.ChosenObject}" />
             <GridSplitter Grid.Row="3" Style="{StaticResource HorizontalGridSplitter}" />
-            <avalonEdit:TextEditor Name="textEditor2" gu:Cell.Index="4 0" FontFamily="Fira Code" FontSize="5pt" SyntaxHighlighting="C#" />
+            <avalonEdit:TextEditor
+                Name="textEditor2"
+                gu:Cell.Index="4 0"
+                FontFamily="Fira Code"
+                FontSize="5pt"
+                SyntaxHighlighting="C#" />
         </Grid>
         <Grid gu:Cell.Index="1 0" gu:Grid.Layout="* auto auto, *">
-            <ScrollViewer gu:Cell.Index="0 0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+            <ScrollViewer
+                gu:Cell.Index="0 0"
+                HorizontalScrollBarVisibility="Hidden"
+                VerticalScrollBarVisibility="Hidden">
                 <Canvas Name="TheCanvas" MouseWheel="TheCanvas_MouseWheel">
                     <Canvas.Background>
-                        <DrawingBrush AlignmentX="Left" AlignmentY="Top" Stretch="None" TileMode="Tile" Viewport="-0.5, -0.5, 10, 10"
-                                      ViewportUnits="Absolute">
+                        <DrawingBrush
+                            AlignmentX="Left"
+                            AlignmentY="Top"
+                            Stretch="None"
+                            TileMode="Tile"
+                            Viewport="-0.5, -0.5, 10, 10"
+                            ViewportUnits="Absolute">
                             <DrawingBrush.Drawing>
                                 <DrawingGroup>
                                     <DrawingGroup.Children>
@@ -147,7 +235,12 @@
             </ScrollViewer>
             <GridSplitter Grid.Row="1" Style="{StaticResource HorizontalGridSplitter}" />
             <Grid gu:Cell.Index="2 0" gu:Grid.Layout="* , * auto">
-                <avalonEdit:TextEditor Name="textEditor" gu:Cell.Index="0 0" FontFamily="Fira Code" FontSize="7pt" SyntaxHighlighting="C#">
+                <avalonEdit:TextEditor
+                    Name="textEditor"
+                    gu:Cell.Index="0 0"
+                    FontFamily="Fira Code"
+                    FontSize="7pt"
+                    SyntaxHighlighting="C#">
                     $.AddConveyor(new V2d[]{(40, 50), (120, 90), (210, 60)}, false, 2);
                     $.AddConveyor(new V2d[]{(70, 100), (70, 140), (70, 170)}, false, 2);
                     $.AddConveyor(new V2d[]{(90, 100), (90, 140), (90, 170)}, false, 2);
@@ -161,7 +254,11 @@
                     $.AddConveyor(new V2d[]{(80, 40), (110, 40), (170, 40), (190, 40)}, false, 2);
                     $.AddConveyor(new V2d[]{(80, 50), (110, 50), (170, 60), (190, 60)}, false, 2);
                 </avalonEdit:TextEditor>
-                <Button Name="RunB" gu:Cell.Index="0 1" Click="RunB_Click" IsEnabled="False">
+                <Button
+                    Name="RunB"
+                    gu:Cell.Index="0 1"
+                    Click="RunB_Click"
+                    IsEnabled="False">
                     <TextBlock>
                         <TextBlock.LayoutTransform>
                             <RotateTransform Angle="90" CenterX="0.5" CenterY="0.5" />

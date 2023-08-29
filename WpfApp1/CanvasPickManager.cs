@@ -1,26 +1,26 @@
-﻿using System.Collections.Generic;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
+﻿using System.Windows.Controls;
 using UILib;
-using WpfLib;
 
 namespace ConveyorApp;
 
-public class CanvasSelectionManager(Canvas canvas) 
-    : SelectionManager(new CanvasObjectHighlighter(canvas) 
-    { 
-        HighlightType = ObjectHighlightTypes.Select 
-    })
+public class CanvasSelectionManager : SelectionManager
 {
-    public override void UpdateBoundingBox(ISelectObject? selectObject) => Highlighter.SelectObject = selectObject;
+    public override void UpdateBoundingBox(ISelectObject? selectObject) => Highlighter?.SetSelectObject(selectObject);
+
+    // TODO Property
+    public void SetCanvas(Canvas canvas) => Highlighter = new CanvasObjectHighlighter(canvas)
+    {
+        HighlightType = ObjectHighlightTypes.Select
+    };
 }
 
-public class CanvasPickManager(Canvas canvas) 
-    : PickManager(new CanvasObjectHighlighter(canvas)
-    { 
-        HighlightType = ObjectHighlightTypes.Pick 
-    })
+public class CanvasPickManager : TargetObjectManager
 {
-    public override void UpdateBoundingBox(ISelectObject? selectObject) => Highlighter.SelectObject = selectObject;
+    public override void UpdateBoundingBox(ISelectObject? selectObject) => Highlighter?.SetSelectObject(selectObject);
+
+    // TODO Property
+    public void SetCanvas(Canvas canvas) => Highlighter = new CanvasObjectHighlighter(canvas)
+    {
+        HighlightType = ObjectHighlightTypes.Target
+    };
 }

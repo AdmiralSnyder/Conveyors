@@ -7,8 +7,8 @@ using UILib;
 
 namespace ConveyorApp.Inputters;
 
-public abstract class SelectLineDefinitionInputterBase<TThis, TLineType> : Inputter<TThis, (TLineType, Point), CanvasInputContext>
-    where TThis : SelectLineDefinitionInputterBase<TThis, TLineType>, new()
+public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : Inputter<TThis, (TLineType, Point), CanvasInputContext>
+    where TThis : TargetLineDefinitionInputterBase<TThis, TLineType>, new()
 {
     protected override void AttachEvents()
     {
@@ -21,7 +21,7 @@ public abstract class SelectLineDefinitionInputterBase<TThis, TLineType> : Input
 
     protected virtual TLineType GetLineType(ISelectObject obj) => (TLineType)obj;
 
-    private void Context_Abort(object? sender, EventArgs e) { }
+    private void Context_Abort(object? sender, EventArgs e) => Abort();
 
     protected override void DetachEvents()
     {
@@ -50,13 +50,13 @@ public abstract class SelectLineDefinitionInputterBase<TThis, TLineType> : Input
     }
 }
 
-public class SelectLineDefinitionInputter : SelectLineDefinitionInputterBase<SelectLineDefinitionInputter, LineDefinition> 
+public class TargetLineDefinitionInputter : TargetLineDefinitionInputterBase<TargetLineDefinitionInputter, LineDefinition> 
 {
     protected override LineDefinition GetLineType(ISelectObject obj) => ((ILineDefinition)obj).Definition;
 
     protected override bool ObjectCanBePicked(ISelectable obj) => obj is ILineDefinition;
 }
 
-public class SelectLineSegmentInputter : SelectLineDefinitionInputterBase<SelectLineSegmentInputter, LineSegment> { }
+public class TargetLineSegmentInputter : TargetLineDefinitionInputterBase<TargetLineSegmentInputter, LineSegment> { }
 
-public class SelectLineInputter : SelectLineDefinitionInputterBase<SelectLineInputter, Line> { }
+public class TargetLineInputter : TargetLineDefinitionInputterBase<TargetLineInputter, Line> { }

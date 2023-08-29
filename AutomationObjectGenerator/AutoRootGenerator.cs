@@ -177,6 +177,7 @@ namespace AutomationObjectGenerator
                         $$"""
                     using System.Runtime.CompilerServices;
                     namespace {{tuple.TargetNameSpace}};
+                    /*123456*/
 
                     public partial class {{tuple.TargetClassName}} : {{tuple.Interface}}
                     {

@@ -12,18 +12,22 @@ public class CreationCommandManager
 {
     public CreationCommandManager()
     {
-        Commands = new()
-        {
-            ["Add Point"] = (AddPoint, "."),
-            ["Add Line"] = (AddLine, "―"),
-            ["Add Line Segment"] = (AddLineSegment, null),
-            ["Add Circle by Center+Circ Point"] = (AddCircleCenterRadius, "O1"),
-            ["Add Circle by Diameter Points"] = (AddCircleTwoPoints, "O2"),
-            ["Add Circle by Three Points"] = (AddCircleThreePoints, "O3"),
-            ["Add Fillet"] = (AddFillet, "U"),
-            ["Add Conveyor"] = (AddConveyor, @"\__/"),
-        };
+        Commands = StaticCommands.ToDictionary(kvp => kvp.Key.Item1, kvp => (kvp.Value(this), kvp.Key.Item2));
     }
+
+    public static List<string> CommandLabels => StaticCommands.Select(kvp => kvp.Key.Item2 ?? kvp.Key.Item1).ToList();
+
+    public static Dictionary<(string, string?), Func<CreationCommandManager, Func<Task>>> StaticCommands = new()
+    {
+        [("Add Point", ".")] = c => c.AddPoint,
+        [("Add Line", "―")] = c => c.AddLine,
+        [("Add Line Segment", null)] = c => c.AddLineSegment,
+        [("Add Circle by Center+Circ Point", "O1")] = c => c.AddCircleCenterRadius,
+        [("Add Circle by Diameter Points", "O2")] = c => c.AddCircleTwoPoints,
+        [("Add Circle by Three Points", "O3")] = c => c.AddCircleThreePoints,
+        [("Add Fillet", "U")] = c => c.AddFillet,
+        [("Add Conveyor", @"\__/")] = c => c.AddConveyor,
+    };
 
     private Dictionary<string, (Func<Task> Command, string? Caption)> Commands;
     internal void AddCommands(Action<Func<Task>, string, string?> addActionButton)
@@ -33,6 +37,7 @@ public class CreationCommandManager
             addActionButton(command.Value.Command, command.Key, command.Value.Caption);
         }
     }
+
     public CanvasInputContext InputContext { get; internal set; }
     public IGeneratedConveyorAutomationObject AutoRoot { get; internal set; }
 

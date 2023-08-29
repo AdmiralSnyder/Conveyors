@@ -34,15 +34,16 @@ public partial class MainWindow
         ShapeProvider.RegisterSelectBehaviour(SelectShapeAction);
         this.DataContext = this;
 
+        SelectionManager = new CanvasSelectionManager();
         InitializeComponent();
 
-        SelectionManager = new CanvasSelectionManager(TheCanvas);
-        PickManager = new(TheCanvas);
+        ((CanvasSelectionManager)SelectionManager).SetCanvas(TheCanvas);
+        PickManager = new();
+        PickManager.SetCanvas(TheCanvas);
+        
         InputPickManager = new();
 
         CreationCommandManager = new();
-
-
 
         AutoRoot = ConveyorAutomationObject.CreateAutomationObject(out var context);
         AutoRoot.Init((TheCanvas, ShapeProvider));
@@ -69,8 +70,8 @@ public partial class MainWindow
 
     private void AddActionButton(Func<Task> commandAction, string commandName, string? caption)
     {
-        var button = new Button() 
-        { 
+        var button = new Button()
+        {
             Content = commandName == "Add Line Segment" 
                 ? Resources["AddLineSegmentButtonContent"] 
                 : caption ?? commandName, 
@@ -80,7 +81,9 @@ public partial class MainWindow
     }
 
     public CreationCommandManager CreationCommandManager { get; set; }
+
     public SelectionManager SelectionManager { get; set; }
+
     public CanvasPickManager PickManager { get; set; }
 
     public InputPickManager InputPickManager { get; set; }
@@ -88,8 +91,6 @@ public partial class MainWindow
     private void SelectShapeAction(Shape shape)
     {
         var mousePosition = Mouse.GetPosition(TheCanvas);
-
-        var oldSelectedObject = SelectionManager.ChosenObject;
 
         if (shape.Tag is ISelectObject selectObject)
         {
@@ -101,7 +102,7 @@ public partial class MainWindow
                     InputPickManager.ChosenObject = selectObject;
                 }
             }
-            else if (PickManager.IsActive)
+            else if (PickManager?.IsActive ?? false)
             {
                 PickManager.MousePosition = mousePosition;
                 if (PickManager.QueryCanPickObject(selectObject))
@@ -115,7 +116,7 @@ public partial class MainWindow
 
                 if (SelectionManager.HierarchicalSelection)
                 {
-                    SelectionManager.ChosenObject = selectObject.FindPredecessorInPath(oldSelectedObject);
+                    SelectionManager.ChosenObject = selectObject.FindPredecessorInPath(SelectionManager.ChosenObject);
                 }
                 else
                 {
@@ -140,7 +141,7 @@ public partial class MainWindow
 
     internal ConveyorShapeProvider ShapeProvider { get; set; }
 
-    // TODO put the zoom functionality into a behaviour
+    // TODO put the zoom functionality into a behavior
     private void TheCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
     {
         var pos = e.GetPosition(TheCanvas);

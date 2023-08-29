@@ -12,9 +12,9 @@ internal class FilletInfoInputter : Inputter<FilletInfoInputter, ((LineDefinitio
 {
     protected override async Task<InputResult<((LineDefinition LineDefinition, Point Point) LineInfo1, (LineDefinition LineDefinition, Point Point) LineInfo2)>> StartAsyncVirtual()
         => await InputManager.Blank()
-            .Then(async _ => await SelectLineInputter.StartInput(Context,
+            .Then(async _ => await TargetLineInputter.StartInput(Context,
                 Helpers.ShowUserNotes("Select the first line.")))
-            .Then(async line1 => await SelectLineInputter.StartInput(Context,
+            .Then(async line1 => await TargetLineInputter.StartInput(Context,
                 Helpers.ShowUserNotes("Select the second line."),
                 Helpers.ShowPickedSelectable(line1.Second.Item1)))
             .Do(ctx => InputResult.SuccessTask(ctx.Flatten().Map(x => (x.Item1.Definition, x.Item2), x => (x.Item1.Definition, x.Item2))));

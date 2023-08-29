@@ -8,7 +8,7 @@ namespace ConveyorApp;
 
 public class CanvasObjectHighlighter(Canvas Canvas) : ObjectHighlighter
 {
-    public static CanvasObjectHighlighter Create(Canvas canvas, ISelectObject selectObject, ObjectHighlightTypes objectHighlightType = ObjectHighlightTypes.Pick)
+    public static CanvasObjectHighlighter Create(Canvas canvas, ISelectObject selectObject, ObjectHighlightTypes objectHighlightType = ObjectHighlightTypes.Target)
     {
         CanvasObjectHighlighter result = new(canvas)
         {
@@ -36,7 +36,7 @@ public class CanvasObjectHighlighter(Canvas Canvas) : ObjectHighlighter
             Stroke = HighlightType switch
             {
                 ObjectHighlightTypes.None => null,
-                ObjectHighlightTypes.Pick => Brushes.Moccasin,
+                ObjectHighlightTypes.Target => Brushes.Moccasin,
                 ObjectHighlightTypes.Select => Brushes.Chartreuse,
                 _ => null,
             },
