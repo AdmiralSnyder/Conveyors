@@ -30,14 +30,15 @@ public partial class MainWindow
 {
     public MainWindow()
     {
-        ViewModel = new() { MainWindow = this};
-        //this.DataContext = ViewModel;
+        ViewModel = new() /*{ MainWindow = this}*/;
+        this.DataContext = ViewModel;
 
         ViewModel.ShapeProvider.RegisterSelectBehaviour(SelectShapeAction);
 
         InitializeComponent();
 
         ViewModel.TheCanvas = TheCanvas;
+        ViewModel.GetAbsolutePositionFunc = e => e.GetPosition(this);
         
         ViewModel.CreationCommandManager.AddCommands(AddActionButton);
 
@@ -63,8 +64,6 @@ public partial class MainWindow
         ButtonsSP.Children.Add(button);
     }
 
-    
-    
     private void SelectShapeAction(Shape shape)
     {
         var mousePosition = Mouse.GetPosition(TheCanvas);
@@ -134,7 +133,6 @@ public partial class MainWindow
         }
     }
 
-
     private void PutItemB_Click(object sender, RoutedEventArgs e)
     {
         foreach (var conveyor in ViewModel.AutoRoot.Conveyors)
@@ -143,20 +141,11 @@ public partial class MainWindow
         }
     }
 
-    private bool _IsRunning;
-    public bool IsRunning
-    {
-        get => _IsRunning;
-        set => Func.Setter(ref _IsRunning, value, isRunning => ViewModel.AutoRoot.Conveyors.ForEach(c => c.IsRunning = isRunning));
-    }
-
-    private void RunningCB_Click(object sender, RoutedEventArgs e) => IsRunning = RunningCB.IsChecked ?? false;
-
-    private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) => IsRunning = false;
+    private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) => ViewModel.IsRunning = false;
 
     private async void MovePointB_Click(object sender, RoutedEventArgs e)
     {
-        RunningCB.IsChecked = false;
+        ViewModel.IsRunning = false;
         await MoveInputter.StartInput(ViewModel.InputContext);
     }
 

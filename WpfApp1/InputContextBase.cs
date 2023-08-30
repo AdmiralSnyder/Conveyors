@@ -183,7 +183,7 @@ public abstract class InputContextBase
 {
     public InputManager InputManager { get; set; }
 
-    public MainWindow MainWindow { get; set; }
+    //public MainWindow MainWindow { get; set; }
 
     public Inputter? CurrentInputter { get; set; }
 

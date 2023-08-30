@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows.Controls;
+using System.Windows.Input;
 using ConveyorLib;
 using CoreLib;
 
@@ -12,7 +13,6 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
     {
         ShapeProvider = new();
         SelectionManager = new CanvasSelectionManager();
-
     }
 
     private string _StatusBarHelpText = "";
@@ -22,6 +22,14 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
         get => _StatusBarHelpText;
         set => this.SetterInpc(ref _StatusBarHelpText, value);
     }
+
+    private double _SnapGridWidth = 10;
+    public double SnapGridWidth 
+    {
+        get => _SnapGridWidth; 
+        set => this.SetterInpc(ref _SnapGridWidth, value); 
+    }
+
 
     private Canvas _TheCanvas;
 
@@ -38,8 +46,8 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
 
     public Action<string> LogAction { get; set; }
 
-    // TODO needs to be deleted
-    public MainWindow MainWindow { get; set; }
+    //// TODO needs to be deleted
+    //public MainWindow MainWindow { get; set; }
 
     public Canvas TheCanvas
     {
@@ -50,7 +58,7 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
             {
                 Canvas = theCanvas,
                 ViewModel = this,
-                MainWindow = MainWindow,
+                //MainWindow = MainWindow,
             };
 
             ((CanvasSelectionManager)SelectionManager).SetCanvas(TheCanvas);
@@ -74,4 +82,22 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
 
         });
     }
+    private bool _IsRunning;
+
+    public bool IsRunning
+    {
+        get => _IsRunning;
+        set => this.SetterInpc(ref _IsRunning, value, isRunning => AutoRoot.Conveyors.ForEach(c => c.IsRunning = isRunning));
+    }
+
+    public int LaneCount { get; set; } = 1;
+    
+    private Point _PanValue;
+    public Point PanValue 
+    {
+        get => _PanValue;
+        set => this.SetterInpc(ref _PanValue, value); 
+    }
+
+    internal Func<MouseEventArgs, Point> GetAbsolutePositionFunc { get; set; }
 }

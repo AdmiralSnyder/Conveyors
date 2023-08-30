@@ -33,7 +33,7 @@ public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : Input
     {
         Context.StopObjectPickingListener();
 
-        Context.MainWindow.ViewModel.InputPickManager.Disable();
+        Context.ViewModel.InputPickManager.Disable();
 
         base.CleanupVirtual();
     }
@@ -42,7 +42,7 @@ public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : Input
 
     protected override Task<InputResult<(TLineType, Point)>> StartAsyncVirtual()
     {
-        Context.MainWindow.ViewModel.InputPickManager.Enable(ObjectCanBePicked);
+        Context.ViewModel.InputPickManager.Enable(ObjectCanBePicked);
 
         Context.StartObjectPickingListener();
 

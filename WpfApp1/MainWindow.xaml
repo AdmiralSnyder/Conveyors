@@ -10,21 +10,24 @@
     xmlns:mx="clr-namespace:WpfLib.MarkupExtensions;assembly=WpfLib"
     xmlns:scg="clr-namespace:System.Collections.Generic;assembly=netstandard"
     xmlns:system="clr-namespace:System;assembly=mscorlib"
+    xmlns:conv="clr-namespace:ConveyorApp.Converters"
     Name="TheWindow"
     Title="MainWindow"
     Width="792"
     Height="442"
     Closing="Window_Closing"
-    DataContext="{Binding RelativeSource={RelativeSource Self}}"
     PreviewKeyDown="Window_PreviewKeyDown"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    d:DataContext="{d:DesignInstance local:MainWindowViewModel, IsDesignTimeCreatable=True}"
+    >
+    <!--DataContext="{Binding RelativeSource={RelativeSource Self}}"--> 
 
     <Window.Resources>
         <local:SnapGridConverter x:Key="SnapGridConverter" />
+        <!--<conv:MultiConverter x:Key="Convi" />-->
         <Brush x:Key="SplitterColor">red</Brush>
         <Brush x:Key="BackgroundColor">green</Brush>
         <system:Double x:Key="SplitterSize">5</system:Double>
-
         <x:Array x:Key="KEKSELIST" Type="system:String">
             <system:String>Hallo</system:String>
             <system:String>Welt</system:String>
@@ -90,12 +93,9 @@
                     Name="SelectB"
                     Click="SelectB_Click"
                     Content="Select" />
-                <ItemsControl
-                    MinWidth="0"
+                <d:ItemsControl
                     d:ItemsSource="{x:Static local:CreationCommandManager.CommandLabels}"
-                    d:MinWidth="50"
-                    d:Visibility="Visible"
-                    Visibility="Hidden">
+                    d:MinWidth="50">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Background="green" Orientation="Horizontal" />
@@ -106,14 +106,12 @@
                             <Button Content="{Binding}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                </d:ItemsControl>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <CheckBox
-                    Name="RunningCB"
-                    Checked="RunningCB_Click"
                     Content="Running"
-                    Unchecked="RunningCB_Click" />
+                    IsChecked="{Binding IsRunning}"/>
                 <Button
                     Name="PutItemB"
                     Click="PutItemB_Click"
@@ -126,12 +124,15 @@
                     Content="Move" />
                 <TextBox
                     Name="LanesCountTB"
-                    Text="2"
-                    ToolTip="Lanes Count" />
+                    Text="{Binding LaneCount}"
+                    ToolTip="Lanes Count" 
+                    MinWidth="20"
+                    
+                    />
                 <TextBox
                     Name="GridWidth"
                     Width="30"
-                    Text="{Binding Path=InputContext.SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}"
+                    Text="{Binding Path=SnapGridWidth, Converter={conv:MultiConverter}}"
                     ToolTip="Grid Width" />
                 <Button
                     Name="HappyBirthdayRubyB"
@@ -151,12 +152,12 @@
         <TextBlock
             Grid.ColumnSpan="2"
             gu:Cell.Index="2 0"
-            Text="{Binding ViewModel.StatusBarHelpText}" />
+            Text="{Binding StatusBarHelpText}" />
         <GridSplitter gu:Cell.Index="1 1" Style="{StaticResource VerticalGridSplitter}" />
         <Grid gu:Cell.Index="1 2" gu:Grid.Layout="20 auto * auto 40, *">
-            <TextBlock gu:Cell.Index="0 0" Text="{Binding Path=ViewModel.SelectionManager.ChosenObject.Text, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
+            <TextBlock gu:Cell.Index="0 0" Text="{Binding Path=SelectionManager.ChosenObject.Text, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}" />
             <GridSplitter Grid.Row="1" Style="{StaticResource HorizontalGridSplitter}" />
-            <local:PropertyGrid gu:Cell.Index="2 0" InspectedObject="{Binding ViewModel.SelectionManager.ChosenObject}" />
+            <local:PropertyGrid gu:Cell.Index="2 0" InspectedObject="{Binding SelectionManager.ChosenObject}" />
             <GridSplitter Grid.Row="3" Style="{StaticResource HorizontalGridSplitter}" />
             <avalonEdit:TextEditor
                 Name="textEditor2"
@@ -177,14 +178,16 @@
                             AlignmentY="Top"
                             Stretch="None"
                             TileMode="Tile"
-                            Viewport="-0.5, -0.5, 10, 10"
+                            Viewport="{Binding SnapGridWidth, Converter={conv:WidthToRectConverter X=-0.5, Y=-0.5}}"
                             ViewportUnits="Absolute">
                             <DrawingBrush.Drawing>
                                 <DrawingGroup>
                                     <DrawingGroup.Children>
                                         <GeometryDrawing Brush="{StaticResource BackgroundColor}">
                                             <GeometryDrawing.Geometry>
-                                                <RectangleGeometry Rect="0, 0, 10, 10" />
+                                                <RectangleGeometry 
+                                                    Rect="{Binding SnapGridWidth, Converter={conv:WidthToRectConverter}}" 
+                                                    />
                                             </GeometryDrawing.Geometry>
                                             <GeometryDrawing.Pen>
                                                 <Pen Brush="{StaticResource BackgroundColor}" />
@@ -226,7 +229,9 @@
                     <Canvas.RenderTransform>
                         <TransformGroup>
                             <ScaleTransform x:Name="CanvasScaleTransform" />
-                            <TranslateTransform x:Name="CanvasTranslateTransform" />
+                            <TranslateTransform
+                                X="{Binding PanValue.X}"
+                                Y="{Binding PanValue.Y}"/>
                         </TransformGroup>
                     </Canvas.RenderTransform>
                 </Canvas>

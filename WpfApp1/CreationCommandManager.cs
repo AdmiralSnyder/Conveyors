@@ -26,7 +26,7 @@ public class CreationCommandManager
         [("Add Circle by Diameter Points", "O2")] = c => c.AddCircleTwoPoints,
         [("Add Circle by Three Points", "O3")] = c => c.AddCircleThreePoints,
         [("Add Fillet", "U")] = c => c.AddFillet,
-        [("Add Conveyor", @"\__/")] = c => c.AddConveyor,
+        [("Add Conveyor", @"\___/")] = c => c.AddConveyor,
     };
 
     private Dictionary<string, (Func<Task> Command, string? Caption)> Commands;
@@ -108,7 +108,7 @@ public class CreationCommandManager
     {
         if ((await ConveyorInputter.StartInput(InputContext)).IsSuccess(out var points))
         {
-            AutoRoot.AddConveyor(points, InputContext.MainWindow.IsRunning, int.TryParse(InputContext.MainWindow.LanesCountTB.Text, out var lanesCnt) ? Math.Max(lanesCnt, 1) : 1);
+            AutoRoot.AddConveyor(points, InputContext.ViewModel.IsRunning, InputContext.ViewModel.LaneCount);
         }
     }
 }

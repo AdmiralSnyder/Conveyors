@@ -32,11 +32,11 @@ public class MoveInputter : StatefulInputter<MoveInputter, Vector, MoveInputter.
         base.InputStateChanged(newValue);
         if (newValue == InputStates.Move)
         {
-            foreach (var conveyor in Context.MainWindow.ViewModel.AutoRoot.Conveyors)
+            foreach (var conveyor in Context.ViewModel.AutoRoot.Conveyors)
             {
                 foreach (var point in conveyor.Points)
                 {
-                    var circle = Context.MainWindow.ViewModel.ShapeProvider.CreatePointMoveCircle(point.Location, MoveCircleClicked);
+                    var circle = Context.ViewModel.ShapeProvider.CreatePointMoveCircle(point.Location, MoveCircleClicked);
                     circle.Tag = point;
                     Context.Canvas.Children.Add(circle);
                     MoveCircles.Add(circle);
@@ -109,7 +109,7 @@ public class MoveInputter : StatefulInputter<MoveInputter, Vector, MoveInputter.
 
         if (MoveShapes.FirstOrDefault() is { Tag: ConveyorPoint point })
         {
-            Context.MainWindow.ViewModel.AutoRoot.MovePoint(point, Context.SnapPoint(Context.GetCanvasPoint(e)));
+            Context.ViewModel.AutoRoot.MovePoint(point, Context.SnapPoint(Context.GetCanvasPoint(e)));
         }
 
         foreach (var shape in MoveShapes)
