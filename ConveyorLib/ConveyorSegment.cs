@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using WpfLib;
 
 namespace ConveyorLib;
 
@@ -114,12 +113,12 @@ public class ConveyorSegment : IConveyorCanvasable, IPathPart, ISelectObject, IR
 
     public ISelectObject? SelectionParent => Conveyor;
 
-    public void AddToCanvas(ConveyorCanvasInfo canvasInfo)
+    public void AddToCanvas(IConveyorCanvasInfo canvasInfo)
     {
         DefinitionLine = canvasInfo.ShapeProvider.CreateConveyorSegmentLine(StartEnd);
         DefinitionLine.Tag = this;
 
-        canvasInfo.Canvas.Children.Add(DefinitionLine);
+        canvasInfo.AddToCanvas(DefinitionLine);
         foreach(var lane in Lanes)
         {
             lane.AddToCanvas(canvasInfo);

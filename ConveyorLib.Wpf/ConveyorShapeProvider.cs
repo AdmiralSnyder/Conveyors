@@ -9,10 +9,11 @@ using System.Windows.Media;
 using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Documents;
 
-namespace ConveyorLib;
+namespace ConveyorLib.Wpf;
 
-public class ConveyorShapeProvider : ShapeProvider
+public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
 {
     public Ellipse CreateTempPoint(Point point) => new Ellipse()
     {
@@ -159,7 +160,7 @@ public class ConveyorShapeProvider : ShapeProvider
 
     public Ellipse CreateConveyorItemEllipse() => new() { Width = ItemSize, Height = ItemSize, Fill = Brushes.Blue };
 
-    internal Shape CreateFillet(TwoPoints points, double radius)
+    public Shape CreateFillet(TwoPoints points, double radius)
     {
         var pg = new PathGeometry();
 
@@ -170,5 +171,11 @@ public class ConveyorShapeProvider : ShapeProvider
         });
 
         return CreateCircleSectorArc(pg, true);
+    }
+
+    public void AddAdornedShapeLayer(Shape shape)
+    {
+        var layer = AdornerLayer.GetAdornerLayer(shape);
+        layer.Add(new ItemTextAdorner(shape));
     }
 }

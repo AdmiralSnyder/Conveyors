@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ConveyorLib;
+using ConveyorLib.Wpf;
 using CoreLib;
 
 namespace ConveyorApp;
@@ -11,7 +12,7 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
 {
     public MainWindowViewModel()
     {
-        ShapeProvider = new();
+        ShapeProvider = new ConveyorShapeProvider();
         SelectionManager = new CanvasSelectionManager();
     }
 
@@ -34,7 +35,7 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
     private Canvas _TheCanvas;
 
     public CanvasInputContext InputContext { get; private set; }
-    internal ConveyorShapeProvider ShapeProvider { get; set; }
+    internal IConveyorShapeProvider ShapeProvider { get; set; }
     public SelectionManager SelectionManager { get; set; }
     public CanvasPickManager PickManager { get; set; }
 

@@ -13,13 +13,13 @@ public abstract class ConveyorAppApplicationObject<TThis, TShape, TSource>
 }
 
 public abstract class ConveyorAppApplicationObject<TThis, TShape, TDefinition, TSource> 
-    : CanvasableObject<ConveyorCanvasInfo, Canvas, ConveyorAppApplication, TShape>
+    : CanvasableObject<IConveyorCanvasInfo, Canvas, ConveyorAppApplication, TShape>
     , IStorable, IStorable<TThis, TSource>
     where TThis : ConveyorAppApplicationObject<TThis, TShape, TDefinition, TSource>, new()
     where TShape : FrameworkElement
     where TDefinition : IDefinition<TSource>, new()
 {
-    protected override void AddToCanvasVirtual(TShape shape) => Canvas.Children.Add(shape);
+    protected override void AddToCanvasVirtual(TShape shape) => CanvasInfo.AddToCanvas(shape);
     protected override void SetTag(TShape shape, object tag) => shape.Tag = tag;
 
     public TDefinition Definition { get; private set; }

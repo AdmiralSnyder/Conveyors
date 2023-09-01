@@ -8,7 +8,7 @@ using System.Windows.Shapes;
 
 namespace WpfLib;
 
-public class ShapeProvider
+public class ShapeProvider : IShapeProvider
 {
     public static Action<Shape> SelectBehaviour { get; private set; }
     public void RegisterSelectBehaviour(Action<Shape> selectBehaviour) => SelectBehaviour = selectBehaviour;

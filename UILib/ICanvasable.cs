@@ -1,7 +1,7 @@
 ﻿namespace UILib;
 
 public interface ICanvasable<TCanvasInfo>
-    where TCanvasInfo : CanvasInfo
+    where TCanvasInfo : ICanvasInfo
 {
     void AddToCanvas(TCanvasInfo canvasInfo);
 }

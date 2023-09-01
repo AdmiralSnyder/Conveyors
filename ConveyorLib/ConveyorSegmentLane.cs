@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
-using WpfLib;
 
 namespace ConveyorLib;
 
@@ -127,12 +126,11 @@ public class ConveyorSegmentLane : IConveyorCanvasable, ILanePart, IDebugText, I
 
     private void UpdateEndLength() => EndLength = BeginLength + Length;
 
-    public void AddToCanvas(ConveyorCanvasInfo canvasInfo)
+    public void AddToCanvas(IConveyorCanvasInfo canvasInfo)
     {
         Line = canvasInfo.ShapeProvider.CreateConveyorSegmentLaneLine(StartEnd);
         Line.Tag = this;
-        
-        canvasInfo.Canvas.Children.Add(Line);
+        canvasInfo.AddToCanvas(Line);
     }
 
     public Point GetPointAbsolute(double length, bool overshoot = false) => StartEnd.GetPointOnLine(length - BeginLength, UnitVector, Length, overshoot);

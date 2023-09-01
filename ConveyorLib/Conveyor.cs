@@ -2,6 +2,8 @@
 using System.Windows;
 using System.Windows.Controls;
 
+using Microsoft.Extensions.DependencyInjection;
+
 namespace ConveyorLib;
 
 public class Conveyor : ISelectObject, IRefreshable, IAppObject<ConveyorAppApplication>
@@ -113,9 +115,9 @@ public class Conveyor : ISelectObject, IRefreshable, IAppObject<ConveyorAppAppli
         }
     }
 
-    public static void AddToCanvas(Conveyor conveyor, ConveyorCanvasInfo canvasInfo)
+    public static void AddToCanvas(Conveyor conveyor, IConveyorCanvasInfo canvasInfo)
     {
-        conveyor.Canvas = canvasInfo.Canvas;
+        conveyor.CanvasInfo = canvasInfo;
         foreach (var segment in conveyor.Segments)
         {
             segment.AddToCanvas(canvasInfo);
@@ -127,10 +129,10 @@ public class Conveyor : ISelectObject, IRefreshable, IAppObject<ConveyorAppAppli
         }
     }
 
-    public Canvas? Canvas;
+    public IConveyorCanvasInfo CanvasInfo;
     public double Speed = 20;
 
-    public void SpawnItems(ConveyorShapeProvider shapeProvider, bool? firstOnly = null)
+    public void SpawnItems(IConveyorShapeProvider shapeProvider, bool? firstOnly = null)
     {
         foreach (var i in LaneIndexes)
         {

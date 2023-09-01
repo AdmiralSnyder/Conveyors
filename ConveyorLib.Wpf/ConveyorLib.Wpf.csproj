@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework>
@@ -12,11 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\ConveyorLib\ConveyorLib.csproj" />
     <ProjectReference Include="..\UILib\UILib.csproj" />
+    <ProjectReference Include="..\WpfLib\WpfLib.csproj" />
   </ItemGroup>
 
 </Project>

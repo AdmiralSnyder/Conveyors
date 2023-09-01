@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using WpfLib;
 
 namespace ConveyorLib;
 
@@ -186,11 +185,11 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
 
     public ISelectObject? SelectionParent => Conveyor;
 
-    public void AddToCanvas(ConveyorCanvasInfo canvasInfo)
+    public void AddToCanvas(IConveyorCanvasInfo canvasInfo)
     {
         PointCircle = canvasInfo.ShapeProvider.CreateConveyorPointEllipse(Location, IsFirst, IsLast, IsClockwise, IsStraight);
         PointCircle.Tag = this;
-        canvasInfo.Canvas.Children.Add(PointCircle);
+        canvasInfo.AddToCanvas(PointCircle);
 
         if (IsFirst || IsLast) return;
         foreach (var lane in Lanes)

@@ -15,6 +15,7 @@ using System.Text.Json.Serialization.Metadata;
 using System.Globalization;
 using System.Threading;
 using System.Windows.Media.Media3D;
+using ConveyorLib.Wpf;
 
 namespace ConveyorApp;
 
@@ -35,7 +36,7 @@ public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomatio
 {
     List<Conveyor> Conveyors { get; }
     
-    ConveyorCanvasInfo CanvasInfo { get; }
+    IConveyorCanvasInfo CanvasInfo { get; }
     
     Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes);
 
@@ -82,9 +83,9 @@ public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppAppli
     [Generated]
     public void Init(object obj)
     {
-        var tuple = ((Canvas Canvas, ConveyorShapeProvider ShapeProvider))obj;
+        var tuple = ((Canvas Canvas, IConveyorShapeProvider ShapeProvider))obj;
         Conveyors = new();
-        CanvasInfo = new() { Canvas = tuple.Canvas, ShapeProvider = tuple.ShapeProvider};
+        CanvasInfo = new ConveyorCanvasInfo() { Canvas = tuple.Canvas, ShapeProvider = tuple.ShapeProvider};
     }
 
     public partial Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes)
@@ -99,7 +100,7 @@ public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppAppli
     private T AddAppObject<T>(T appObject)
         where T : IAppObject<ConveyorAppApplication>
     {
-        if (appObject is ICanAddToCanvas<ConveyorCanvasInfo> canvasable)
+        if (appObject is ICanAddToCanvas<IConveyorCanvasInfo> canvasable)
         {
             canvasable.AddToCanvas(CanvasInfo);
         }

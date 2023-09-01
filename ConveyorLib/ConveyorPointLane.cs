@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using WpfLib;
 
 namespace ConveyorLib;
 
@@ -36,10 +35,10 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
     public ConveyorPoint Point { get; }
     public int Number { get; }
 
-    public void AddToCanvas(ConveyorCanvasInfo canvasInfo)
+    public void AddToCanvas(IConveyorCanvasInfo canvasInfo)
     {
         Arc = canvasInfo.ShapeProvider.CreateConveyorPointPath(ArcGeometry, IsLeft);
-        canvasInfo.Canvas.Children.Add(Arc);
+        canvasInfo.AddToCanvas(Arc);
         Arc!.Tag = this;
     }
 

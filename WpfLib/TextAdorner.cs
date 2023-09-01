@@ -6,11 +6,6 @@ using System.Windows.Shapes;
 
 namespace WpfLib;
 
-public interface ITextAdornable
-{
-    string AdornmentText { get; }
-}
-
 public class TextAdorner<TShapeTag> : Adorner
     where TShapeTag : ITextAdornable
 {

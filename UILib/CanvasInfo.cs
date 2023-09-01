@@ -3,11 +3,18 @@
 namespace UILib;
 
 public interface ICanvasInfo
-{ }
+{ 
+    TShape AddToCanvas<TShape>(TShape shape);
+}
 
-public class CanvasInfo<TCanvas> : ICanvasInfo
+public interface ICanvasInfo<TCanvas> : ICanvasInfo 
 {
     public TCanvas Canvas { get; set; }
 }
 
-public class CanvasInfo : CanvasInfo<Canvas> { }
+public abstract class CanvasInfo<TCanvas> : ICanvasInfo<TCanvas>
+{
+    public TCanvas Canvas { get; set; }
+
+    public abstract TShape AddToCanvas<TShape>(TShape shape);
+}

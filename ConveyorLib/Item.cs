@@ -5,13 +5,30 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using WpfLib;
+using PointDef.twopoints;
 
 namespace ConveyorLib;
 
-class ItemTextAdorner : TextAdorner<Item>
+public interface IConveyorShapeProvider : IShapeProvider
 {
-    public ItemTextAdorner(UIElement adornedElement) : base(adornedElement) { }
+    Ellipse CreateConveyorItemEllipse();
+    void AddAdornedShapeLayer(Shape shape);
+    Line CreateConveyorPositioningLine(TwoPoints value);
+    Shape CreatePoint(Point point);
+    Ellipse CreatePointMoveCircle(Point location, Action<Shape> moveCircleClicked);
+    Shape CreateCircle(Point center, double radius);
+    Ellipse CreateTempPoint(Point point);
+    Line CreateTempLine(TwoPoints points);
+    void RegisterSelectBehaviour(Action<Shape> selectShapeAction);
+    Ellipse CreateConveyorPointEllipse(Point point, bool isFirst, bool isLast, bool isClockwise, bool isStraight, double size = 4d);
+    Path CreateConveyorPointPath(PathGeometry geometry, bool isLeft);
+    Line CreateConveyorSegmentLine(TwoPoints points);
+    Line CreateConveyorSegmentLaneLine(TwoPoints points);
+    Shape CreateFillet(TwoPoints points, double radius);
+    Line CreateLine(TwoPoints points);
+    Line CreateLineSegment(TwoPoints points);
+    Line CreateDebugThinLineSegment(TwoPoints points);
+    Line CreateDebugLineSegment(TwoPoints points);
 }
 
 public class Item : ISelectObject, IRefreshable, ITextAdornable
@@ -24,15 +41,15 @@ public class Item : ISelectObject, IRefreshable, ITextAdornable
     private static int Num = 0;
 
     public int LaneNumber { get; }
-    public Item(Conveyor conveyor, int lane, ConveyorShapeProvider shapeProvider)
+    public Item(Conveyor conveyor, int lane, IConveyorShapeProvider shapeProvider)
     {
         LaneNumber = lane;
         Conveyor = conveyor;
         Shape = shapeProvider.CreateConveyorItemEllipse();
         Shape.Tag = this;
-        Conveyor.Canvas.Children.Add(Shape);
-        var layer = AdornerLayer.GetAdornerLayer(Shape);
-        layer.Add(new ItemTextAdorner(Shape));
+        Conveyor.CanvasInfo.AddToCanvas(Shape);
+        shapeProvider.AddAdornedShapeLayer(Shape);
+        
         AddAge(0);
         Number = Num++;
     }

@@ -16,7 +16,7 @@ namespace ConveyorApp
 
         List<Shape> Shapes = new();
         public Canvas Canvas { get; set; }
-        public ConveyorShapeProvider ShapeProvider { get; internal set; }
+        public IConveyorShapeProvider ShapeProvider { get; internal set; }
 
         public void PutPoint(Point point)
         {

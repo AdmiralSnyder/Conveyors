@@ -1,5 +1,8 @@
 ﻿using CoreLib;
+using PointDef;
+using PointDef.twopoints;
 using System;
+using System.Drawing;
 
 namespace WpfLib;
 
@@ -8,13 +11,14 @@ public static class WpfFunc
     public static void ApplyMouseBehavior(this Shape shape, Action<Shape> behavior, MouseAction mouseAction = MouseAction.LeftClick)
         => shape.InputBindings.Add(new MouseBinding(new MyCommand<Shape>(behavior, shape), new(mouseAction)));
 
-    public static void SetLocation(this Shape shape, Point location)
+    public static Shape SetLocationWpf(this Shape shape, Point location)
     {
         Canvas.SetLeft(shape, location.X);
         Canvas.SetTop(shape, location.Y);
+        return shape;
     }
 
-    public static Line SetLocation(this Line line, TwoPoints points)
+    public static Line SetLocationWpf(this Line line, TwoPoints points)
     {
         if (points.P1.X != line.X1)
         {
@@ -36,7 +40,19 @@ public static class WpfFunc
         return line;
     }
 
-    public static TShape SetCenterLocation<TShape>(this TShape shape, Point location)
-        where TShape : Shape => shape.Modify(s => s.SetLocation(location.Subtract((s.Width / 2, s.Height / 2))));
+    public static V2d GetSizeWpf<TShape>(this TShape shape) where TShape : Shape => (shape.Width, shape.Height);
+}
 
+public class UIHelpersInstanceWpf : IUIHelpers
+{
+    public V2d GetSize<TShape>(TShape shape) => ((Shape)(object)shape).GetSizeWpf();
+    public TShape SetLocation<TShape>(TShape shape, Point location) => (TShape)(object)(((Shape)(object)shape).SetLocationWpf(location));
+
+    public TShape SetLocation<TShape>(TShape shape, TwoPoints location) => (TShape)(object)(((Line)(object)shape).SetLocationWpf(location));
+
+    private TShape Modify<TShape, TArg>(TShape shape, Action<TShape, TArg> modifyFunc, TArg arg)
+    {
+        modifyFunc(shape, arg);
+        return shape;
+    }
 }

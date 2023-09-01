@@ -1,3 +1,3 @@
 ﻿namespace ConveyorLib;
 
-public interface IConveyorCanvasable : ICanvasable<ConveyorCanvasInfo> { }
+public interface IConveyorCanvasable : ICanvasable<IConveyorCanvasInfo> { }

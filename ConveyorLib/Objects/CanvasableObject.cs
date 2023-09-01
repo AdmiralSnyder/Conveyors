@@ -10,12 +10,11 @@ public interface ICanAddToCanvas<TCanvasInfo>
 public abstract class CanvasableObject<TCanvasInfo, TCanvas, TApplication, TShape> 
     : ApplicationObject<TApplication>, ICanAddToCanvas<TCanvasInfo>
     where TApplication : IApplication
-    where TCanvasInfo : CanvasInfo<TCanvas>
+    where TCanvasInfo : ICanvasInfo
     where TCanvas : class
 {
     protected TShape Shape { get; private set; }
 
-    protected TCanvas? Canvas { get; private set; }
     protected TCanvasInfo CanvasInfo { get; private set; }
     protected abstract void SetTag(TShape shape, object tag);
 
@@ -24,7 +23,6 @@ public abstract class CanvasableObject<TCanvasInfo, TCanvas, TApplication, TShap
     
     public void AddToCanvas(TCanvasInfo canvasInfo)
     {
-        Canvas = canvasInfo.Canvas;
         CanvasInfo = canvasInfo;
         Shape = GetShape();
         SetTag(Shape, this);
