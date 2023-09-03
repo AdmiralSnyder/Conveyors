@@ -1,22 +1,21 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using CoreLib.Definition;
+﻿using CoreLib.Definition;
+using UILib.Shapes;
 
 namespace ConveyorLib.Objects;
 
 public abstract class ConveyorAppApplicationObject<TThis, TShape, TSource>
     : ConveyorAppApplicationObject<TThis, TShape, SimpleDefinition<TSource>, TSource>
     where TThis : ConveyorAppApplicationObject<TThis, TShape, TSource>, new()
-    where TShape : FrameworkElement
+    where TShape : IShape
 {
     public TSource Source => Definition.Source;
 }
 
 public abstract class ConveyorAppApplicationObject<TThis, TShape, TDefinition, TSource> 
-    : CanvasableObject<IConveyorCanvasInfo, Canvas, ConveyorAppApplication, TShape>
+    : CanvasableObject<IConveyorCanvasInfo, ConveyorAppApplication, TShape>
     , IStorable, IStorable<TThis, TSource>
     where TThis : ConveyorAppApplicationObject<TThis, TShape, TDefinition, TSource>, new()
-    where TShape : FrameworkElement
+    where TShape : IShape
     where TDefinition : IDefinition<TSource>, new()
 {
     protected override void AddToCanvasVirtual(TShape shape) => CanvasInfo.AddToCanvas(shape);

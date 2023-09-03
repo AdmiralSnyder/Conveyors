@@ -1,49 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Shapes;
+﻿using System.Windows.Shapes;
 using WpfLib;
 using System.Windows.Media;
-using System.Windows.Controls;
-using System.Windows;
 using System.Windows.Input;
 using System.Windows.Documents;
+using UILib.Shapes;
+using WpfLib.Shapes;
 
 namespace ConveyorLib.Wpf;
 
 public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
 {
-    public Ellipse CreateTempPoint(Point point) => new Ellipse()
+    public IEllipse CreateTempPoint(Point point) => new WpfEllipse(new()
     {
         Width = 3,
         Height = 3,
         Fill = Brushes.Magenta,
-    }.SetCenterLocation(point);
+    }).SetCenterLocation(point);
 
-    public Shape CreatePoint(Point point)=> new Ellipse()
+    public IShape CreatePoint(Point point) => new WpfEllipse(new()
     {
         Width = 3,
         Height = 3,
         Fill = Brushes.Magenta,
-    }.SetCenterLocation(point).WithSelectBehaviour();
+    }).SetCenterLocation(point).WithSelectBehaviour();
 
-    public Shape CreateCircle(Point center, double radius) => new Ellipse()
+    public IShape CreateCircle(Point center, double radius) => new WpfEllipse(new()
     {
         Width = radius * 2 + 1,
         Height = radius * 2 + 1,
         Stroke = Brushes.Magenta,
-    }.SetCenterLocation(center).WithSelectBehaviour();
+    }).SetCenterLocation(center).WithSelectBehaviour();
 
-    public Line CreateTempLine(TwoPoints points)
+    public ILine CreateTempLine(TwoPoints points)
     {
         var line = PrepareLine(points);
         line.Stroke = Brushes.Magenta;
         return line;
     }
 
-    public Line CreateConveyorPositioningLine(TwoPoints points)
+    public ILine CreateConveyorPositioningLine(TwoPoints points)
     {
         var line = PrepareLine(points);
         line.Stroke = Brushes.Black;
@@ -51,7 +46,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
         return line;
     }
 
-    public Line CreateConveyorSegmentLine(TwoPoints points)
+    public ILine CreateConveyorSegmentLine(TwoPoints points)
     {
         var line = PrepareLine(points);
         line.Stroke = Brushes.Red;
@@ -59,7 +54,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
         return line;
     }
 
-    public Line CreateLineSegment(TwoPoints points)
+    public ILine CreateLineSegment(TwoPoints points)
     {
         var line = PrepareLine(points);
         line.Stroke = Brushes.Beige;
@@ -67,7 +62,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
         return line;
     }
 
-    public Line CreateDebugLineSegment(TwoPoints points)
+    public ILine CreateDebugLineSegment(TwoPoints points)
     {
         var line = PrepareLine(points);
         line.Stroke = Brushes.Magenta;
@@ -75,7 +70,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
         return line;
     }
 
-    public Line CreateDebugThinLineSegment(TwoPoints points)
+    public ILine CreateDebugThinLineSegment(TwoPoints points)
     {
         var line = PrepareLine(points);
         line.Stroke = Brushes.Magenta;
@@ -83,7 +78,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
         return line;
     }
 
-    public Line CreateLine(TwoPoints points)
+    public ILine CreateLine(TwoPoints points)
     {
         var vector = points.P2 - points.P1;
         var start = points.P1;
@@ -103,7 +98,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
         return line;
     }
 
-    public Line CreateConveyorSegmentLaneLine(TwoPoints points)
+    public ILine CreateConveyorSegmentLaneLine(TwoPoints points)
     {
         var line = PrepareLine(points);
         line.Stroke = Brushes.White;
@@ -112,7 +107,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
     }
 
 
-    public Ellipse CreateConveyorPointEllipse(Point point, bool isFirst, bool isLast, bool isClockwise, bool isStraight, double size = 4d) => new Ellipse()
+    public IEllipse CreateConveyorPointEllipse(Point point, bool isFirst, bool isLast, bool isClockwise, bool isStraight, double size = 4d) => new WpfEllipse(new Ellipse()
     {
         Width = size,
         Height = size,
@@ -122,26 +117,27 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
         : isClockwise ? Brushes.Purple
         : isStraight ? Brushes.Peru
         : Brushes.Blue,
-    }.SetCenterLocation(point).WithSelectBehaviour();
+    }).SetCenterLocation(point).WithSelectBehaviour();
 
 
-    public Path CreateConveyorPointPath(PathGeometry geometry, bool isLeft) => new Path()
+    // TODO Eliminate PathGeometry here.
+    public IPath CreateConveyorPointPath(PathGeometry geometry, bool isLeft) => new WpfPath(new()
     {
         Data = geometry,
         Stroke = isLeft ? Brushes.Plum : Brushes.Tomato,
-    }.WithSelectBehaviour();
+    }).WithSelectBehaviour();
 
-    public Path CreateCircleSectorArc(PathGeometry geometry, bool isLeft) => new Path()
+    public IPath CreateCircleSectorArc(PathGeometry geometry, bool isLeft) => new WpfPath(new()
     {
         Data = geometry,
         Stroke = isLeft ? Brushes.Orange : Brushes.Teal,
         StrokeThickness = 2,
-    }.WithSelectBehaviour();
+    }).WithSelectBehaviour();
 
-    public Ellipse CreatePointMoveCircle(Point location, Action<Shape> leftClickAction)
+    public IEllipse CreatePointMoveCircle(Point location, Action<IShape> leftClickAction)
     {
         const double Size = 15d;
-        Ellipse result = new()
+        IEllipse result = new WpfEllipse(new()
         {
             Width = Size,
             Height = Size,
@@ -149,7 +145,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
             StrokeThickness = 3,
             Fill = Brushes.Transparent,
             Cursor = Cursors.Hand
-        };
+        });
 
         result.ApplyMouseBehavior(leftClickAction, MouseAction.LeftClick);
         result.SetCenterLocation(location);
@@ -158,9 +154,9 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
 
     private const double ItemSize = 3;
 
-    public Ellipse CreateConveyorItemEllipse() => new() { Width = ItemSize, Height = ItemSize, Fill = Brushes.Blue };
+    public IEllipse CreateConveyorItemEllipse() => new WpfEllipse(new() { Width = ItemSize, Height = ItemSize, Fill = Brushes.Blue });
 
-    public Shape CreateFillet(TwoPoints points, double radius)
+    public IShape CreateFillet(TwoPoints points, double radius)
     {
         var pg = new PathGeometry();
 
@@ -173,9 +169,9 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
         return CreateCircleSectorArc(pg, true);
     }
 
-    public void AddAdornedShapeLayer(Shape shape)
+    public void AddAdornedShapeLayer(IShape shape)
     {
-        var layer = AdornerLayer.GetAdornerLayer(shape);
-        layer.Add(new ItemTextAdorner(shape));
+        var layer = AdornerLayer.GetAdornerLayer(((WpfShape)shape).BackingShape);
+        layer.Add(new ItemTextAdorner(((WpfShape)shape).BackingShape));
     }
 }

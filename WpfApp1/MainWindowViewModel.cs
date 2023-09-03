@@ -57,7 +57,8 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
         {
             InputContext = new CanvasInputContext()
             {
-                Canvas = theCanvas,
+                Canvas = new() { Canvas = theCanvas },
+
                 ViewModel = this,
                 //MainWindow = MainWindow,
             };

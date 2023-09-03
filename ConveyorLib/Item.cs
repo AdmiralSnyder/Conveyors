@@ -1,34 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using PointDef.twopoints;
+using UILib.Shapes;
 
 namespace ConveyorLib;
 
 public interface IConveyorShapeProvider : IShapeProvider
 {
-    Ellipse CreateConveyorItemEllipse();
-    void AddAdornedShapeLayer(Shape shape);
-    Line CreateConveyorPositioningLine(TwoPoints value);
-    Shape CreatePoint(Point point);
-    Ellipse CreatePointMoveCircle(Point location, Action<Shape> moveCircleClicked);
-    Shape CreateCircle(Point center, double radius);
-    Ellipse CreateTempPoint(Point point);
-    Line CreateTempLine(TwoPoints points);
-    void RegisterSelectBehaviour(Action<Shape> selectShapeAction);
-    Ellipse CreateConveyorPointEllipse(Point point, bool isFirst, bool isLast, bool isClockwise, bool isStraight, double size = 4d);
-    Path CreateConveyorPointPath(PathGeometry geometry, bool isLeft);
-    Line CreateConveyorSegmentLine(TwoPoints points);
-    Line CreateConveyorSegmentLaneLine(TwoPoints points);
-    Shape CreateFillet(TwoPoints points, double radius);
-    Line CreateLine(TwoPoints points);
-    Line CreateLineSegment(TwoPoints points);
-    Line CreateDebugThinLineSegment(TwoPoints points);
-    Line CreateDebugLineSegment(TwoPoints points);
+    IEllipse CreateConveyorItemEllipse();
+    void AddAdornedShapeLayer(IShape shape);
+    ILine CreateConveyorPositioningLine(TwoPoints value);
+    IShape CreatePoint(Point point);
+    IEllipse CreatePointMoveCircle(Point location, Action<IShape> moveCircleClicked);
+    IShape CreateCircle(Point center, double radius);
+    IEllipse CreateTempPoint(Point point);
+    ILine CreateTempLine(TwoPoints points);
+    void RegisterSelectBehavior(Action<IShape> selectShapeAction);
+    IEllipse CreateConveyorPointEllipse(Point point, bool isFirst, bool isLast, bool isClockwise, bool isStraight, double size = 4d);
+    IPath CreateConveyorPointPath(PathGeometry geometry, bool isLeft);
+    ILine CreateConveyorSegmentLine(TwoPoints points);
+    ILine CreateConveyorSegmentLaneLine(TwoPoints points);
+    IShape CreateFillet(TwoPoints points, double radius);
+    ILine CreateLine(TwoPoints points);
+    ILine CreateLineSegment(TwoPoints points);
+    ILine CreateDebugThinLineSegment(TwoPoints points);
+    ILine CreateDebugLineSegment(TwoPoints points);
 }
 
 public class Item : ISelectObject, IRefreshable, ITextAdornable
@@ -55,7 +52,7 @@ public class Item : ISelectObject, IRefreshable, ITextAdornable
     }
 
     public int Number { get; }
-    public Shape Shape { get; }
+    public IShape Shape { get; }
 
     private double _Age;
     public double Age => _Age;
@@ -110,7 +107,7 @@ public class Item : ISelectObject, IRefreshable, ITextAdornable
     public Point Location
     {
         get => _Location;
-        set => Func.Setter(ref _Location, value, newValue => Shape.Dispatcher.BeginInvoke(SetLocation, newValue));
+        set => Func.Setter(ref _Location, value, newValue => Conveyor.CanvasInfo.BeginInvoke(Shape, SetLocation, newValue));
     }
 
     private Point[] SelectionBoundsPoints = new Point[1];

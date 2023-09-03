@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using UILib.Shapes;
 
 namespace ConveyorApp.Inputters;
 
@@ -92,7 +93,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
         {
             if (TempLines.TryPop(out var last))
             {
-                Context.Canvas.Children.Remove(last);
+                Context.Canvas.RemoveFromCanvas(last);
             }
             if (TempLines.TryPeek(out last))
             {
@@ -112,7 +113,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
         {
             foreach (var line in TempLines)
             {
-                Context.Canvas.Children.Remove(line);
+                Context.Canvas.RemoveFromCanvas(line);
             }
             TempLines.Clear();
             InputState = InputStates.None;
@@ -137,7 +138,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
             Point lastPoint = (double.NaN, double.NaN);
             foreach (var line in TempLines.Reverse())
             {
-                Context.Canvas.Children.Remove(line);
+                Context.Canvas.RemoveFromCanvas(line);
                 line.Stroke = Brushes.Red;
                 if (line.X1 != line.X2 || line.Y1 != line.Y2)
                 {
@@ -165,7 +166,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
         }
     }
 
-    private readonly Stack<Line> TempLines = new();
+    private readonly Stack<ILine> TempLines = new();
 
     public override void HandleMouseMove(object sender, MouseEventArgs e)
     {

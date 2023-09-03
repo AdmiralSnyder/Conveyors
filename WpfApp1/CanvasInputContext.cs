@@ -6,27 +6,29 @@ using System.Windows.Input;
 using System.Windows.Shapes;
 using CoreLib;
 using UILib;
+using UILib.Shapes;
+using WpfLib;
 
 namespace ConveyorApp;
 
 public class CanvasInputContext : InputContextBase
 {
-    private Canvas _Canvas;
-    public Canvas Canvas 
+    private CanvasInfo _Canvas;
+    public CanvasInfo Canvas 
     { 
         get => _Canvas;
         set => Func.Setter(ref _Canvas, value, RegisterCanvas); 
     }
 
-    private void RegisterCanvas(Canvas oldCanvas, Canvas newCanvas)
+    private void RegisterCanvas(CanvasInfo oldCanvasInfo, CanvasInfo newCanvasInfo)
     {
-        if (oldCanvas is not null)
+        if (oldCanvasInfo is { Canvas :  { } oldCanvas})
         {
             oldCanvas.MouseDown -= HandleMouseDown;
             oldCanvas.MouseUp -= HandleMouseUp;
             oldCanvas.MouseMove -= HandleMouseMove;
         }
-        if (newCanvas is not null)
+        if (newCanvasInfo is { Canvas: { } newCanvas})
         { 
             newCanvas.MouseDown += HandleMouseDown;
             newCanvas.MouseUp += HandleMouseUp;
@@ -36,16 +38,13 @@ public class CanvasInputContext : InputContextBase
 
     public TextBlock NotesLabel { get; set; }
 
-    public override void SetCursor(Cursor cursor)
-    {
-        Canvas.Cursor = cursor;
-    }
+    public override void SetCursor(Cursor cursor) => Canvas.Canvas.Cursor = cursor;
 
     public override void CaptureMouse()
     {
         if (Canvas is { })
         {
-            Mouse.Capture(Canvas);
+            Mouse.Capture(Canvas.Canvas);
         }
     }
 
@@ -100,7 +99,7 @@ public class CanvasInputContext : InputContextBase
     private Rect snapGridWidthRectGodIHateWPF;
 
     private Point GetWindowPoint(MouseEventArgs e) => ViewModel.GetAbsolutePositionFunc(e);
-    public Point GetCanvasPoint(MouseEventArgs e) => e.GetPosition(Canvas);
+    public Point GetCanvasPoint(MouseEventArgs e) => e.GetPosition(Canvas.Canvas);
 
     public Point GetSnappedCanvasPoint(MouseEventArgs e) => SnapPoint(GetCanvasPoint(e));
 
@@ -120,23 +119,23 @@ public class CanvasInputContext : InputContextBase
     public Point SnapPoint(Point point, bool snap) => snap ? SnapPoint(point, snap, (int)ViewModel.SnapGridWidth) : point;
     public Point SnapPoint(Point point, bool snap, int snapGridWidth) => snap ? ((int)((point.X + snapGridWidth / 2) / snapGridWidth) * snapGridWidth, (int)((point.Y + snapGridWidth / 2) / snapGridWidth) * snapGridWidth) : point;
 
-    public void SetLineEnd(Line line, Point point)
+    public void SetLineEnd(ILine line, Point point)
     {
         line.X2 = point.X;
         line.Y2 = point.Y;
     }
 
-    public Line AddLine(Point from, Point to)
+    public ILine AddLine(Point from, Point to)
     {
         var line = ViewModel.ShapeProvider.CreateConveyorPositioningLine(((Point)from, (Point)to));
-        Canvas.Children.Add(line);
+        Canvas.AddToCanvas(line);
         return line;
     }
 
-    public Shape AddPoint(Point point)
+    public IShape AddPoint(Point point)
     {
         var pointShape = ViewModel.ShapeProvider.CreatePoint(point);
-        Canvas.Children.Add(pointShape);
+        Canvas.AddToCanvas(pointShape);
         return pointShape;
     }
 
@@ -165,8 +164,5 @@ public class CanvasInputContext : InputContextBase
         }
     }
 
-    internal void RemoveShape(Shape centerPointShape)
-    {
-        Canvas.Children.Remove(centerPointShape);
-    }
+    internal void RemoveShape(Shape centerPointShape) => Canvas.RemoveFromCanvas(centerPointShape);
 }

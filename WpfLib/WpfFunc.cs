@@ -3,14 +3,33 @@ using PointDef;
 using PointDef.twopoints;
 using System;
 using System.Drawing;
+using UILib.Shapes;
+using WpfLib.Shapes;
 
 namespace WpfLib;
 
+public static class ShapeFunc 
+{
+    public static IShapeFunc Instance { get; set; }
+    public static void ApplyMouseBehavior(this IShape shape, Action<IShape> behavior, MouseAction mouseAction = MouseAction.LeftClick)
+        => Instance.ApplyMouseBehavior(shape, behavior, mouseAction);
+
+}
+
+public interface IShapeFunc
+{
+    void ApplyMouseBehavior(IShape shape, Action<IShape> behavior, MouseAction mouseAction = MouseAction.LeftClick);
+}
+
+public class ShapeFuncInstanceWpf : IShapeFunc
+{
+    public void ApplyMouseBehavior(IShape shape, Action<IShape> behavior, MouseAction mouseAction = MouseAction.LeftClick)
+    => ((WpfShape)shape).BackingShape.InputBindings.Add(new MouseBinding(new MyCommand<IShape>(behavior, shape), new(mouseAction)));
+}
+
+
 public static class WpfFunc
 {
-    public static void ApplyMouseBehavior(this Shape shape, Action<Shape> behavior, MouseAction mouseAction = MouseAction.LeftClick)
-        => shape.InputBindings.Add(new MouseBinding(new MyCommand<Shape>(behavior, shape), new(mouseAction)));
-
     public static Shape SetLocationWpf(this Shape shape, Point location)
     {
         Canvas.SetLeft(shape, location.X);
@@ -45,10 +64,19 @@ public static class WpfFunc
 
 public class UIHelpersInstanceWpf : IUIHelpers
 {
-    public V2d GetSize<TShape>(TShape shape) => ((Shape)(object)shape).GetSizeWpf();
-    public TShape SetLocation<TShape>(TShape shape, Point location) => (TShape)(object)(((Shape)(object)shape).SetLocationWpf(location));
+    public V2d GetSize(IShape shape) => ((WpfShape)shape).BackingShape.GetSizeWpf();
 
-    public TShape SetLocation<TShape>(TShape shape, TwoPoints location) => (TShape)(object)(((Line)(object)shape).SetLocationWpf(location));
+    public TShape SetLocation<TShape>(TShape shape, Point location) where TShape : IShape 
+    {
+        ((WpfShape)(object)shape).BackingShape.SetLocationWpf(location);
+        return shape;
+    }
+
+    public TShape SetLocation<TShape>(TShape shape, TwoPoints location)where TShape : IShape
+    {
+        ((WpfShape<Line>)(object)shape).BackingObject.SetLocationWpf(location);
+        return shape;
+    }
 
     private TShape Modify<TShape, TArg>(TShape shape, Action<TShape, TArg> modifyFunc, TArg arg)
     {

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Shapes;
+using UILib.Shapes;
 
 namespace ConveyorApp
 {
@@ -57,7 +58,7 @@ namespace ConveyorApp
             AddToCanvas(lineSegment);
         }
 
-        private void AddToCanvas(Shape shape) => Canvas.Children.Add(shape);
+        private void AddToCanvas(IShape shape) => AddToCanvas(shape);
 
         public void SetOrigin(Point origin) => Origin = origin;
 

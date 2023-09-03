@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
+﻿using UILib.Shapes;
+//using System.Windows.Shapes;
 
 namespace ConveyorLib;
 
@@ -157,7 +154,7 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
 
     public PointLaneStrategies LaneStrategy { get; }
     public int Number { get; }
-    public Ellipse PointCircle { get; internal set; }
+    public IEllipse PointCircle { get; internal set; }
     public Conveyor Conveyor { get; }
     public LinkedListNode<ConveyorPoint> Node { get; internal set; }
     public LinkedListNode<IPathPart> ElementsNode { get; internal set; }

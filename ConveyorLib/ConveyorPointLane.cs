@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Numerics;
-using System.Windows.Controls;
+﻿using System.Diagnostics;
 using System.Windows.Media;
-using System.Windows.Shapes;
+using UILib.Shapes;
 
 namespace ConveyorLib;
 
@@ -24,7 +20,7 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
 
     public string DebugText => $"{Point.Conveyor.Number}.{Point.Number}.{Lane} ({Length:2})";
     public string Text => $"PointLane {DebugText}";
-    public Path? Arc { get; private set; }
+    public IPath? Arc { get; private set; }
     public int Lane { get; internal set; }
 
     public bool Inside { get; private set; }

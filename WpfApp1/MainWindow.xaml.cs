@@ -20,6 +20,7 @@ using ConveyorApp.Inputters;
 using CoreLib.Definition;
 using System.Windows.Controls;
 using System.Threading.Tasks;
+using UILib.Shapes;
 
 namespace ConveyorApp;
 
@@ -33,7 +34,7 @@ public partial class MainWindow
         ViewModel = new() /*{ MainWindow = this}*/;
         this.DataContext = ViewModel;
 
-        ViewModel.ShapeProvider.RegisterSelectBehaviour(SelectShapeAction);
+        ViewModel.ShapeProvider.RegisterSelectBehavior(SelectShapeAction);
 
         InitializeComponent();
 
@@ -64,7 +65,7 @@ public partial class MainWindow
         ButtonsSP.Children.Add(button);
     }
 
-    private void SelectShapeAction(Shape shape)
+    private void SelectShapeAction(IShape shape)
     {
         var mousePosition = Mouse.GetPosition(TheCanvas);
 

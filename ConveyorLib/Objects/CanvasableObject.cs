@@ -7,11 +7,10 @@ public interface ICanAddToCanvas<TCanvasInfo>
 }
 
 
-public abstract class CanvasableObject<TCanvasInfo, TCanvas, TApplication, TShape> 
+public abstract class CanvasableObject<TCanvasInfo, TApplication, TShape> 
     : ApplicationObject<TApplication>, ICanAddToCanvas<TCanvasInfo>
     where TApplication : IApplication
     where TCanvasInfo : ICanvasInfo
-    where TCanvas : class
 {
     protected TShape Shape { get; private set; }
 

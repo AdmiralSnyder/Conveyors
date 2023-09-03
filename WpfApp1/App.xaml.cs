@@ -18,6 +18,7 @@ namespace ConveyorApp
         {
             base.OnStartup(e);
             UIHelpers.Instance = new UIHelpersInstanceWpf();
+            ShapeFunc.Instance = new ShapeFuncInstanceWpf();
         }
     }
 }

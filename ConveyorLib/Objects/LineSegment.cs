@@ -1,14 +1,13 @@
-﻿using System.Windows.Controls;
-using System.Windows.Shapes;
-using CoreLib.Definition;
+﻿using CoreLib.Definition;
+using UILib.Shapes;
 
 namespace ConveyorLib.Objects;
 
-public class LineSegment : ConveyorAppApplicationObject<LineSegment, Shape, LineDefinition, TwoPoints>, ILineDefinition
+public class LineSegment : ConveyorAppApplicationObject<LineSegment, IShape, LineDefinition, TwoPoints>, ILineDefinition
 {
     public override string Text => "SomeLineSegment123";
 
     public override Vector[] GetSelectionBoundsPoints() => new[] { Definition.ReferencePoint1, Definition.ReferencePoint2 };
 
-    protected override Shape GetShape() => CanvasInfo.ShapeProvider.CreateLineSegment(Definition.RefPoints);
+    protected override IShape GetShape() => CanvasInfo.ShapeProvider.CreateLineSegment(Definition.RefPoints);
 }

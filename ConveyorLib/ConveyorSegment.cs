@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Media;
-using System.Windows.Shapes;
+﻿using UILib.Shapes;
 
 namespace ConveyorLib;
 
@@ -18,7 +15,7 @@ public class ConveyorSegment : IConveyorCanvasable, IPathPart, ISelectObject, IR
         StartEnd = startEnd;
     }
 
-    public Line? DefinitionLine { get; set; }
+    public ILine? DefinitionLine { get; set; }
 
     private TwoPoints _StartEnd;
     public TwoPoints StartEnd 

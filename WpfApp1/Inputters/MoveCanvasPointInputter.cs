@@ -6,6 +6,8 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using WpfLib;
 using ConveyorApp.Inputters;
+using UILib.Shapes;
+using WpfLib.Shapes;
 
 namespace ConveyorApp.Inputters;
 
@@ -23,9 +25,9 @@ public class MoveInputter : StatefulInputter<MoveInputter, Vector, MoveInputter.
         Context.CurrentInputter = this;
     }
 
-    private readonly List<Ellipse> MoveCircles = new();
+    private readonly List<IEllipse> MoveCircles = new();
 
-    private readonly List<Shape> MoveShapes = new();
+    private readonly List<IShape> MoveShapes = new();
 
     protected override void InputStateChanged(InputStates newValue)
     {
@@ -38,34 +40,34 @@ public class MoveInputter : StatefulInputter<MoveInputter, Vector, MoveInputter.
                 {
                     var circle = Context.ViewModel.ShapeProvider.CreatePointMoveCircle(point.Location, MoveCircleClicked);
                     circle.Tag = point;
-                    Context.Canvas.Children.Add(circle);
+                    Context.Canvas.AddToCanvas(circle);
                     MoveCircles.Add(circle);
                 }
             }
         }
     }
 
-    private void MoveCircleClicked(Shape shape)
+    private void MoveCircleClicked(IShape shape)
     {
-        if (shape is Ellipse moveCircle && moveCircle.Tag is ConveyorPoint point)
+        if (shape is IEllipse moveCircle && moveCircle.Tag is ConveyorPoint point)
         {
             const double size = 5d;
-            var newCircle = new Ellipse()
+            var newCircle = new WpfEllipse(new()
             {
                 Width = size,
                 Height = size,
                 Fill = Brushes.Yellow,
                 Tag = point,
-            };
+            });
             newCircle.SetCenterLocation(point.Location);
-            Context.Canvas.Children.Add(newCircle);
+            Context.Canvas.AddToCanvas(newCircle);
 
             MoveShapes.Add(newCircle);
             var (prev, last) = point.GetAdjacentSegments();
 
             if (prev is { })
             {
-                var prevLine = new Line()
+                var prevLine = new WpfLine(new()
                 {
                     X1 = prev.StartEnd.P1.X,
                     Y1 = prev.StartEnd.P1.Y,
@@ -73,13 +75,13 @@ public class MoveInputter : StatefulInputter<MoveInputter, Vector, MoveInputter.
                     Y2 = prev.StartEnd.P2.Y,
                     Stroke = Brushes.Yellow,
                     Tag = point,
-                };
-                Context.Canvas.Children.Add(prevLine);
+                });
+                Context.Canvas.AddToCanvas(prevLine);
                 MoveShapes.Add(prevLine);
             }
             if (last is { })
             {
-                var nextLine = new Line()
+                var nextLine = new WpfLine(new()
                 {
                     X1 = last.StartEnd.P2.X,
                     Y1 = last.StartEnd.P2.Y,
@@ -87,15 +89,15 @@ public class MoveInputter : StatefulInputter<MoveInputter, Vector, MoveInputter.
                     Y2 = last.StartEnd.P1.Y,
                     Stroke = Brushes.Yellow,
                     Tag = point,
-                };
-                Context.Canvas.Children.Add(nextLine);
+                });
+                Context.Canvas.AddToCanvas(nextLine);
                 MoveShapes.Add(nextLine);
             }
         }
 
         foreach (var circle in MoveCircles)
         {
-            Context.Canvas.Children.Remove(circle);
+            Context.Canvas.RemoveFromCanvas(circle);
         }
         MoveCircles.Clear();
 
@@ -114,7 +116,7 @@ public class MoveInputter : StatefulInputter<MoveInputter, Vector, MoveInputter.
 
         foreach (var shape in MoveShapes)
         {
-            Context.Canvas.Children.Remove(shape);
+            Context.Canvas.RemoveFromCanvas(shape);
         }
         MoveShapes.Clear();
     }
@@ -130,11 +132,11 @@ public class MoveInputter : StatefulInputter<MoveInputter, Vector, MoveInputter.
             point = Context.SnapPoint(point);
             foreach (var shape in MoveShapes)
             {
-                if (shape is Ellipse ellipse)
+                if (shape is IEllipse ellipse)
                 {
                     ellipse.SetCenterLocation(point);
                 }
-                if (shape is Line line)
+                if (shape is ILine line)
                 {
                     Context.SetLineEnd(line, point);
                 }

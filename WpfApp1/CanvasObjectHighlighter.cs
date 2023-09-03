@@ -2,13 +2,15 @@
 using System.Windows.Media;
 using System.Windows.Shapes;
 using UILib;
+using UILib.Shapes;
 using WpfLib;
+using WpfLib.Shapes;
 
 namespace ConveyorApp;
 
-public class CanvasObjectHighlighter(Canvas Canvas) : ObjectHighlighter
+public class CanvasObjectHighlighter(CanvasInfo CanvasInfo) : ObjectHighlighter
 {
-    public static CanvasObjectHighlighter Create(Canvas canvas, ISelectObject selectObject, ObjectHighlightTypes objectHighlightType = ObjectHighlightTypes.Target)
+    public static CanvasObjectHighlighter Create(CanvasInfo canvas, ISelectObject selectObject, ObjectHighlightTypes objectHighlightType = ObjectHighlightTypes.Target)
     {
         CanvasObjectHighlighter result = new(canvas)
         {
@@ -18,18 +20,18 @@ public class CanvasObjectHighlighter(Canvas Canvas) : ObjectHighlighter
         result.Highlight();
         return result;
     }
-    private Rectangle? SelectionRect;
+    private IRectangle? SelectionRect;
 
     protected override void Highlight()
     {
         if (SelectionRect is not null)
         {
-            Canvas.Children.Remove(SelectionRect);
+            CanvasInfo.RemoveFromCanvas(SelectionRect);
         }
         if (SelectObject is null) return;
 
         var boundingRect = Maths.GetBoundingRectTopLeftSize(SelectObject.GetSelectionBoundsPoints());
-        SelectionRect = new()
+        SelectionRect = new WpfRectangle(new()
         {
             Width = boundingRect.P2.X + 8,
             Height = boundingRect.P2.Y + 8,
@@ -44,8 +46,8 @@ public class CanvasObjectHighlighter(Canvas Canvas) : ObjectHighlighter
             SnapsToDevicePixels = true,
             RadiusX = 2,
             RadiusY = 2,
-        };
+        });
         SelectionRect.SetLocation(boundingRect.P1.Subtract((4, 4)));
-        Canvas.Children.Add(SelectionRect);
+        CanvasInfo.AddToCanvas(SelectionRect);
     }
 }

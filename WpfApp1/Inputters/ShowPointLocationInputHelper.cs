@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using UILib;
+using UILib.Shapes;
 using WpfLib;
 
 namespace ConveyorApp.Inputters;
@@ -11,7 +12,7 @@ namespace ConveyorApp.Inputters;
 public abstract class ShowDynamicCircleInputHelper<TThis> : ShowDynamicShapeInputHelper<TThis>
     where TThis : ShowDynamicCircleInputHelper<TThis>, new()
 {
-    protected override Shape CreateShape() => Context.ViewModel.ShapeProvider.CreateCircle(default, default);
+    protected override IShape CreateShape() => Context.ViewModel.ShapeProvider.CreateCircle(default, default);
     protected void UpdateCircle(Point center, double radius)
     {
         TmpShape.SetCenterLocation(center);
@@ -20,7 +21,7 @@ public abstract class ShowDynamicCircleInputHelper<TThis> : ShowDynamicShapeInpu
 
     }
 }
-public abstract class ShowDynamicShapeInputHelper<TThis> : ShowShapeInputHelper<TThis, Shape>
+public abstract class ShowDynamicShapeInputHelper<TThis> : ShowShapeInputHelper<TThis, IShape>
     where TThis : ShowDynamicShapeInputHelper<TThis>, new()
 {
     protected override void AttachEvents() => Context.MouseMovedInCanvas += Context_MouseMovedInCanvas;
@@ -33,6 +34,7 @@ public abstract class ShowDynamicShapeInputHelper<TThis> : ShowShapeInputHelper<
             ? System.Windows.Visibility.Visible
             : System.Windows.Visibility.Hidden;
     }
+
     protected abstract bool UpdateMousePoint(Point point);
 }
 
@@ -84,7 +86,7 @@ public class ShowCircleByDiameterInputHelper : ShowDynamicCircleInputHelper<Show
 
 public class ShowThreePointCircleOnMouseLocationInputHelper : ShowDynamicCircleInputHelper<ShowThreePointCircleOnMouseLocationInputHelper>
 {
-    protected override Shape CreateShape() => Context.ViewModel.ShapeProvider.CreateCircle(default, default);
+    protected override IShape CreateShape() => Context.ViewModel.ShapeProvider.CreateCircle(default, default);
 
     public Point Point1 { get; set; }
     public Point Point2 { get; set; }
@@ -108,20 +110,20 @@ public class ShowThreePointCircleOnMouseLocationInputHelper : ShowDynamicCircleI
     }
 }
 
-public abstract class ShowPointInputHelper<TThis> : ShowShapeInputHelper<TThis, Ellipse>
+public abstract class ShowPointInputHelper<TThis> : ShowShapeInputHelper<TThis, IEllipse>
     where TThis : ShowPointInputHelper<TThis>, new()
 {
-    protected override Ellipse CreateShape() => Context.ViewModel.ShapeProvider.CreateTempPoint(default);
+    protected override IEllipse CreateShape() => Context.ViewModel.ShapeProvider.CreateTempPoint(default);
 }
 
 public abstract class ShowShapeInputHelper<TThis, TShape> : Inputter<TThis, Unit, CanvasInputContext>
     where TThis : ShowShapeInputHelper<TThis, TShape>, new()
-    where TShape : Shape
+    where TShape : IShape
 {
     protected override void CleanupVirtual()
     {
         base.CleanupVirtual();
-        Context.Canvas.Children.Remove(_TmpShape);
+        Context.Canvas.RemoveFromCanvas(_TmpShape);
     }
 
     private TShape? _TmpShape;
@@ -135,14 +137,14 @@ public abstract class ShowShapeInputHelper<TThis, TShape> : Inputter<TThis, Unit
             if (_TmpShape is null)
             {
                 _TmpShape = CreateShape();
-                Context.Canvas.Children.Add(_TmpShape);
+                Context.Canvas.AddToCanvas(_TmpShape);
             }
             return _TmpShape;
         }
     }
 }
 
-public abstract class ShowLineFromToInputHelper<TThis> : ShowShapeInputHelper<TThis, Line>
+public abstract class ShowLineFromToInputHelper<TThis> : ShowShapeInputHelper<TThis, ILine>
 where TThis : ShowLineFromToInputHelper<TThis>, new()
 {
     private Point _StartPoint;
@@ -169,7 +171,7 @@ where TThis : ShowLineFromToInputHelper<TThis>, new()
         });
     }
 
-    protected override Line CreateShape() => Context.ViewModel.ShapeProvider.CreateTempLine(default);
+    protected override ILine CreateShape() => Context.ViewModel.ShapeProvider.CreateTempLine(default);
 }
 
 public class ShowLineFromToFixedInputHelper : ShowLineFromToInputHelper<ShowLineFromToFixedInputHelper>

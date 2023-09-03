@@ -1,8 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Windows;
-using System.Windows.Controls;
-
-using Microsoft.Extensions.DependencyInjection;
 
 namespace ConveyorLib;
 

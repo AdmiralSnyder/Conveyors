@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Shapes;
+﻿using System.Diagnostics;
+using UILib.Shapes;
 
 namespace ConveyorLib;
 
@@ -19,7 +15,7 @@ public class ConveyorSegmentLane : IConveyorCanvasable, ILanePart, IDebugText, I
         Rebuild();
     }
 
-    public Line? Line { get; private set; }
+    public ILine? Line { get; private set; }
 
     public double EndLength { get; set; }
 
