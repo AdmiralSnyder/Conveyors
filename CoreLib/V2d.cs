@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Text.Json.Serialization;
-using PointAlias = System.Windows.Point;
 
 namespace PointDef
 {
@@ -34,7 +33,6 @@ namespace PointDef
         };
 
         public static implicit operator (double, double)(V2d vect) => (vect.X, vect.Y);
-        public static implicit operator PointAlias(V2d vect) => new(vect.X, vect.Y);
 
         public Angle Angle()
         {
@@ -53,7 +51,6 @@ namespace PointDef
         }
 
         public static implicit operator V2d((double, double) tuple) => new(tuple);
-        public static implicit operator V2d(PointAlias p) => new(p.X, p.Y);
 
         public static V2d operator - (V2d a, V2d b) => new(a.X - b.X, a.Y - b.Y);
         public static V2d operator + (V2d a, V2d b) => new(a.X + b.X, a.Y + b.Y);

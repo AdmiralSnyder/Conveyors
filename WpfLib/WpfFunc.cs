@@ -30,6 +30,9 @@ public class ShapeFuncInstanceWpf : IShapeFunc
 
 public static class WpfFunc
 {
+    public static V2d AsPoint(this System.Windows.Point point) => (point.X, point.Y);
+    public static System.Windows.Point AsPoint(this V2d point) => new(point.X, point.Y);
+
     public static Shape SetLocationWpf(this Shape shape, Point location)
     {
         Canvas.SetLeft(shape, location.X);

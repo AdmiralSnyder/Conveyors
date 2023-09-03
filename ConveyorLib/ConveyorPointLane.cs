@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Windows.Media;
 using UILib.Shapes;
 
 namespace ConveyorLib;
@@ -45,7 +44,7 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
     }
 
     private TwoPoints ArcStartEnd { get; set; }
-    private PathGeometry ArcGeometry { get; set; } = new();
+    private IPathGeometry ArcGeometry { get; set; } = canvasInfo.ShapeProvider.CreatePathGeometry();
 
     private Point[] SelectionBoundsPoints = new Point[2];
     public Point[] GetSelectionBoundsPoints() => SelectionBoundsPoints;

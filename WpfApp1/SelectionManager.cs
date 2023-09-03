@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using UILib;
+using WpfLib;
 
 namespace ConveyorApp;
 
@@ -74,7 +75,7 @@ public abstract class ChooseObjectManager : INotifyPropertyChangedImpl, IRefresh
 
             UpdateBoundingBox(value);
             RefreshManager<ISelectable>.RegisterObserver(this, value);
-            ChosenObjectChanged?.Invoke(this, new((ChosenObject, MousePosition)));
+            ChosenObjectChanged?.Invoke(this, new((ChosenObject, MousePosition.AsPoint())));
         });
     }
 

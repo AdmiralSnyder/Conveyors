@@ -1,5 +1,4 @@
-﻿using System.Windows.Shapes;
-using UILib.Shapes;
+﻿using UILib.Shapes;
 
 namespace ConveyorLib;
 

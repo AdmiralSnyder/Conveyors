@@ -8,21 +8,25 @@ public class WpfShape : IShape, ITag
     protected WpfShape(Shape backingShape) => BackingShape = backingShape;
 
     public Shape BackingShape { get; }
-    public Visibility Visibility 
+
+    public bool Visible
     {
-        get => BackingShape.Visibility;
-        set => BackingShape.Visibility = value;
+        get => BackingShape.Visibility == Visibility.Visible;
+        set => BackingShape.Visibility = value ? Visibility.Visible : Visibility.Hidden;
     }
+
     public object Tag 
     {
         get => BackingShape.Tag;
         set => BackingShape.Tag = value;
     }
+
     public double Height
     {
         get => BackingShape.Height;
         set => BackingShape.Height = value;
     }
+
     public double Width 
     {
         get => BackingShape.Width;

@@ -39,7 +39,7 @@ public partial class MainWindow
         InitializeComponent();
 
         ViewModel.TheCanvas = TheCanvas;
-        ViewModel.GetAbsolutePositionFunc = e => e.GetPosition(this);
+        ViewModel.GetAbsolutePositionFunc = e => e.GetPosition(this).AsPoint();
         
         ViewModel.CreationCommandManager.AddCommands(AddActionButton);
 

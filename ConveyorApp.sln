@@ -28,7 +28,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConveyorLib", "ConveyorLib\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UILib", "UILib\UILib.csproj", "{CA5DECF8-F354-4087-8496-9C0517E3A8C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConveyorLib.Wpf", "ConveyorLib.Wpf\ConveyorLib.Wpf.csproj", "{D134DC42-8D80-46CD-862F-A290F78A22F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConveyorLib.Wpf", "ConveyorLib.Wpf\ConveyorLib.Wpf.csproj", "{D134DC42-8D80-46CD-862F-A290F78A22F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConveyorAppBlazor", "ConveyorAppBlazor\ConveyorAppBlazor.csproj", "{9C5B7105-A755-4300-9029-8D7ECF71367E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,6 +70,10 @@ Global
 		{D134DC42-8D80-46CD-862F-A290F78A22F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D134DC42-8D80-46CD-862F-A290F78A22F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D134DC42-8D80-46CD-862F-A290F78A22F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C5B7105-A755-4300-9029-8D7ECF71367E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C5B7105-A755-4300-9029-8D7ECF71367E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C5B7105-A755-4300-9029-8D7ECF71367E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C5B7105-A755-4300-9029-8D7ECF71367E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

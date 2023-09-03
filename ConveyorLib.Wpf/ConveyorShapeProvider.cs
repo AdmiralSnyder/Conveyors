@@ -1,6 +1,7 @@
 ﻿using System.Windows.Shapes;
 using WpfLib;
 using System.Windows.Media;
+using SDColor = System.Drawing.Color;
 using System.Windows.Input;
 using System.Windows.Documents;
 using UILib.Shapes;
@@ -34,14 +35,14 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
     public ILine CreateTempLine(TwoPoints points)
     {
         var line = PrepareLine(points);
-        line.Stroke = Brushes.Magenta;
+        line.StrokeColor = SDColor.Magenta;
         return line;
     }
 
     public ILine CreateConveyorPositioningLine(TwoPoints points)
     {
         var line = PrepareLine(points);
-        line.Stroke = Brushes.Black;
+        line.StrokeColor = SDColor.Black;
         line.StrokeThickness = 2;
         return line;
     }
@@ -49,7 +50,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
     public ILine CreateConveyorSegmentLine(TwoPoints points)
     {
         var line = PrepareLine(points);
-        line.Stroke = Brushes.Red;
+        line.StrokeColor = SDColor.Red;
         line.StrokeThickness = 2;
         return line;
     }
@@ -57,7 +58,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
     public ILine CreateLineSegment(TwoPoints points)
     {
         var line = PrepareLine(points);
-        line.Stroke = Brushes.Beige;
+        line.StrokeColor = SDColor.Beige;
         line.StrokeThickness = 2;
         return line;
     }
@@ -65,7 +66,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
     public ILine CreateDebugLineSegment(TwoPoints points)
     {
         var line = PrepareLine(points);
-        line.Stroke = Brushes.Magenta;
+        line.StrokeColor = SDColor.Magenta;
         line.StrokeThickness = 1.5;
         return line;
     }
@@ -73,7 +74,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
     public ILine CreateDebugThinLineSegment(TwoPoints points)
     {
         var line = PrepareLine(points);
-        line.Stroke = Brushes.Magenta;
+        line.StrokeColor = SDColor.Magenta;
         line.StrokeThickness = 0.5;
         return line;
     }
@@ -93,7 +94,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
 
         }
         var line = PrepareLine((start, end));
-        line.Stroke = Brushes.Beige;
+        line.StrokeColor = SDColor.Beige;
         line.StrokeThickness = 2;
         return line;
     }
@@ -101,7 +102,7 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
     public ILine CreateConveyorSegmentLaneLine(TwoPoints points)
     {
         var line = PrepareLine(points);
-        line.Stroke = Brushes.White;
+        line.StrokeColor = SDColor.White;
         line.StrokeThickness = 1;
         return line;
     }
@@ -162,12 +163,14 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
 
         pg.Figures.Add(new()
         {
-            StartPoint = points.P1,
-            Segments = { new ArcSegment(points.P2, new(radius, radius), 0, false, SweepDirection.Clockwise, true) }
+            StartPoint = points.P1.AsPoint(),
+            Segments = { new ArcSegment(points.P2.AsPoint(), new(radius, radius), 0, false, SweepDirection.Clockwise, true) }
         });
 
         return CreateCircleSectorArc(pg, true);
     }
+
+    public IPathGeometry CreatePathGeometry() => new WpfPathGeometry(new());
 
     public void AddAdornedShapeLayer(IShape shape)
     {
