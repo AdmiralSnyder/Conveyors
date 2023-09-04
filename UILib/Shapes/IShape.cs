@@ -2,9 +2,6 @@
 
 namespace UILib.Shapes;
 
-public interface IPathGeometry
-{  }
-
 public interface IShape : ITag
 {
     bool Visible { get; set; }

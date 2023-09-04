@@ -44,7 +44,7 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
     }
 
     private TwoPoints ArcStartEnd { get; set; }
-    private IPathGeometry ArcGeometry { get; set; } = canvasInfo.ShapeProvider.CreatePathGeometry();
+    private IPathGeometry ArcGeometry { get; set; } = GeometryProvider.CreatePathGeometry();
 
     private Point[] SelectionBoundsPoints = new Point[2];
     public Point[] GetSelectionBoundsPoints() => SelectionBoundsPoints;
@@ -65,15 +65,11 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
         ((ISelectObject)this).SetSelectionPoints(prevEnd, nextStart);
         // TODO add 3rd
 
-        ArcGeometry.Figures.Clear();
+        ArcGeometry.ClearFigures();
 
         if (Point.LaneStrategy == PointLaneStrategies.StraightLineSegment)
         {
-            ArcGeometry.Figures.Add(new()
-            {
-                StartPoint = prevEnd,
-                Segments = { new LineSegment(nextStart, true) }
-            });
+            ArcGeometry.AddLineFigure(prevEnd, nextStart);
             Length = new TwoPoints(prevEnd, nextStart).Length();
         }
         else if (Point.LaneStrategy == PointLaneStrategies.Curve)
@@ -96,11 +92,11 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
             var (largeArc, swDir) = (clockwise, IsLeft) switch
             {
                 // TODO inside
-                (true, true) => (false, SweepDirection.Counterclockwise), // left turn, left side, bad
-                (true, false) => (false, SweepDirection.Counterclockwise),  // right turn, right side, bad
+                (true, true) => (false, ArcSweepDirections.CounterClockwise), // left turn, left side, bad
+                (true, false) => (false, ArcSweepDirections.CounterClockwise),  // right turn, right side, bad
                                                                             // outside
-                (false, true) => (false, SweepDirection.Clockwise), // right turn, left side, good
-                (false, false) => (false, SweepDirection.Clockwise), // left turn, right side, good
+                (false, true) => (false, ArcSweepDirections.Clockwise), // right turn, left side, good
+                (false, false) => (false, ArcSweepDirections.Clockwise), // left turn, right side, good
             };
 
             if (Inside)
@@ -172,11 +168,7 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
                     }
                     var ActEnd = (end - CrossStart) - CrossEnd;
 
-                    ArcGeometry.Figures.Add(new()
-                    {
-                        StartPoint = ActStart,
-                        Segments = { new ArcSegment(ActEnd, new(radius, radius), Point.Angle.Degrees, largeArc, swDir, true) }
-                    });
+                    ArcGeometry.AddArcFigure(ActStart, ActEnd, radius, Point.Angle.Degrees, largeArc, swDir);
 
                     if (ElementsNode.Previous?.Value is ConveyorSegmentLane prevSegLane)
                     {
@@ -191,11 +183,7 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
             }
             else
             {
-                ArcGeometry.Figures.Add(new()
-                {
-                    StartPoint = prevEnd,
-                    Segments = { new ArcSegment(nextStart, new(radius, radius), Point.Angle.Degrees, largeArc, swDir, true) }
-                });
+                ArcGeometry.AddArcFigure(prevEnd, nextStart, radius, Point.Angle.Degrees, largeArc, swDir);
             }
 
 

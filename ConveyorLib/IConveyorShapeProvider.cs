@@ -22,6 +22,4 @@ public interface IConveyorShapeProvider : IShapeProvider
     ILine CreateLineSegment(TwoPoints points);
     ILine CreateDebugThinLineSegment(TwoPoints points);
     ILine CreateDebugLineSegment(TwoPoints points);
-
-    IPathGeometry CreatePathGeometry();
 }

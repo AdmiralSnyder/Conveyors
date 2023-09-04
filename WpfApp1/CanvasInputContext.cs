@@ -99,7 +99,7 @@ public class CanvasInputContext : InputContextBase
     private Rect snapGridWidthRectGodIHateWPF;
 
     private Point GetWindowPoint(MouseEventArgs e) => ViewModel.GetAbsolutePositionFunc(e);
-    public Point GetCanvasPoint(MouseEventArgs e) => e.GetPosition(Canvas.Canvas);
+    public Point GetCanvasPoint(MouseEventArgs e) => e.GetPosition(Canvas.Canvas).AsPoint();
 
     public Point GetSnappedCanvasPoint(MouseEventArgs e) => SnapPoint(GetCanvasPoint(e));
 

@@ -28,12 +28,7 @@ public abstract class ShowDynamicShapeInputHelper<TThis> : ShowShapeInputHelper<
     protected override void DetachEvents() => Context.MouseMovedInCanvas -= Context_MouseMovedInCanvas;
 
     private void Context_MouseMovedInCanvas(object sender, MouseEventArgs e)
-    {
-        var point = Context.GetSnappedCanvasPoint(e);
-        TmpShape.Visible = UpdateMousePoint(point)
-            ? System.Windows.Visibility.Visible
-            : System.Windows.Visibility.Hidden;
-    }
+        => TmpShape.Visible = UpdateMousePoint(Context.GetSnappedCanvasPoint(e));
 
     protected abstract bool UpdateMousePoint(Point point);
 }

@@ -121,10 +121,9 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
     }).SetCenterLocation(point).WithSelectBehaviour();
 
 
-    // TODO Eliminate PathGeometry here.
-    public IPath CreateConveyorPointPath(PathGeometry geometry, bool isLeft) => new WpfPath(new()
+    public IPath CreateConveyorPointPath(IPathGeometry geometry, bool isLeft) => new WpfPath(new()
     {
-        Data = geometry,
+        Data = ((WpfPathGeometry)geometry).BackingObject,
         Stroke = isLeft ? Brushes.Plum : Brushes.Tomato,
     }).WithSelectBehaviour();
 
@@ -170,7 +169,6 @@ public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
         return CreateCircleSectorArc(pg, true);
     }
 
-    public IPathGeometry CreatePathGeometry() => new WpfPathGeometry(new());
 
     public void AddAdornedShapeLayer(IShape shape)
     {

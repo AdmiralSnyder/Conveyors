@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -139,7 +140,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
             foreach (var line in TempLines.Reverse())
             {
                 Context.Canvas.RemoveFromCanvas(line);
-                line.Stroke = Brushes.Red;
+                line.StrokeColor = System.Drawing.Color.Red;
                 if (line.X1 != line.X2 || line.Y1 != line.Y2)
                 {
                     AddPoint((line.X1, line.Y1));

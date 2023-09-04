@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using ConveyorLib.Wpf;
 using WpfLib;
 
 namespace ConveyorApp
@@ -19,6 +20,7 @@ namespace ConveyorApp
             base.OnStartup(e);
             UIHelpers.Instance = new UIHelpersInstanceWpf();
             ShapeFunc.Instance = new ShapeFuncInstanceWpf();
+            GeometryProvider.Instance = new GeometryProviderInstanceWpf();
         }
     }
 }
