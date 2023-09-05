@@ -1,3 +1,3 @@
-﻿namespace ConveyorLib;
+﻿namespace CoreLib;
 
 public interface IApplication { }

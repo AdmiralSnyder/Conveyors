@@ -1,4 +1,4 @@
-﻿namespace ConveyorLib;
+﻿namespace CoreLib;
 
 public interface IAppObject { }
 
