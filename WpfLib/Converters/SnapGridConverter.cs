@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
 
-namespace ConveyorApp;
+namespace WpfLib.Converters;
 
-public class SnapGridConverter : IMultiValueConverter
+public class SnapGridConverter : ConverterBase<SnapGridConverter>, IMultiValueConverter
 {
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
@@ -20,7 +20,7 @@ public class SnapGridConverter : IMultiValueConverter
         {
             var x = (int)xd;
             var y = (int)yd;
-            
+
             x /= spacing;
             y /= spacing;
             x++;
@@ -28,7 +28,7 @@ public class SnapGridConverter : IMultiValueConverter
             var res = new Point[x * y];
             for (int i = 0; i < x; i++)
             {
-                for(int j = 0; j < y; j++)
+                for (int j = 0; j < y; j++)
                 {
                     res[i * y + j] = new Point(i * spacing - 0.5, j * spacing - 0.5);
                 }

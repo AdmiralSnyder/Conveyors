@@ -45,7 +45,6 @@
 	<ItemGroup>
 		<PackageReference Include="AvalonEdit" Version="6.3.0.90" />
 		<PackageReference Include="Gu.Wpf.GridExtensions" Version="0.1.1" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.7.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -56,6 +55,7 @@
 		<ProjectReference Include="..\ConveyorLib\ConveyorLib.csproj" />
 		<ProjectReference Include="..\CoreLib\CoreLib.csproj" />
 		<ProjectReference Include="..\GenerationLib\GenerationLib.csproj" />
+		<ProjectReference Include="..\ScriptingLib\ScriptingLib.csproj" />
 		<ProjectReference Include="..\UILib\UILib.csproj" />
 		<ProjectReference Include="..\WpfLib\WpfLib.csproj" />
 	</ItemGroup>

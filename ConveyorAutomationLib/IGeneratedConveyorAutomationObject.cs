@@ -3,7 +3,7 @@ using ConveyorLib;
 using ConveyorLib.Objects;
 using System.Collections.Generic;
 
-namespace ConveyorApp;
+namespace ConveyorAutomationLib;
 
 // todo move IGeneratedConveyorAutomationObject here once there's a solution in #roslyn
 

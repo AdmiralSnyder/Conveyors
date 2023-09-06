@@ -21,6 +21,7 @@ using CoreLib.Definition;
 using System.Windows.Controls;
 using System.Threading.Tasks;
 using UILib.Shapes;
+using ScriptingLib;
 
 namespace ConveyorApp;
 
@@ -40,10 +41,16 @@ public partial class MainWindow
 
         ViewModel.TheCanvas = TheCanvas;
         ViewModel.GetAbsolutePositionFunc = e => e.GetPosition(this).AsPoint();
-        
+
         ViewModel.CreationCommandManager.AddCommands(AddActionButton);
 
-        ScriptRunner.InitializeScriptingEnvironment(ViewModel.AutoRoot, Dispatcher, RunB);
+        ScriptRunner.InitializeScriptingEnvironment(ViewModel.AutoRoot, 
+            async () => await RunB.Dispatcher.InvokeAsync(() => RunB.IsEnabled = true),
+            async () => await Dispatcher.InvokeAsync(() => Mouse.OverrideCursor = Cursors.Wait),
+            async () => await Dispatcher.InvokeAsync(() => Mouse.OverrideCursor = null),
+            ex => MessageBox.Show(ex.ToString(), "Error running script"),
+        new[] { typeof(Point), typeof(ConveyorAutomationLib.ConveyorAutomationObject) }, 
+        new[] { typeof(Point), typeof(ConveyorAutomationLib.ConveyorAutomationObject) });
 
         ViewModel.LogAction = async s => await textEditor2.Dispatcher.InvokeAsync(() => textEditor2.AppendText(s + Environment.NewLine));
 
@@ -57,11 +64,12 @@ public partial class MainWindow
     {
         var button = new Button()
         {
-            Content = commandName == "Add Line Segment" 
-                ? Resources["AddLineSegmentButtonContent"] 
-                : caption ?? commandName, 
-            ToolTip = commandName };
-        button.Click += async (s, e) => await commandAction(); 
+            Content = commandName == "Add Line Segment"
+                ? Resources["AddLineSegmentButtonContent"]
+                : caption ?? commandName,
+            ToolTip = commandName
+        };
+        button.Click += async (s, e) => await commandAction();
         ButtonsSP.Children.Add(button);
     }
 
@@ -71,7 +79,7 @@ public partial class MainWindow
 
         if (shape.Tag is ISelectObject selectObject)
         {
-            if (ViewModel.InputPickManager is { IsActive : true} inpMgr)
+            if (ViewModel.InputPickManager is { IsActive: true } inpMgr)
             {
                 inpMgr.MousePosition = mousePosition;
                 if (inpMgr.QueryCanPickObject(selectObject))
@@ -114,7 +122,7 @@ public partial class MainWindow
 
     #endregion
 
-    
+
 
     // TODO put the zoom functionality into a behavior
     private void TheCanvas_MouseWheel(object sender, MouseWheelEventArgs e)

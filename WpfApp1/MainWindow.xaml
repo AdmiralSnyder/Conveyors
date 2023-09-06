@@ -24,8 +24,6 @@
     <!--DataContext="{Binding RelativeSource={RelativeSource Self}}"--> 
 
     <Window.Resources>
-        <local:SnapGridConverter x:Key="SnapGridConverter" />
-        <!--<conv:MultiConverter x:Key="Convi" />-->
         <Brush x:Key="SplitterColor">red</Brush>
         <Brush x:Key="BackgroundColor">green</Brush>
         <system:Double x:Key="SplitterSize">5</system:Double>
@@ -208,7 +206,7 @@
                                   ItemsSource="{mx:MultiBinding {Binding ElementName=TheCanvas, Path=ActualWidth},
                                                                 {Binding ElementName=TheCanvas, Path=ActualHeight},
                                                                 {Binding Path=SnapGridWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}},
-                                                                Converter={StaticResource SnapGridConverter}}"
+                                                                Converter= {conv:SnapGridConverter}}"
                                   Visibility="Visible">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>

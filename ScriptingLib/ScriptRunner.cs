@@ -10,14 +10,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Threading;
 
-namespace ConveyorApp;
+namespace ScriptingLib;
 
-internal class ScriptRunner
+public class ScriptRunner
 {
     private ScriptGlobalsBase Globals;
     private Script Script;
@@ -25,28 +21,34 @@ internal class ScriptRunner
 
     private Type TheObjectType;
 
-    private Dispatcher Dispatcher;
+    private Action? BeforeExecAction;
+    private Action? AfterExecAction;
+    private Action<Exception>? ErrorAction;
 
-    public void InitializeScriptingEnvironment<TRootObj>(TRootObj automationRoot, Dispatcher dispatcher, Button? runButton = null)
+    public void InitializeScriptingEnvironment<TRootObj>(TRootObj automationRoot, 
+        Action? initDoneAction, 
+        Action? beforeExecAction, Action? afterExecAction, Action<Exception>? errorAction, 
+        Type[] namespaceTypes, Type[] assemblyTypes)
     {
-        Dispatcher = dispatcher;
-
+        BeforeExecAction = beforeExecAction; 
+        AfterExecAction = afterExecAction;
+        ErrorAction = errorAction;
         using var loader = new InteractiveAssemblyLoader();
 
         Globals = new ScriptGlobals<TRootObj>() { TheObject = automationRoot };
         TheObjectType = typeof(TRootObj);
         var globalsType = typeof(ScriptGlobals<TRootObj>);
-        Script = CSharpScript.Create("", ScriptOptions.Default.AddImports(globalsType.Namespace, typeof(Point).Namespace)
-            .AddReferences(typeof(ScriptGlobals<TRootObj>).Assembly, typeof(Point).Assembly),
+        Script = CSharpScript.Create("", ScriptOptions.Default
+            .AddImports(globalsType.Namespace)
+            .AddImports(namespaceTypes.Select(t => t.Namespace))
+            .AddReferences(typeof(ScriptGlobals<TRootObj>).Assembly)
+            .AddReferences(assemblyTypes.Select(t => t.Assembly)),
             globalsType, loader);
 
         InitScriptTask = Task.Run(async () =>
         {
             await Script.RunAsync(Globals);
-            if (runButton is { })
-            {
-                await runButton.Dispatcher.InvokeAsync(() => runButton.IsEnabled = true);
-            }
+            initDoneAction?.Invoke();
         });
     }
 
@@ -88,7 +90,7 @@ return true;
             {
                 if (File.Exists(file))
                 {
-                    var fullFile = System.IO.Path.GetFullPath(file);
+                    var fullFile = Path.GetFullPath(file);
                     existingFiles.Add(fullFile);
                 }
                 else
@@ -97,28 +99,38 @@ return true;
                 }
             }
 
-            this.Script.Options.AddReferences(existingFiles.ToArray());
+            Script.Options.AddReferences(existingFiles.ToArray());
             var script = Script.ContinueWith(classDefinition);
-            await Task.Run(async () => await Dispatcher.InvokeAsync(async () =>
+            BeforeExecAction?.Invoke();
+            try
             {
-                try
-                {
-                    Mouse.OverrideCursor = Cursors.Wait;
+                var x = await script.ContinueWith<bool>($"foo.Execute(TheObject)").RunAsync(Globals);
+            }
+            catch (Exception ex)
+            {
+                ErrorAction?.Invoke(ex);
+            }
+            AfterExecAction?.Invoke();
+            //await Task.Run(async () => await Dispatcher.InvokeAsync(async () =>
+            //{
+            //    try
+            //    {
+            //        beforee
+            //        Mouse.OverrideCursor = Cursors.Wait;
 
-                    try
-                    {
-                        var x = await script.ContinueWith<bool>($"foo.Execute(TheObject)").RunAsync(Globals);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.ToString(), "Error running script");
-                    }
-                }
-                finally
-                {
-                    Mouse.OverrideCursor = null;
-                }
-            }));
+            //        try
+            //        {
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            MessageBox.Show(ex.ToString(), "Error running script");
+            //        }
+            //    }
+            //    finally
+            //    {
+            //        Mouse.OverrideCursor = null;
+            //    }
+            //}));
         }
     }
 }
