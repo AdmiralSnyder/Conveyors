@@ -1,29 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CoreLib;
-
-public struct Unit
-{ }
-
-public class EventArgs<T> : EventArgs
-{
-    public T Data { get; set; }
-
-    public EventArgs(T data) => Data = data;
-}
-
-public abstract class INotifyPropertyChangedImpl : INotifyPropertyChanged
-{
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected internal void OnPropertyChanged([CallerMemberName] string name = "INVALID") => PropertyChanged?.Invoke(this, new(name));
-}
 
 public static class Func
 {

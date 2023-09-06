@@ -13,11 +13,6 @@ public interface IListNode<T>
     public LinkedListNode<T> Node { get; }
 }
 
-public interface IAutomationOutByID
-{
-    string ID { get; }
-}
-
 public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IElementsNode<IPathPart>, IListNode<ConveyorPoint>, IRefreshable, IAutomationOutByID
 {
     public string ID => $"{Conveyor.Number}.{Number}";

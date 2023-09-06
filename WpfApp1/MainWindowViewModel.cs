@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ConveyorAutomationLib;
 using ConveyorLib;
 using ConveyorLib.Wpf;
 using CoreLib;
@@ -50,14 +51,16 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
     //// TODO needs to be deleted
     //public MainWindow MainWindow { get; set; }
 
+    public IConveyorCanvasInfo CanvasInfo { get; private set; }
     public Canvas TheCanvas
     {
         get => _TheCanvas;
         set => Func.Setter(ref _TheCanvas, value, theCanvas =>
         {
+            CanvasInfo = new ConveyorCanvasInfo() { Canvas = theCanvas, ShapeProvider = ShapeProvider };
             InputContext = new CanvasInputContext()
             {
-                Canvas = new() { Canvas = theCanvas },
+                Canvas = (WpfLib.CanvasInfo)CanvasInfo,
 
                 ViewModel = this,
                 //MainWindow = MainWindow,
@@ -74,7 +77,7 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
 
             AutoRoot = ConveyorAutomationObject.CreateAutomationObject(out var context);
             
-            AutoRoot.Init((TheCanvas, ShapeProvider));
+            AutoRoot.Init(CanvasInfo);
 
             CreationCommandManager.InputContext = InputContext;
             CreationCommandManager.AutoRoot = AutoRoot;

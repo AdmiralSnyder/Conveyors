@@ -1,12 +1,11 @@
-﻿using ConveyorLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace ConveyorApp;
+namespace ConveyorLib.TypeResolvers;
 
 public class StorageObjectTypeResolver : DefaultJsonTypeInfoResolver
 {
@@ -29,7 +28,7 @@ public class StorageObjectTypeResolver : DefaultJsonTypeInfoResolver
         if (jsonTypeInfo.Type == typeof(StorageObject))
         {
             var derivedTypes = GetDerivedStorageObjects();
-            
+
             jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
             {
                 TypeDiscriminatorPropertyName = "$AppObjectType",

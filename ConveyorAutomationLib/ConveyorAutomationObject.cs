@@ -1,17 +1,14 @@
 ﻿using ConveyorLib;
 using ConveyorLib.Objects;
-using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Controls;
-using WpfLib;
 using System.Text.Json;
 using System.IO;
-using ConveyorLib.Wpf;
 using AutomationLib;
 using CoreLib;
 using GenerationLib;
+using ConveyorLib.TypeResolvers;
 
-namespace ConveyorApp;
+namespace ConveyorAutomationLib;
 
 public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomationFeatures
 {
@@ -58,9 +55,8 @@ public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppAppli
     [Generated]
     public void Init(object obj)
     {
-        var tuple = ((Canvas Canvas, IConveyorShapeProvider ShapeProvider))obj;
         Conveyors = new();
-        CanvasInfo = new ConveyorCanvasInfo() { Canvas = tuple.Canvas, ShapeProvider = tuple.ShapeProvider};
+        CanvasInfo = (IConveyorCanvasInfo)obj;
     }
 
     public partial Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes)

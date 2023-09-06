@@ -1,12 +1,11 @@
-﻿using ConveyorLib;
-using ConveyorLib.Objects;
+﻿using ConveyorLib.Objects;
 using CoreLib;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace ConveyorApp;
+namespace ConveyorLib.TypeResolvers;
 
 public class PolymorphicTypeResolver : DefaultJsonTypeInfoResolver
 {

@@ -69,7 +69,6 @@ public class AutoRootGenerator : IIncrementalGenerator
 
         AutomationClassInfo GetAutomationTypeInfo3(ClassDeclarationSyntax targetNode, SemanticModel semanticModel, ITypeSymbol automationInterface, CancellationToken ct)
         {
-
             MemberDeclarationSyntax ModifyMember(MemberDeclarationSyntax member)
             {
                 member = FullyQualifyTypes(member);
@@ -136,7 +135,11 @@ public class AutoRootGenerator : IIncrementalGenerator
                 return memberDeclarationSyntaxNode;
             }
 
-            var members = (automationInterface.DeclaringSyntaxReferences.First().GetSyntax() as InterfaceDeclarationSyntax).Members.Select(ModifyMember);
+            var members = automationInterface.GetMembers()
+                .Select(m => m.DeclaringSyntaxReferences.FirstOrDefault().GetSyntax() as MemberDeclarationSyntax)
+                .Where(x => x is not null)
+                .Select(ModifyMember);
+            //DELETE//automationInterface.DeclaringSyntaxReferences.First().GetSyntax() as InterfaceDeclarationSyntax).Members.Select(ModifyMember);
             var membersTexts = (members.Select(x => x.ToFullString()));
             //members = members.WithLeadingTrivia(SyntaxFactory.Comment("KEKSE"));
             //var interfaceSymbol = gasc.SemanticModel.GetDeclaredSymbol(interfaceSyntaxNode);
@@ -197,10 +200,10 @@ public class AutoRootGenerator : IIncrementalGenerator
 
 
 
-                    public partial class Automation{{tuple.TargetClassName}}<TWrapper> : {{tuple.Interface}}, IAutomationRoot, IAutomationContext
-                    where TWrapper : {{tuple.Interface}}, IAutomationRoot, new()
+                    public partial class Automation{{tuple.TargetClassName}}<TWrapped> : {{tuple.Interface}}, IAutomationRoot, IAutomationContext
+                    where TWrapped : {{tuple.Interface}}, IAutomationRoot, new()
                     {
-                        private TWrapper AutomationObject { get; } = new();
+                        private TWrapped AutomationObject { get; } = new();
                     
                         public void Init(object obj) => AutomationObject.Init(obj);
 

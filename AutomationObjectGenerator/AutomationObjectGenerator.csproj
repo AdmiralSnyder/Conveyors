@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   <LangVersion>preview</LangVersion>
-    <AssemblyName>AutomationObjectGenerator.21</AssemblyName>
+    <AssemblyName>AutomationObjectGenerator.24</AssemblyName>
     <GenerateAssemblyNameAttribute>false</GenerateAssemblyNameAttribute>
   </PropertyGroup>
 

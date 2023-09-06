@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\GlobalUsings.cs" Link="GlobalUsings.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AutomationLib\AutomationLib.csproj" />
+    <ProjectReference Include="..\AutomationObjectGenerator\AutomationObjectGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\ConveyorLib\ConveyorLib.csproj" />
+    <ProjectReference Include="..\GenerationLib\GenerationLib.csproj" />
+  </ItemGroup>
+</Project>

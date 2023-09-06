@@ -1,1 +1,1 @@
-ConveyorApp
+ConveyorAutomationLib

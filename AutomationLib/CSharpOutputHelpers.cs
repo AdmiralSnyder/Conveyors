@@ -1,10 +1,10 @@
-﻿using ConveyorLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
+using CoreLib;
 
-namespace ConveyorApp;
+namespace AutomationLib;
 
 public static class CSharpOutputHelpers
 {
