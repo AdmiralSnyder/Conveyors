@@ -1,7 +1,34 @@
-﻿<canvas>
-</canvas>
+﻿
 
+@using Blazor.Extensions.Canvas
+@using Blazor.Extensions;
+@using ConveyorLib.Objects;
+kekse
+ <BECanvas Width="500" Height="500" @ref=TheCanvas/> 
+kekse2
+@code 
+{
+    protected override Task OnInitializedAsync()
+    {
+        return base.OnInitializedAsync();
+    }
+    private BECanvasComponent TheCanvas { get; set; }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+    //     var ctx = await TheCanvas.CreateCanvas2DAsync();
+    //     await ctx.SetFillStyleAsync("green");
 
-@code {
-    
+    // await ctx.FillRectAsync(10, 100, 100, 100);
+    // await ctx.SetFontAsync("48px serif");
+    // await ctx.StrokeTextAsync("Hello Blazor!!!", 10, 100);
+        // foreach (var obj in AppContent.CanvasInfo.Canvas.Children)
+        // {
+        //     obj.Draw(ctx);
+        // }
+    }
 }

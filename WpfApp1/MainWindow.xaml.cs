@@ -22,6 +22,7 @@ using System.Windows.Controls;
 using System.Threading.Tasks;
 using UILib.Shapes;
 using ScriptingLib;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace ConveyorApp;
 
@@ -163,12 +164,11 @@ public partial class MainWindow
 
     private readonly ScriptRunner ScriptRunner = new();
 
-    private void HappyBirthdayRubyB_Click(object sender, RoutedEventArgs e) => WriteString("R");
-    //WriteString("""
-    //HAPPY
-    //BIRTHDAY
-    //RUBY
-    //""");
+    private void HappyBirthdayRubyB_Click(object sender, RoutedEventArgs e) => WriteString("""
+    HAPPY
+    BIRTHDAY
+    RUBY
+    """);
 
     private void WriteString(string text) => WriteStrings(text.Split(Environment.NewLine));
 
@@ -216,5 +216,12 @@ public partial class MainWindow
         {
             ViewModel.SelectionManager.ToggleSelectMode();
         }
+    }
+
+    private async void SendB_Click(object sender, RoutedEventArgs e)
+    {
+        var conn = new HubConnectionBuilder().WithUrl("http://localhost:5262/conveyorhub").Build();
+        await conn.StartAsync();
+        await conn.SendAsync("SendMessage", "Hello", textEditor.Text);
     }
 }

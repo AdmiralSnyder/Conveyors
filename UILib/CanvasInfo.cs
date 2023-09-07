@@ -16,7 +16,7 @@ public interface ICanvasInfo<TCanvas> : ICanvasInfo
 public abstract class CanvasInfo<TCanvas> : ICanvasInfo<TCanvas>
 {
     public TCanvas Canvas { get; set; }
-
+    public IShapeProvider ShapeProvider { get; set; }
     public abstract TShape AddToCanvas<TShape>(TShape shape);
     public abstract void BeginInvoke<T>(IShape shape, Action<T> action, T value);
     public abstract TShape RemoveFromCanvas<TShape>(TShape shape);

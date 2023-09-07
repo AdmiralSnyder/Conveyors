@@ -60,7 +60,7 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
             CanvasInfo = new ConveyorCanvasInfo() { Canvas = theCanvas, ShapeProvider = ShapeProvider };
             InputContext = new CanvasInputContext()
             {
-                Canvas = (WpfLib.CanvasInfo)CanvasInfo,
+                Canvas = (WpfLib.WpfCanvasInfo)CanvasInfo,
 
                 ViewModel = this,
                 //MainWindow = MainWindow,

@@ -9,7 +9,7 @@ using WpfLib.Shapes;
 
 namespace WpfLib;
 
-public class CanvasInfo : CanvasInfo<Canvas>
+public class WpfCanvasInfo : CanvasInfo<Canvas>
 {
     public override TShape AddToCanvas<TShape>(TShape shape)
     {

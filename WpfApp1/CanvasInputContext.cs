@@ -13,14 +13,14 @@ namespace ConveyorApp;
 
 public class CanvasInputContext : InputContextBase
 {
-    private CanvasInfo _Canvas;
-    public CanvasInfo Canvas 
+    private WpfCanvasInfo _Canvas;
+    public WpfCanvasInfo Canvas 
     { 
         get => _Canvas;
         set => Func.Setter(ref _Canvas, value, RegisterCanvas); 
     }
 
-    private void RegisterCanvas(CanvasInfo oldCanvasInfo, CanvasInfo newCanvasInfo)
+    private void RegisterCanvas(WpfCanvasInfo oldCanvasInfo, WpfCanvasInfo newCanvasInfo)
     {
         if (oldCanvasInfo is { Canvas :  { } oldCanvas})
         {

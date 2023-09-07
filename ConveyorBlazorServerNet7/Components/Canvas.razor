@@ -1,0 +1,51 @@
+﻿@using Blazor.Extensions.Canvas
+@using Blazor.Extensions;
+@using ConveyorLib.Objects;
+@using Microsoft.AspNetCore.SignalR.Client;
+@inject NavigationManager Navigation
+
+kekse
+<BECanvas Width="500" Height="500" @ref=TheCanvas />
+kekse2
+@code
+{
+    private HubConnection? hubConnection;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (hubConnection is null)
+        {
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(Navigation.ToAbsoluteUri("/conveyorhub"))
+                .Build();
+
+            hubConnection.On<string, string>("ReceiveMessage", async (user, message) =>
+            {
+                await AppContent.ScriptRunner.RunScript(message);
+                await InvokeAsync(StateHasChanged);
+            });
+
+            await hubConnection.StartAsync();
+        }
+    }
+
+    private BECanvasComponent TheCanvas { get; set; }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        var ctx = await TheCanvas.CreateCanvas2DAsync();
+
+        // await ctx.SetStrokeStyleAsync("blue");
+        foreach (var obj in AppContent.CanvasInfo.Canvas.Children.ToList())
+        {
+            await obj.DrawAsync(ctx);
+        }
+    }
+}

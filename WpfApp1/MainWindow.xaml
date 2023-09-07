@@ -21,7 +21,7 @@
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance local:MainWindowViewModel, IsDesignTimeCreatable=True}"
     >
-    <!--DataContext="{Binding RelativeSource={RelativeSource Self}}"--> 
+    <!--DataContext="{Binding RelativeSource={RelativeSource Self}}"-->
 
     <Window.Resources>
         <Brush x:Key="SplitterColor">red</Brush>
@@ -256,18 +256,14 @@
                     $.AddConveyor(new V2d[]{(80, 40), (110, 40), (170, 40), (190, 40)}, false, 2);
                     $.AddConveyor(new V2d[]{(80, 50), (110, 50), (170, 60), (190, 60)}, false, 2);
                 </avalonEdit:TextEditor>
-                <Button
-                    Name="RunB"
-                    gu:Cell.Index="0 1"
-                    Click="RunB_Click"
-                    IsEnabled="False">
-                    <TextBlock>
-                        <TextBlock.LayoutTransform>
-                            <RotateTransform Angle="90" CenterX="0.5" CenterY="0.5" />
-                        </TextBlock.LayoutTransform>
+                <StackPanel Orientation="Vertical" gu:Cell.Index="0 1">
+                    <Button Name="RunB" Click="RunB_Click" IsEnabled="False">
                         Run
-                    </TextBlock>
-                </Button>
+                    </Button>
+                    <Button Name="SendB" Click="SendB_Click">
+                        Send
+                    </Button>
+                </StackPanel>
             </Grid>
         </Grid>
     </Grid>

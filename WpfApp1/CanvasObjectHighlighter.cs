@@ -8,9 +8,9 @@ using WpfLib.Shapes;
 
 namespace ConveyorApp;
 
-public class CanvasObjectHighlighter(CanvasInfo CanvasInfo) : ObjectHighlighter
+public class CanvasObjectHighlighter(WpfCanvasInfo CanvasInfo) : ObjectHighlighter
 {
-    public static CanvasObjectHighlighter Create(CanvasInfo canvas, ISelectObject selectObject, ObjectHighlightTypes objectHighlightType = ObjectHighlightTypes.Target)
+    public static CanvasObjectHighlighter Create(WpfCanvasInfo canvas, ISelectObject selectObject, ObjectHighlightTypes objectHighlightType = ObjectHighlightTypes.Target)
     {
         CanvasObjectHighlighter result = new(canvas)
         {

@@ -13,6 +13,7 @@ namespace ConveyorAutomationLib;
 public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomationFeatures
 {
     List<Conveyor> Conveyors { get; }
+    //List<IAppObject> /*AutomationObjects*/ { get; }
     
     IConveyorCanvasInfo CanvasInfo { get; }
     
@@ -21,7 +22,6 @@ public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomatio
     Circle AddCircleCenterRadius((Point Center, double Radius) centerRadius);
     Circle AddCircleDiameter((Point Point1, Point Point2) diameter);
     Circle AddCircleThreePoints((Point Point1, Point Point2, Point Point3) threePoints);
-    //string Blub();
 
     Line AddLine(TwoPoints points);
     LineSegment AddLineSegment(TwoPoints points);
