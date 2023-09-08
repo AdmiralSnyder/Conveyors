@@ -1,8 +1,10 @@
-﻿using Blazor.Extensions.Canvas.Canvas2D;
+﻿using System.Drawing;
+using Blazor.Extensions.Canvas.Canvas2D;
 using ConveyorLib;
 using ConveyorLibWeb.Shapes;
 using PointDef;
 using PointDef.twopoints;
+using UILib;
 using UILib.Shapes;
 
 namespace ConveyorLibWeb;
@@ -11,7 +13,7 @@ public class WebCanvasShapeProvider : IConveyorShapeProvider
 {
     public void AddAdornedShapeLayer(IShape shape) => throw new NotImplementedException();
 
-    public IShape CreateCircle(Point center, double radius) => new WebCanvasEllipse(new() { Center = center, Radius = radius });
+    public IShape CreateCircle(Point center, double radius) => new WebCanvasEllipse(new() { Width = radius * 2, Height = radius * 2 }).SetCenterLocation(center);
 
     public IEllipse CreateConveyorItemEllipse() => throw new NotImplementedException();
 
@@ -35,7 +37,12 @@ public class WebCanvasShapeProvider : IConveyorShapeProvider
 
     public ILine CreateLineSegment(TwoPoints<V2d> points) => throw new NotImplementedException();
 
-    public IShape CreatePoint(V2d point) => throw new NotImplementedException();
+    public IShape CreatePoint(V2d point) => new WebCanvasEllipse(new()
+    {
+        Width = 3,
+        Height = 3,
+        Fill = Color.Magenta,
+    }).SetCenterLocation(point)/*.WithSelectBehaviour()*/;
 
     public IEllipse CreatePointMoveCircle(V2d location, Action<IShape> moveCircleClicked) => throw new NotImplementedException();
 

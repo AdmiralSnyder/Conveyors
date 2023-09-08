@@ -9,7 +9,7 @@ using WpfLib.Shapes;
 
 namespace ConveyorLib.Wpf;
 
-public class ConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
+public class WpfConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
 {
     public IEllipse CreateTempPoint(Point point) => new WpfEllipse(new()
     {

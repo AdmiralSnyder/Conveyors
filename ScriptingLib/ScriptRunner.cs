@@ -18,15 +18,12 @@ public class ScriptRunner
     private ScriptGlobalsBase Globals;
     private Script Script;
     private Task InitScriptTask;
-
     private Type TheObjectType;
-
     private Action? BeforeExecAction;
     private Action? AfterExecAction;
     private Action<Exception>? ErrorAction;
 
-    public void InitializeScriptingEnvironment<TRootObj>(TRootObj automationRoot, 
-        Action? initDoneAction, 
+    public void InitializeScriptingEnvironment<TRootObj>(TRootObj automationRoot, Action? initDoneAction, 
         Action? beforeExecAction, Action? afterExecAction, Action<Exception>? errorAction, 
         Type[] namespaceTypes, Type[] assemblyTypes)
     {
@@ -66,20 +63,21 @@ public class ScriptRunner
 
         text = text.Replace("$", "DynObj");
 
+        string classDefinition = $$"""
+            using System;
+            using System.Linq.Expressions;
+            {{string.Join(Environment.NewLine, usings.Select(u => $"using {u}"))}}
 
-        string classDefinition = @$"using System;
-using System.Linq.Expressions;
-{string.Join(Environment.NewLine, usings.Select(u => $"using {u}"))}
-
-class foo
-{{
-    //public static dynamic DynObj {{ get; set; }}
-    public static bool Execute({TheObjectType.FullName} DynObj)
-    {{
-        {text}
-return true;
-    }}
-}}";
+            class foo
+            {
+                //public static dynamic DynObj { get; set; }
+                public static bool Execute({{TheObjectType.FullName}} DynObj)
+                {
+                    {{text}}
+                    return true;
+                }
+            }
+            """;
 
         if (Script is not null)
         {
@@ -111,32 +109,11 @@ return true;
                 ErrorAction?.Invoke(ex);
             }
             AfterExecAction?.Invoke();
-            //await Task.Run(async () => await Dispatcher.InvokeAsync(async () =>
-            //{
-            //    try
-            //    {
-            //        beforee
-            //        Mouse.OverrideCursor = Cursors.Wait;
-
-            //        try
-            //        {
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            MessageBox.Show(ex.ToString(), "Error running script");
-            //        }
-            //    }
-            //    finally
-            //    {
-            //        Mouse.OverrideCursor = null;
-            //    }
-            //}));
         }
     }
 }
 
-public class ScriptGlobalsBase
-{ }
+public class ScriptGlobalsBase { }
 
 public class ScriptGlobals<TTheObject> : ScriptGlobalsBase
 {

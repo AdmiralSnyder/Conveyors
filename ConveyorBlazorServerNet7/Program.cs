@@ -1,6 +1,7 @@
 using ConveyorBlazorServerNet7;
 using ConveyorBlazorServerNet7.Data;
 using ConveyorBlazorServerNet7.Hubs;
+using ConveyorLibWeb;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -38,6 +39,8 @@ app.MapHub<ConveyorHub>("/conveyorhub");
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
+UIHelpers.Instance = new UIHelpersInstanceWebCanvas();
 
 AppContent.Init();
 AppContent.AutoRoot.AddLine(((0, 0), (200, 200)));

@@ -13,7 +13,7 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
 {
     public MainWindowViewModel()
     {
-        ShapeProvider = new ConveyorShapeProvider();
+        ShapeProvider = new WpfConveyorShapeProvider();
         SelectionManager = new CanvasSelectionManager();
     }
 
@@ -51,16 +51,14 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
     //// TODO needs to be deleted
     //public MainWindow MainWindow { get; set; }
 
-    public IConveyorCanvasInfo CanvasInfo { get; private set; }
     public Canvas TheCanvas
     {
         get => _TheCanvas;
         set => Func.Setter(ref _TheCanvas, value, theCanvas =>
         {
-            CanvasInfo = new ConveyorCanvasInfo() { Canvas = theCanvas, ShapeProvider = ShapeProvider };
             InputContext = new CanvasInputContext()
             {
-                Canvas = (WpfLib.WpfCanvasInfo)CanvasInfo,
+                Canvas = new() { Canvas = theCanvas },
 
                 ViewModel = this,
                 //MainWindow = MainWindow,
@@ -77,7 +75,7 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
 
             AutoRoot = ConveyorAutomationObject.CreateAutomationObject(out var context);
             
-            AutoRoot.Init(CanvasInfo);
+            AutoRoot.Init(new WpfConveyorCanvasInfo() { Canvas = TheCanvas, ShapeProvider = ShapeProvider});
 
             CreationCommandManager.InputContext = InputContext;
             CreationCommandManager.AutoRoot = AutoRoot;

@@ -9,7 +9,7 @@ public class WebCanvasLine : WebCanvasShape<WebLine>, ILine
 
     public Color StrokeColor
     {
-        get => BackingObject.StrokeColor;
+        get => BackingObject.StrokeColor.Value;
         set => BackingObject.StrokeColor = value;
     }
     public double StrokeThickness

@@ -2,7 +2,7 @@
 
 namespace ConveyorLib.Wpf;
 
-public class ConveyorCanvasInfo : WpfCanvasInfo, IConveyorCanvasInfo
+public class WpfConveyorCanvasInfo : WpfCanvasInfo, IConveyorCanvasInfo
 {
     IConveyorShapeProvider IConveyorCanvasInfo.ShapeProvider 
     {

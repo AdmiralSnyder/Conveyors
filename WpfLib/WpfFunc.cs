@@ -64,26 +64,3 @@ public static class WpfFunc
 
     public static V2d GetSizeWpf<TShape>(this TShape shape) where TShape : Shape => (shape.Width, shape.Height);
 }
-
-public class UIHelpersInstanceWpf : IUIHelpers
-{
-    public V2d GetSize(IShape shape) => ((WpfShape)shape).BackingShape.GetSizeWpf();
-
-    public TShape SetLocation<TShape>(TShape shape, Point location) where TShape : IShape 
-    {
-        ((WpfShape)(object)shape).BackingShape.SetLocationWpf(location);
-        return shape;
-    }
-
-    public TShape SetLocation<TShape>(TShape shape, TwoPoints location)where TShape : IShape
-    {
-        ((WpfShape<Line>)(object)shape).BackingObject.SetLocationWpf(location);
-        return shape;
-    }
-
-    private TShape Modify<TShape, TArg>(TShape shape, Action<TShape, TArg> modifyFunc, TArg arg)
-    {
-        modifyFunc(shape, arg);
-        return shape;
-    }
-}
