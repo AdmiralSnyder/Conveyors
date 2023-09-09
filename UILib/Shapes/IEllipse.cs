@@ -6,4 +6,4 @@ using System.Threading.Tasks;
 
 namespace UILib.Shapes;
 
-public interface IEllipse : IShape { }
+public interface IEllipse : IShape, IFill, IStroke { }

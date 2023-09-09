@@ -43,9 +43,9 @@ app.MapFallbackToPage("/_Host");
 UIHelpers.Instance = new UIHelpersInstanceWebCanvas();
 
 AppContent.Init();
-AppContent.AutoRoot.AddLine(((0, 0), (200, 200)));
-AppContent.AutoRoot.AddLine(((100, 100), (0, 200)));
+//AppContent.AutoRoot.AddLine(((0, 0), (200, 200)));
+//AppContent.AutoRoot.AddLine(((100, 100), (0, 200)));
 
-AppContent.AutoRoot.AddCircleCenterRadius(((100, 100), 50));
+//AppContent.AutoRoot.AddCircleCenterRadius(((100, 100), 50));
 
 app.Run();

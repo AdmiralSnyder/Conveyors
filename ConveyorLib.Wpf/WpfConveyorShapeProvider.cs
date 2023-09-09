@@ -106,8 +106,6 @@ public class WpfConveyorShapeProvider : ShapeProvider, IConveyorShapeProvider
         line.StrokeThickness = 1;
         return line;
     }
-
-
     public IEllipse CreateConveyorPointEllipse(Point point, bool isFirst, bool isLast, bool isClockwise, bool isStraight, double size = 4d) => new WpfEllipse(new Ellipse()
     {
         Width = size,

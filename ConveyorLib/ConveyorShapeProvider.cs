@@ -1,23 +1,22 @@
-﻿using System.Drawing;
-using Blazor.Extensions.Canvas.Canvas2D;
-using ConveyorLib;
-using ConveyorLibWeb.Shapes;
+﻿using ConveyorLib;
 using PointDef;
 using PointDef.twopoints;
-using UILib;
 using UILib.Shapes;
 
 namespace ConveyorLibWeb;
 
-public class WebCanvasShapeProvider : IConveyorShapeProvider
+public class ConveyorShapeProvider<TEllipse, TLine> : IConveyorShapeProvider
+    where TEllipse : IEllipse, new()
+    where TLine : ILine, new()
 {
     public void AddAdornedShapeLayer(IShape shape) => throw new NotImplementedException();
 
-    public IShape CreateCircle(Point center, double radius) => new WebCanvasEllipse(new() { Width = radius * 2, Height = radius * 2 }).SetCenterLocation(center);
+    public IShape CreateCircle(Point center, double radius) => ConveyorShapeSpecifications.CreateCircle<TEllipse>(center, radius);
 
-    public IEllipse CreateConveyorItemEllipse() => throw new NotImplementedException();
+    public IEllipse CreateConveyorItemEllipse() => ConveyorShapeSpecifications.CreateConveyorItemEllipse<TEllipse>();
 
-    public IEllipse CreateConveyorPointEllipse(V2d point, bool isFirst, bool isLast, bool isClockwise, bool isStraight, double size = 4) => throw new NotImplementedException();
+    public IEllipse CreateConveyorPointEllipse(V2d point, bool isFirst, bool isLast, bool isClockwise, bool isStraight, double size = 4)
+        => ConveyorShapeSpecifications.CreateConveyorPointEllipse<TEllipse>(point, isFirst, isLast, isClockwise, isStraight, size);
 
     public IPath CreateConveyorPointPath(IPathGeometry geometry, bool isLeft) => throw new NotImplementedException();
 
@@ -33,16 +32,11 @@ public class WebCanvasShapeProvider : IConveyorShapeProvider
 
     public IShape CreateFillet(TwoPoints<V2d> points, double radius) => throw new NotImplementedException();
 
-    public ILine CreateLine(TwoPoints points) => new WebCanvasLine(new() { FromTo = points });
+    public ILine CreateLine(TwoPoints points) => ConveyorShapeSpecifications.CreateLine<TLine>(points);
 
     public ILine CreateLineSegment(TwoPoints<V2d> points) => throw new NotImplementedException();
 
-    public IShape CreatePoint(V2d point) => new WebCanvasEllipse(new()
-    {
-        Width = 3,
-        Height = 3,
-        Fill = Color.Magenta,
-    }).SetCenterLocation(point)/*.WithSelectBehaviour()*/;
+    public IShape CreatePoint(Point point) => ConveyorShapeSpecifications.CreatePoint<TEllipse>(point);
 
     public IEllipse CreatePointMoveCircle(V2d location, Action<IShape> moveCircleClicked) => throw new NotImplementedException();
 

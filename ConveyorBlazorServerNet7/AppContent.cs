@@ -67,7 +67,7 @@ public class AppContent
 
     public static IAutomationContext AutoContext { get; private set; }
     public static IGeneratedConveyorAutomationObject AutoRoot { get; private set; }
-    public static WebCanvasShapeProvider ShapeProvider { get; private set; }
+    public static WebCanvasConveyorShapeProvider ShapeProvider { get; private set; }
 
     public static ScriptRunner ScriptRunner { get; private set; } = new();
 }

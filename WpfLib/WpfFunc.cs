@@ -63,4 +63,6 @@ public static class WpfFunc
     }
 
     public static V2d GetSizeWpf<TShape>(this TShape shape) where TShape : Shape => (shape.Width, shape.Height);
+
+    public static System.Drawing.Color AsColor(this System.Media.Color)
 }

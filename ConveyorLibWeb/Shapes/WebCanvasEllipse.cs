@@ -1,8 +1,13 @@
-﻿using UILib.Shapes;
+﻿using System.Drawing;
+using UILib.Shapes;
 
 namespace ConveyorLibWeb.Shapes;
 
 public class WebCanvasEllipse: WebCanvasShape<WebEllipse>, IEllipse
 {
-    public WebCanvasEllipse(WebEllipse ellipse): base(ellipse) { }
+    public WebCanvasEllipse(): base(new()) { }
+
+    public Color? FillColor { get; set; }
+    public Color? StrokeColor { get; set; }
+    public double StrokeThickness { get; set; }
 }
