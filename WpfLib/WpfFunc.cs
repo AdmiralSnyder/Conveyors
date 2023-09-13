@@ -3,30 +3,17 @@ using PointDef;
 using PointDef.twopoints;
 using System;
 using System.Drawing;
+using System.Windows.Media;
 using UILib.Shapes;
 using WpfLib.Shapes;
 
 namespace WpfLib;
 
-public static class ShapeFunc 
+public class MouseBehaviorManagerWpf : IMouseBehaviorManager
 {
-    public static IShapeFunc Instance { get; set; }
-    public static void ApplyMouseBehavior(this IShape shape, Action<IShape> behavior, MouseAction mouseAction = MouseAction.LeftClick)
-        => Instance.ApplyMouseBehavior(shape, behavior, mouseAction);
-
+    public void ApplyMouseBehavior(IShape shape, Action<IShape> behavior, MouseActions mouseAction = MouseActions.LeftClick)
+    => ((WpfShape)shape).BackingShape.InputBindings.Add(new MouseBinding(new UICommand<IShape>(behavior, shape), new((MouseAction)mouseAction)));
 }
-
-public interface IShapeFunc
-{
-    void ApplyMouseBehavior(IShape shape, Action<IShape> behavior, MouseAction mouseAction = MouseAction.LeftClick);
-}
-
-public class ShapeFuncInstanceWpf : IShapeFunc
-{
-    public void ApplyMouseBehavior(IShape shape, Action<IShape> behavior, MouseAction mouseAction = MouseAction.LeftClick)
-    => ((WpfShape)shape).BackingShape.InputBindings.Add(new MouseBinding(new MyCommand<IShape>(behavior, shape), new(mouseAction)));
-}
-
 
 public static class WpfFunc
 {
@@ -64,5 +51,9 @@ public static class WpfFunc
 
     public static V2d GetSizeWpf<TShape>(this TShape shape) where TShape : Shape => (shape.Width, shape.Height);
 
-    public static System.Drawing.Color AsColor(this System.Media.Color)
+    public static System.Drawing.Color AsColor(this System.Windows.Media.Color color) => System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B);
+    public static System.Windows.Media.Color AsColor(this System.Drawing.Color color) => System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
+    public static SolidColorBrush? AsBrush(this System.Drawing.Color? color) => color.HasValue ? new SolidColorBrush(color.Value.AsColor()) : null;
+
+    public static System.Drawing.Color? GetBrushColor(this Brush brush) => brush is SolidColorBrush scb ? (scb.Color.AsColor()) : null;
 }

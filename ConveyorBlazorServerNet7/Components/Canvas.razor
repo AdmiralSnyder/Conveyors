@@ -40,11 +40,38 @@
     {
         await base.OnAfterRenderAsync(firstRender);
         var ctx = await TheCanvas.CreateCanvas2DAsync();
+        await ctx.BeginBatchAsync();
+        await ctx.ClearRectAsync(0, 0, 500, 500);
+        await ctx.SetFillStyleAsync("#008000");
+        await ctx.FillRectAsync(0, 0, 500, 500);
 
-        // await ctx.SetStrokeStyleAsync("blue");
         foreach (var obj in AppContent.CanvasInfo.Canvas.Children.ToList())
         {
             await obj.DrawAsync(ctx);
         }
+
+
+        // await ctx.MoveToAsync(100, 100);
+        // await ctx.LineToAsync(130, 100);
+        // await ctx.StrokeAsync();
+        // await ctx.BeginPathAsync();
+        // await ctx.ArcAsync(150, 150, 50, 0, Math.PI, false);
+        // await ctx.StrokeAsync();
+
+        // await ctx.BeginPathAsync();
+        // await ctx.ArcAsync(300, 300, 50, Math.PI / 2, Math.PI * 1.5, false);
+        // await ctx.StrokeAsync();
+        // await ctx.StrokeAsync();
+        // await ctx.LineToAsync(200, 200);
+        // await ctx.StrokeAsync();
+        // await ctx.LineToAsync(150, 150);
+        // await ctx.StrokeAsync();
+
+        // await ctx.ArcToAsync(300, 300, 350, 300, 50);
+
+        
+        
+        await ctx.EndBatchAsync();
+
     }
 }

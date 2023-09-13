@@ -16,6 +16,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ConveyorLib\ConveyorLib.csproj" />
+    <ProjectReference Include="..\UILib.Extern.Web.Canvas\UILib.Extern.Web.Canvas.csproj" />
+    <ProjectReference Include="..\WebLibCanvas\WebLibCanvas.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ConveyorLibWeb.Shapes;
+using UILib.Extern.Web.Canvas;
 
 namespace ConveyorLibWeb;
 
@@ -23,8 +23,4 @@ public static class WebFunc
         line.FromTo = points;
         return line;
     }
-
-    public static object ToFillStyle(this Color color) => $"rgb({color.R},{color.G},{color.B})";
-    public static string ToStrokeStyle(this Color color) => $"rgb({color.R},{color.G},{color.B})";
-
 }

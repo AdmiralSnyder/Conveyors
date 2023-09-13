@@ -8,6 +8,8 @@ using WpfLib;
 using ConveyorApp.Inputters;
 using UILib.Shapes;
 using WpfLib.Shapes;
+using System.Drawing;
+using ConveyorLib.Objects.Conveyor;
 
 namespace ConveyorApp.Inputters;
 
@@ -52,13 +54,13 @@ public class MoveInputter : StatefulInputter<MoveInputter, Vector, MoveInputter.
         if (shape is IEllipse moveCircle && moveCircle.Tag is ConveyorPoint point)
         {
             const double size = 5d;
-            var newCircle = new WpfEllipse(new()
+            var newCircle = new WpfEllipse()
             {
                 Width = size,
                 Height = size,
-                Fill = Brushes.Yellow,
+                FillColor = System.Drawing.Color.Yellow,
                 Tag = point,
-            });
+            };
             newCircle.SetCenterLocation(point.Location);
             Context.Canvas.AddToCanvas(newCircle);
 
@@ -67,29 +69,29 @@ public class MoveInputter : StatefulInputter<MoveInputter, Vector, MoveInputter.
 
             if (prev is { })
             {
-                var prevLine = new WpfLine(new()
+                var prevLine = new WpfLine
                 {
                     X1 = prev.StartEnd.P1.X,
                     Y1 = prev.StartEnd.P1.Y,
                     X2 = prev.StartEnd.P2.X,
                     Y2 = prev.StartEnd.P2.Y,
-                    Stroke = Brushes.Yellow,
+                    StrokeColor = System.Drawing.Color.Yellow,
                     Tag = point,
-                });
+                };
                 Context.Canvas.AddToCanvas(prevLine);
                 MoveShapes.Add(prevLine);
             }
             if (last is { })
             {
-                var nextLine = new WpfLine(new()
+                var nextLine = new WpfLine
                 {
                     X1 = last.StartEnd.P2.X,
                     Y1 = last.StartEnd.P2.Y,
                     X2 = last.StartEnd.P1.X,
                     Y2 = last.StartEnd.P1.Y,
-                    Stroke = Brushes.Yellow,
+                    StrokeColor = System.Drawing.Color.Yellow,
                     Tag = point,
-                });
+                };
                 Context.Canvas.AddToCanvas(nextLine);
                 MoveShapes.Add(nextLine);
             }

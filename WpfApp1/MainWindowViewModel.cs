@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ConveyorAutomationLib;
-using ConveyorLib;
+using ConveyorLib.Shapes;
 using ConveyorLib.Wpf;
 using CoreLib;
 
@@ -48,9 +48,6 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
 
     public Action<string> LogAction { get; set; }
 
-    //// TODO needs to be deleted
-    //public MainWindow MainWindow { get; set; }
-
     public Canvas TheCanvas
     {
         get => _TheCanvas;
@@ -61,7 +58,6 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
                 Canvas = new() { Canvas = theCanvas },
 
                 ViewModel = this,
-                //MainWindow = MainWindow,
             };
 
             ((CanvasSelectionManager)SelectionManager).SetCanvas(TheCanvas);
@@ -81,8 +77,6 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
             CreationCommandManager.AutoRoot = AutoRoot;
 
             context.LogAction = s => LogAction?.Invoke(s);
-
-
         });
     }
     private bool _IsRunning;

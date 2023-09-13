@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using ConveyorLib.Objects.Conveyor;
 using WpfLib;
 
 namespace ConveyorLib;

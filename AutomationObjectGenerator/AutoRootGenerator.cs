@@ -62,12 +62,15 @@ public class AutoRootGenerator : IIncrementalGenerator
         {
             InfoAndDiagnostics<AutomationClassInfo> result = new()
             {
-                Info = GetAutomationTypeInfo3(gasc.TargetNode as ClassDeclarationSyntax, gasc.SemanticModel, gasc.Attributes.First().AttributeClass.TypeArguments.FirstOrDefault(), ct)
+                Info = GetAutomationTypeInfo3(
+                    gasc.TargetNode as ClassDeclarationSyntax, 
+                    gasc.SemanticModel, 
+                gasc.Attributes.First().AttributeClass?.TypeArguments.FirstOrDefault(), ct)
             };
             return result;
         }
 
-        AutomationClassInfo GetAutomationTypeInfo3(ClassDeclarationSyntax targetNode, SemanticModel semanticModel, ITypeSymbol automationInterface, CancellationToken ct)
+        AutomationClassInfo GetAutomationTypeInfo3(ClassDeclarationSyntax? targetNode, SemanticModel semanticModel, ITypeSymbol? automationInterface, CancellationToken ct)
         {
             MemberDeclarationSyntax ModifyMember(MemberDeclarationSyntax member)
             {

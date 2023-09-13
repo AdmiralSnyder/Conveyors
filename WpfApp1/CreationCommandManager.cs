@@ -5,6 +5,7 @@ using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using ConveyorApp.Inputters;
+using ConveyorApp.Inputters.Helpers;
 using ConveyorAutomationLib;
 
 namespace ConveyorApp;

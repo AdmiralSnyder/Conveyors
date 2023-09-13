@@ -32,8 +32,24 @@ public class WpfShape : IShape, ITag
         get => BackingShape.Width;
         set => BackingShape.Width = value;
     }
-}
 
+    public System.Drawing.Color? FillColor 
+    {
+        get => BackingShape.Fill.GetBrushColor();
+        set => BackingShape.Fill = value.AsBrush(); 
+    }
+    public System.Drawing.Color? StrokeColor
+    {
+        get => BackingShape.Stroke.GetBrushColor();
+        set => BackingShape.Stroke = value.AsBrush();
+    }
+
+    public double StrokeThickness 
+    {
+        get => BackingShape.StrokeThickness; 
+        set => BackingShape.StrokeThickness = value; 
+    }
+}
 
 public class WpfShape<TShape> : WpfShape
     where TShape : Shape

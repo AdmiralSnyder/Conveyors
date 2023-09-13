@@ -2,12 +2,14 @@
 using Blazor.Extensions.Canvas.Canvas2D;
 using ConveyorAutomationLib;
 using ConveyorLib;
+using ConveyorLib.Shapes;
 using ConveyorLibWeb;
 using ConveyorLibWeb.Shapes;
 using CoreLib;
 using Microsoft.CodeAnalysis.Scripting;
 using ScriptingLib;
 using UILib;
+using UILib.Extern.Web.Canvas;
 using UILib.Shapes;
 
 namespace ConveyorBlazorServerNet7;

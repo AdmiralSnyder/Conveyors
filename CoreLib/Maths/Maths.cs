@@ -444,7 +444,7 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         }
     }
 
-    internal static Vector Orthogonal(this Vector vector) => vector.RotateAroundOrigin(Angle.Plus90);
+    public static Vector Orthogonal(this Vector vector) => vector.RotateAroundOrigin(Angle.Plus90);
 
     /// <summary> y2 - m * x2 </summary>
     public static double GetOffsetY(Point endPoint, double slope) => endPoint.Y - slope * endPoint.X;
@@ -604,6 +604,78 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
     }
 
     public static bool PointsAreEqual(this TwoPoints twoPoints) => twoPoints.P1 == twoPoints.P2;
+
+    public static bool IsParallel(this Vector v1, Vector v2)
+    {
+        if (v1.X == 0 && v2.X == 0 || v1.Y == 0 && v2.Y == 0) return true;
+
+        var k = v1.X / v2.X;
+        return v1.Y / k == v2.Y;
+    }
+
+    public static bool LineCrossesPoint(this LineDefinition line, Point point)
+        => new Vector(line.ReferencePoint1, point).IsParallel(line.Vector);
+
+    public static Point[] LineCrossesLine(LineDefinition line1, LineDefinition line2)
+    {
+        if (line1.Vector.IsParallel(line2.Vector))
+        {
+            if (line1.LineCrossesPoint(line2.ReferencePoint1))
+            {
+                return new Point[2];
+            }
+            else
+            {
+                return Array.Empty<Point>();
+            }
+        }
+        else
+        {
+            if (GetCrossingPoint(line1.RefPoints, line2.RefPoints, out var cp))
+            {
+                return new[] { cp };
+            }
+            else throw new MathsException("previous checks were invalid");
+        }
+    }
+
+    public static Point[] CircleCrossesLine(CircleDefinition circle, LineDefinition line)
+    {
+        if (circle.IsDegenerated) return null;
+        var (c, r) = circle.CenterRadius;
+        if (LineCrossesPoint(line, c)) return new[]
+        {
+            c.Add(line.Vector.Normalize().Multiply(r)),
+            c.Add(line.Vector.Normalize().Multiply(-r)),
+        };
+
+        LineDefinition normalThroughCenter = new(c, line.Vector.Orthogonal());
+        var lineCrossPoint = LineCrossesLine(line, normalThroughCenter)[0];
+        var distance = new Vector(c, lineCrossPoint).Length();
+        if (distance == r) return new[] { lineCrossPoint };
+        else
+        {
+            Pythagoras(distance, out var kath, r);
+            return new[]
+            {
+                lineCrossPoint.Add(line.Vector.Normalize().Multiply(kath)),
+                lineCrossPoint.Add(line.Vector.Normalize().Multiply(-kath))
+            };
+        }
+    }
+
+    private static void Pythagoras(double a, double b, out double c)
+    {
+        c = Math.Sqrt(a * a + b * b);
+    }
+    
+    private static void Pythagoras(double a, out double b, double c)
+    {
+        // a^2+b^2=c^2
+        // b^2=c^2-a^2
+        // b=sqrt(c^2-a^2)
+        b = Math.Sqrt(c * c - a * a);
+    }
 }
 
 public class MathsException : Exception

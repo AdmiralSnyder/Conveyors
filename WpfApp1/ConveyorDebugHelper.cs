@@ -1,4 +1,4 @@
-﻿using ConveyorLib;
+﻿using ConveyorLib.Shapes;
 using CoreLib;
 using System;
 using System.Collections.Generic;

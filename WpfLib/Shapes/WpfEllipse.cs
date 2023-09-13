@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -10,9 +11,17 @@ namespace WpfLib.Shapes;
 
 public class WpfEllipse : WpfShape<Ellipse>, IEllipse
 {
-    public WpfEllipse(Ellipse wpfShape) : base(wpfShape) { }
+    // anscheinend muss der radius +1 gerechnet werden...
+    public WpfEllipse() : base(new Ellipse()) { }
+    public new double Height
+    {
+        get => base.Height - 1;
+        set => base.Height = value + 1;
+    }
 
-    public Color? FillColor { get => BackingObject.Fill is SolidColorBrush scb ? Color.FromArgb scb.Color ; set => ; }
-    public Color? StrokeColor { get => ; set => ; }
-    public double StrokeThickness { get => ; set => ; }
+    public new double Width
+    {
+        get => base.Width - 1;
+        set => base.Width = value + 1;
+    }
 }

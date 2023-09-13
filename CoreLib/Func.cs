@@ -15,6 +15,12 @@ public static class Func
         return obj;
     }
 
+    private static T Modify<T, TArg>(this T obj, Action<T, TArg> modifyAction, TArg arg)
+    {
+        modifyAction(obj, arg);
+        return obj;
+    }
+
     public static void SetterInpc<T>(this INotifyPropertyChangedImpl obj, ref T backingField, T value, [CallerMemberName] string propertyName = "INVALID")
     {
         if (!object.Equals(backingField, value))
@@ -85,6 +91,7 @@ public static class Func
     }
 
     public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, Func<TKey, TValue> factory)
+        where TKey : notnull
     {
         if (!dict.TryGetValue(key, out var value))
         {

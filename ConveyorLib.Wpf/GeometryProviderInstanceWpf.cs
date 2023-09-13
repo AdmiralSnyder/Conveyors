@@ -5,5 +5,5 @@ namespace ConveyorLib.Wpf;
 
 public class GeometryProviderInstanceWpf : IGeometryProviderInstance
 { 
-    public IPathGeometry CreatePathGeometry() => new WpfPathGeometry(new());
+    public IPathGeometry CreatePathGeometry() => new WpfPathGeometry();
 }

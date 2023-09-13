@@ -6,7 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using ConveyorLib.Wpf;
+using UILib.Behaviors;
 using WpfLib;
+using WpfLib.Behaviors;
 
 namespace ConveyorApp
 {
@@ -19,8 +21,9 @@ namespace ConveyorApp
         {
             base.OnStartup(e);
             UIHelpers.Instance = new UIHelpersInstanceWpf();
-            ShapeFunc.Instance = new ShapeFuncInstanceWpf();
+            MouseBehaviorManager.Instance = new MouseBehaviorManagerWpf();
             GeometryProvider.Instance = new GeometryProviderInstanceWpf();
+            SelectBehaviorProvider.Instance = new SelectBehaviorProviderInstanceWpf();
         }
     }
 }

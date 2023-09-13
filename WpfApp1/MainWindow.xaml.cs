@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using UILib.Shapes;
 using ScriptingLib;
 using Microsoft.AspNetCore.SignalR.Client;
+using WpfLib.Behaviors;
 
 namespace ConveyorApp;
 
@@ -36,7 +37,7 @@ public partial class MainWindow
         ViewModel = new() /*{ MainWindow = this}*/;
         this.DataContext = ViewModel;
 
-        ViewModel.ShapeProvider.RegisterSelectBehavior(SelectShapeAction);
+        SelectBehaviorProviderInstanceWpf.RegisterSelectBehavior(SelectShapeAction);
 
         InitializeComponent();
 

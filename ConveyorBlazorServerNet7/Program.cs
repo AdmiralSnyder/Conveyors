@@ -5,6 +5,7 @@ using ConveyorLibWeb;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.ResponseCompression;
+using PointDef;
 using ScriptingLib;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,8 +42,11 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 UIHelpers.Instance = new UIHelpersInstanceWebCanvas();
+GeometryProvider.Instance = new GeometryProviderInstanceWebCanvas();
 
 AppContent.Init();
+AppContent.AutoRoot.AddConveyor(new V2d[] { (100, 50), (170, 110), (240, 50), (270, 140) }, false, 2);
+
 //AppContent.AutoRoot.AddLine(((0, 0), (200, 200)));
 //AppContent.AutoRoot.AddLine(((100, 100), (0, 200)));
 

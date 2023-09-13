@@ -7,8 +7,8 @@ public enum ArcSweepDirections
 
 public interface IPathGeometry
 {
-    void AddArcFigure(Vector prevEnd, Vector nextStart, double radius, double degrees, bool isLargeArc, ArcSweepDirections sweepDirection);
+    void AddArcFigure(Point startPoint, Point EndPoint, double radius, double degrees, bool isLargeArc, ArcSweepDirections sweepDirection);
     
-    void AddLineFigure(Vector prevEnd, Vector nextStart);
+    void AddLineFigure(Point start, Point end);
     void ClearFigures();
 }

@@ -1,4 +1,5 @@
-﻿using ConveyorLib.Objects;
+﻿using ConveyorApp.Inputters.Helpers;
+using ConveyorLib.Objects;
 using CoreLib.Definition;
 using System;
 using System.Collections.Generic;

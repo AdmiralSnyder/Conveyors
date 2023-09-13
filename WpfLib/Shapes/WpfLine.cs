@@ -6,18 +6,8 @@ namespace WpfLib.Shapes;
 
 public class WpfLine : WpfShape<Line>, ILine
 {
-    public WpfLine (Line wpfShape) : base(wpfShape) { }
+    public WpfLine () : base(new Line()) { }
 
-    public Brush Stroke 
-    {
-        get => BackingObject.Stroke;
-        set => BackingObject.Stroke = value;
-    }
-    public double StrokeThickness 
-    { 
-        get => BackingObject.StrokeThickness; 
-        set => BackingObject.StrokeThickness = value; 
-    }
     public double X1 
     { 
         get => BackingObject.X1; 
@@ -37,13 +27,5 @@ public class WpfLine : WpfShape<Line>, ILine
     {
         get => BackingObject.Y2; 
         set => BackingObject.Y2 = value; 
-    }
-
-    private System.Drawing.Color _StrokeColor;
-
-    public System.Drawing.Color StrokeColor 
-    {
-        get => _StrokeColor;
-        set => Func.Setter(ref _StrokeColor, value, () => BackingObject.Stroke = new SolidColorBrush(Color.FromArgb(value.A, value.R, value.G, value.B)));
     }
 }

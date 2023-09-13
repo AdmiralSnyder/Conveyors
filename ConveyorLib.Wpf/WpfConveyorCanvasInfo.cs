@@ -1,4 +1,5 @@
-﻿using WpfLib;
+﻿using ConveyorLib.Shapes;
+using WpfLib;
 
 namespace ConveyorLib.Wpf;
 
