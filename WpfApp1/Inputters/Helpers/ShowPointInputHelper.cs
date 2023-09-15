@@ -9,5 +9,5 @@ namespace ConveyorApp.Inputters.Helpers;
 public abstract class ShowPointInputHelper<TThis> : ShowShapeInputHelper<TThis, IEllipse>
     where TThis : ShowPointInputHelper<TThis>, new()
 {
-    protected override IEllipse CreateShape() => Context.ViewModel.ShapeProvider.CreateTempPoint(default);
+    protected override IEllipse CreateShape() => ShapeProvider.CreateTempPoint(default);
 }

@@ -17,4 +17,6 @@ public class WebPath : WebShape
         }
         await DrawAsyncInternal(context);
     }
+
+    public override bool ContainsPoint(Vector point) => false;
 }

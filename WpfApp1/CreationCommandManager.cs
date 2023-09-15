@@ -40,7 +40,7 @@ public class CreationCommandManager
         }
     }
 
-    public CanvasInputContext InputContext { get; internal set; }
+    public WpfCanvasInputContext InputContext { get; internal set; }
     public IGeneratedConveyorAutomationObject AutoRoot { get; internal set; }
 
     internal async Task AddCircleCenterRadius()

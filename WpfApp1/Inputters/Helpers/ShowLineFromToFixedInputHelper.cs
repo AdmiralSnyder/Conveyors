@@ -2,7 +2,7 @@
 
 public class ShowLineFromToFixedInputHelper : ShowLineFromToInputHelper<ShowLineFromToFixedInputHelper>
 {
-    public static ShowLineFromToFixedInputHelper Create(CanvasInputContext context, Point point1, Point point2)
+    public static ShowLineFromToFixedInputHelper Create(WpfCanvasInputContext context, Point point1, Point point2)
     {
         var result = Create(context);
         result.StartPoint = point1;

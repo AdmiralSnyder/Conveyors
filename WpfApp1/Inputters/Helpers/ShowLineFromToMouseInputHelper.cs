@@ -1,10 +1,11 @@
 ﻿using System.Windows.Input;
+using InputLib;
 
 namespace ConveyorApp.Inputters.Helpers;
 
 public class ShowLineFromToMouseInputHelper : ShowLineFromToInputHelper<ShowLineFromToMouseInputHelper>
 {
-    public static ShowLineFromToMouseInputHelper Create(CanvasInputContext context, Point point1)
+    public static ShowLineFromToMouseInputHelper Create(InputContextBase context, Point point1)
     {
         var result = Create(context);
         result.StartPoint = point1;
@@ -15,9 +16,12 @@ public class ShowLineFromToMouseInputHelper : ShowLineFromToInputHelper<ShowLine
     protected override void AttachEvents() => Context.MouseMovedInCanvas += Context_MouseMovedInCanvas;
     protected override void DetachEvents() => Context.MouseMovedInCanvas -= Context_MouseMovedInCanvas;
 
-    private void Context_MouseMovedInCanvas(object sender, MouseEventArgs e)
+    private void Context_MouseMovedInCanvas(object sender, EventArgs e)
     {
-        var point = Context.GetSnappedCanvasPoint(e);
-        EndPoint = point;
+        if (e is MouseEventArgs mea)
+        {
+            var point = Context.GetPoint(mea);
+            EndPoint = point;
+        }
     }
 }

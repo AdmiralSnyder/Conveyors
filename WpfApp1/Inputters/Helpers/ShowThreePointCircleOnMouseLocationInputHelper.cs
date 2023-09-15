@@ -1,10 +1,11 @@
-﻿using UILib.Shapes;
+﻿using InputLib;
+using UILib.Shapes;
 
 namespace ConveyorApp.Inputters.Helpers;
 
 public class ShowThreePointCircleOnMouseLocationInputHelper : ShowDynamicCircleInputHelper<ShowThreePointCircleOnMouseLocationInputHelper>
 {
-    protected override IShape CreateShape() => Context.ViewModel.ShapeProvider.CreateCircle(default, default);
+    protected override IShape CreateShape() => ShapeProvider.CreateCircle(default, default);
 
     public Point Point1 { get; set; }
     public Point Point2 { get; set; }
@@ -19,7 +20,7 @@ public class ShowThreePointCircleOnMouseLocationInputHelper : ShowDynamicCircleI
         else return false;
     }
 
-    internal static ShowThreePointCircleOnMouseLocationInputHelper Create(CanvasInputContext context, Point point1, Point point2)
+    internal static ShowThreePointCircleOnMouseLocationInputHelper Create(InputContextBase context, Point point1, Point point2)
     {
         var result = Create(context);
         result.Point1 = point1;

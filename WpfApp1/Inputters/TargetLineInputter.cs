@@ -1,13 +1,14 @@
 ﻿using ConveyorLib.Objects;
 using CoreLib;
 using CoreLib.Definition;
+using InputLib;
 using System;
 using System.Threading.Tasks;
 using UILib;
 
 namespace ConveyorApp.Inputters;
 
-public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : Inputter<TThis, (TLineType, Point), CanvasInputContext>
+public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : Inputter<TThis, (TLineType, Point)>
     where TThis : TargetLineDefinitionInputterBase<TThis, TLineType>, new()
 {
     protected override void AttachEvents()
@@ -31,9 +32,8 @@ public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : Input
 
     protected override void CleanupVirtual()
     {
-        Context.StopObjectPickingListener();
-
-        Context.ViewModel.InputPickManager.Disable();
+        ((WpfCanvasInputContext)Context).StopObjectPickingListener();
+        ((WpfCanvasInputContext)Context).ViewModel.InputPickManager.Disable();
 
         base.CleanupVirtual();
     }
@@ -42,9 +42,8 @@ public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : Input
 
     protected override Task<InputResult<(TLineType, Point)>> StartAsyncVirtual()
     {
-        Context.ViewModel.InputPickManager.Enable(ObjectCanBePicked);
-
-        Context.StartObjectPickingListener();
+        ((WpfCanvasInputContext)Context).ViewModel.InputPickManager.Enable(ObjectCanBePicked);
+        ((WpfCanvasInputContext)Context).StartObjectPickingListener();
 
         return base.StartAsyncVirtual();
     }

@@ -1,9 +1,10 @@
 ﻿using System.Threading.Tasks;
 using ConveyorApp.Inputters.Helpers;
+using InputLib;
 
 namespace ConveyorApp.Inputters;
 
-public class CircleCenterRadiusInputter : Inputter<CircleCenterRadiusInputter, (Point Center, double Radius), CanvasInputContext, CanvasInputHelpers>
+public class CircleCenterRadiusInputter : Inputter<CircleCenterRadiusInputter, (Point Center, double Radius), CanvasInputHelpers>
 {
     protected override async Task<InputResult<(Vector Center, double Radius)>> StartAsyncVirtual()
         => await InputManager.Blank()

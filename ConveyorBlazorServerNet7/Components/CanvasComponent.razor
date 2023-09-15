@@ -1,0 +1,15 @@
+﻿@using Blazor.Extensions;
+@inherits BECanvasComponent
+
+<canvas id="@Id" width="@Width" height="@Height" @ref="_canvasRef" style=@Style @onclick=@CanvasClick @onmousemove=@CanvasMouseMove></canvas>
+@code
+{
+    [Parameter]
+    public string? Style{ get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> CanvasClick{ get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> CanvasMouseMove { get; set; }
+}

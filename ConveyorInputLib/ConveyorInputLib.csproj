@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\GlobalUsings\GlobalUsings.AutoRoot.Conveyor.cs" Link="GlobalUsings.AutoRoot.Conveyor.cs" />
+    <Compile Include="..\GlobalUsings\GlobalUsings.cs" Link="GlobalUsings.cs" />
+    <Compile Include="..\GlobalUsings\GlobalUsings.ShapeProvider.Conveyor.cs" Link="GlobalUsings.ShapeProvider.Conveyor.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ConveyorAutomationLib\ConveyorAutomationLib.csproj" />
+    <ProjectReference Include="..\ConveyorLib\ConveyorLib.csproj" />
+    <ProjectReference Include="..\CoreLib\CoreLib.csproj" />
+    <ProjectReference Include="..\InputLib\InputLib.csproj" />
+    <ProjectReference Include="..\UILib\UILib.csproj" />
+  </ItemGroup>
+
+</Project>

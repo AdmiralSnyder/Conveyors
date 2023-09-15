@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\GlobalUsings.cs" Link="GlobalUsings.cs" />
-    <Compile Include="..\GlobalUsings.WPF.cs" Link="GlobalUsings.WPF.cs" />
-    <Compile Include="..\GlobalUsings.WpfLib.cs" Link="GlobalUsings.WpfLib.cs" />
+    <Compile Include="..\GlobalUsings\GlobalUsings.cs" Link="GlobalUsings.cs" />
+    <Compile Include="..\GlobalUsings\GlobalUsings.WPF.cs" Link="GlobalUsings.WPF.cs" />
+    <Compile Include="..\GlobalUsings\GlobalUsings.WpfLib.cs" Link="GlobalUsings.WpfLib.cs" />
   </ItemGroup>
 
   <ItemGroup>

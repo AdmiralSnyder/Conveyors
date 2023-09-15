@@ -664,17 +664,23 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         }
     }
 
-    private static void Pythagoras(double a, double b, out double c)
+    public static void Pythagoras(double a, double b, out double c)
     {
         c = Math.Sqrt(a * a + b * b);
     }
     
-    private static void Pythagoras(double a, out double b, double c)
+    public static void Pythagoras(double a, out double b, double c)
     {
         // a^2+b^2=c^2
         // b^2=c^2-a^2
         // b=sqrt(c^2-a^2)
         b = Math.Sqrt(c * c - a * a);
+    }
+
+    public static bool PointIsInCircle(Point point, CircleDefinition definition)
+    {
+        var (c, r) = definition.CenterRadius;
+        return new Vector(point, c).Length() < r;
     }
 }
 

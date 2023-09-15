@@ -10,7 +10,9 @@ public class WebEllipse : WebShape
     protected override async Task DrawAsyncVirtual(Canvas2DContext context)
     {
         await context.BeginPathAsync();
-        await context.ArcAsync(Location.X + Radius, Location.Y+ Radius, Radius, 0, 2 * Math.PI);
+        await context.ArcAsync(Location.X + Radius, Location.Y + Radius, Radius, 0, 2 * Math.PI);
         await DrawAsyncInternal(context);
     }
+
+    public override bool ContainsPoint(Point point) => Maths.PointIsInCircle(point, new(Location + (Width / 2, Height / 2), Radius));
 }

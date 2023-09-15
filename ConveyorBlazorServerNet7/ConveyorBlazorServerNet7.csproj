@@ -7,8 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\GlobalUsings.ConveyorLib.cs" Link="GlobalUsings.ConveyorLib.cs" />
-    <Compile Include="..\GlobalUsings.cs" Link="GlobalUsings.cs" />
+    <Compile Include="..\GlobalUsings\GlobalUsings.AutoRoot.Conveyor.cs" Link="GlobalUsings.AutoRoot.Conveyor.cs" />
+    <Compile Include="..\GlobalUsings\GlobalUsings.ConveyorLib.cs" Link="GlobalUsings.ConveyorLib.cs" />
+    <Compile Include="..\GlobalUsings\GlobalUsings.cs" Link="GlobalUsings.cs" />
+    <Compile Include="..\GlobalUsings\GlobalUsings.ShapeProvider.Conveyor.cs" Link="GlobalUsings.ShapeProvider.Conveyor.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AutomationLib\AutomationLib.csproj" />
     <ProjectReference Include="..\ConveyorAutomationLib\ConveyorAutomationLib.csproj" />
+    <ProjectReference Include="..\ConveyorInputLib\ConveyorInputLib.csproj" />
     <ProjectReference Include="..\ConveyorLibWeb\ConveyorLibWeb.csproj" />
     <ProjectReference Include="..\ConveyorLib\ConveyorLib.csproj" />
     <ProjectReference Include="..\CoreLib\CoreLib.csproj" />

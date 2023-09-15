@@ -1,4 +1,5 @@
 ﻿using CoreLib;
+using InputLib;
 
 namespace ConveyorApp.Inputters.Helpers;
 
@@ -11,7 +12,7 @@ public class ShowFixedPointInputHelper : ShowPointInputHelper<ShowFixedPointInpu
         set => Func.Setter(ref _Location, value, () => TmpShape.SetCenterLocation(Location));
     }
 
-    public static ShowFixedPointInputHelper Create(CanvasInputContext context, Point location)
+    public static ShowFixedPointInputHelper Create(InputContextBase context, Point location)
     {
         var result = Create(context);
         result.Location = location;

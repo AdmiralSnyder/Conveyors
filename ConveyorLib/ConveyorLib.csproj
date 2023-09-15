@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\GlobalUsings.ConveyorLib.cs" Link="GlobalUsings.ConveyorLib.cs" />
-    <Compile Include="..\GlobalUsings.cs" Link="GlobalUsings.cs" />
+    <Compile Include="..\GlobalUsings\GlobalUsings.ConveyorLib.cs" Link="GlobalUsings.ConveyorLib.cs" />
+    <Compile Include="..\GlobalUsings\GlobalUsings.cs" Link="GlobalUsings.cs" />
   </ItemGroup>
 
   <ItemGroup>

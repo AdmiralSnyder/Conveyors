@@ -17,4 +17,6 @@ public class WebLine : WebShape
         await DrawAsyncInternal(context);
         //await context.SetStrokeStyleAsync(oldStrokeStyle);
     }
+
+    public override bool ContainsPoint(Vector point) => false;
 }

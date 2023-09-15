@@ -1,4 +1,4 @@
-﻿namespace ConveyorApp.Inputters.Helpers;
+﻿namespace InputLib;
 
 public class ShowUserNotesInputHelper : Inputter<ShowUserNotesInputHelper, InputContextBase>
 {

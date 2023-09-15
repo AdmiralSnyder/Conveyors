@@ -1,17 +1,25 @@
 ﻿@page "/"
 
 @using ConveyorBlazorServerNet7.Components
+@using ConveyorInputLib;
 @using Microsoft.AspNetCore.SignalR.Client;
 
-<PageTitle>Index</PageTitle>
-
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
-
-<SurveyPrompt Title="How is Blazor working for you?" />
+<button @onclick=MoveButtonClick disabled=@MoveButtonDisabled>Move</button>
 <Canvas />
 
 @code
 {
+    private bool MoveButtonDisabled{ get; set; }
+
+    async void MoveButtonClick()
+    {
+        MoveButtonDisabled = true;
+        StateHasChanged();
+        if ((await MoveConveyorPointInputter.StartInput(AppContent.InputContext)).IsSuccess(out var info))
+        {
+            AutoRoot.MovePoint(info.Item1, info.Item2);
+        };
+        MoveButtonDisabled = false;
+        StateHasChanged();
+    }
 }

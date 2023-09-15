@@ -183,7 +183,10 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
             }
             else
             {
-                ArcGeometry.AddArcFigure(prevEnd, nextStart, radius, Point.Angle.Degrees, largeArc, swDir);
+                if (prevEnd != nextStart)
+                {
+                    ArcGeometry.AddArcFigure(prevEnd, nextStart, radius, Point.Angle.Degrees, largeArc, swDir);
+                }
             }
 
 

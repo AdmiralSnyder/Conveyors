@@ -1,32 +1,32 @@
-﻿using ConveyorApp.Inputters.Helpers;
-using CoreLib;
+﻿using CoreLib;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
+using InputLib;
+using UILib.Shapes;
 
-namespace ConveyorApp.Inputters;
+namespace InputLib;
 
-public abstract class Inputter
+public abstract class Inputter : IInputter
 {
-    public virtual void HandleMouseDown(object sender, MouseButtonEventArgs e) { }
+    public virtual void HandleMouseDown(object sender, EventArgs e) { }
 
-    public virtual void HandleMouseMove(object sender, MouseEventArgs e) { }
+    public virtual void HandleMouseMove(object sender, EventArgs e) { }
 
     public abstract void Start();
 
     public abstract void RunAsync();
 
     public abstract void Abort();
+
+    public virtual IEnumerable<IShape> GetMouseDownShapes() => [];
 }
 
-public abstract class InputterBase<TThis, TContext, TTask> : Inputter
-    where TThis : InputterBase<TThis, TContext, TTask>, new()
-    where TContext : InputContextBase
+public abstract class InputterBase<TThis, TTask> : Inputter
+    where TThis : InputterBase<TThis, TTask>, new()
 {
-    private TContext? _Context;
+    private InputContextBase? _Context;
 
-    public TContext Context 
+    public InputContextBase Context 
     {
         get => _Context ?? throw new NullReferenceException("Context darf nicht null sein");
         private set => Func.Setter(ref _Context, value, ContextAssigned);
@@ -34,7 +34,7 @@ public abstract class InputterBase<TThis, TContext, TTask> : Inputter
 
     protected virtual void ContextAssigned() { }
     
-    public static TThis Create(TContext context) => new() { Context = context };
+    public static TThis Create(InputContextBase context) => new() { Context = context };
 
     public override void Start() => AttachEvents();
 
@@ -75,13 +75,7 @@ public abstract class InputterBase<TThis, TContext, TTask> : Inputter
         CleanupVirtual();
     }
 
-    protected virtual void CleanupVirtual() 
-    {
-        if (Context.CurrentInputter == this)
-        {
-            Context.CurrentInputter = null;
-        }
-    }
+    protected virtual void CleanupVirtual() => Context.ClearInputter(this);
 
     protected virtual void AbortVirtual() { }
 
@@ -91,7 +85,7 @@ public abstract class InputterBase<TThis, TContext, TTask> : Inputter
 
     private Inputter[]? SubInputters { get; set; }
 
-    public static TTask StartInput(TContext context, params Inputter[] subInputters)
+    public static TTask StartInput(InputContextBase context, params Inputter[] subInputters)
     {
         var inputter = Create(context);
         inputter.SubInputters = subInputters;
@@ -100,9 +94,8 @@ public abstract class InputterBase<TThis, TContext, TTask> : Inputter
 
 }
 
-public abstract class Inputter<TThis, TContext> : InputterBase<TThis, TContext, Task>
-    where TThis : Inputter<TThis, TContext>, new()
-    where TContext : InputContextBase
+public abstract class Inputter<TThis> : InputterBase<TThis, Task>
+    where TThis : Inputter<TThis>, new()
 {
     protected TaskCompletionSource TaskCompletionSource { get; set; }
 
@@ -120,9 +113,8 @@ public abstract class Inputter<TThis, TContext> : InputterBase<TThis, TContext, 
     }
 }
 
-public abstract class Inputter<TThis, TResult, TContext> : InputterBase<TThis, TContext, Task<InputResult<TResult>>>
-    where TThis : Inputter<TThis, TResult, TContext>, new()
-    where TContext : InputContextBase
+public abstract class Inputter<TThis, TResult> : InputterBase<TThis, Task<InputResult<TResult>>>
+    where TThis : Inputter<TThis, TResult>, new()
 {
     protected TaskCompletionSource<InputResult<TResult>> TaskCompletionSource { get; set; }
 
@@ -155,42 +147,10 @@ public abstract class Inputter<TThis, TResult, TContext> : InputterBase<TThis, T
     }
 }
 
-public abstract class Inputter<TThis, TResult, TContext, THelpers> : Inputter<TThis, TResult, TContext>
-    where TThis : Inputter<TThis, TResult, TContext, THelpers>, new()
-    where TContext : InputContextBase
-    where THelpers : InputHelpers<TContext>, new()
+public abstract class Inputter<TThis, TResult, THelpers> : Inputter<TThis, TResult>
+    where TThis : Inputter<TThis, TResult, THelpers>, new()
+    where THelpers : InputHelpers, new()
 {
     public THelpers Helpers { get; private set; }
     protected override void ContextAssigned() => Helpers = new() { Context = Context };
-}
-
-public abstract class StatefulInputter<TThis, TResult, TInputState, TContext> : Inputter<TThis, TResult, TContext>
-    where TThis : StatefulInputter<TThis, TResult, TInputState, TContext>, new()
-    where TInputState : struct, Enum
-    where TContext : InputContextBase
-{
-
-
-    private TInputState _InputState;
-    protected TInputState InputState
-    {
-        get => _InputState;
-        set
-        {
-            if (!value.Equals(_InputState))
-            {
-                var oldValue = _InputState;
-                _InputState = value;
-                InputStateChanged(oldValue, value);
-            }
-        }
-    }
-
-    protected virtual void InputStateChanged(TInputState oldValue, TInputState newValue)
-    {
-        InputStateChanged(newValue);
-    }
-
-    protected virtual void InputStateChanged(TInputState newValue)
-    { }
 }

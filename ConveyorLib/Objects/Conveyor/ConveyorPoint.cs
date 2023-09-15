@@ -2,6 +2,8 @@
 
 namespace ConveyorLib.Objects.Conveyor;
 
+public interface IMovable { }
+
 public interface IElementsNode<T>
 {
     public LinkedListNode<IPathPart> ElementsNode { get; }
@@ -12,7 +14,7 @@ public interface IListNode<T>
     public LinkedListNode<T> Node { get; }
 }
 
-public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IElementsNode<IPathPart>, IListNode<ConveyorPoint>, IRefreshable, IAutomationOutByID
+public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IElementsNode<IPathPart>, IListNode<ConveyorPoint>, IRefreshable, IAutomationOutByID, IMovable
 {
     public string ID => $"{Conveyor.Number}.{Number}";
 

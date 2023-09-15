@@ -1,9 +1,10 @@
 ﻿using System.Threading.Tasks;
 using ConveyorApp.Inputters.Helpers;
+using InputLib;
 
 namespace ConveyorApp.Inputters;
 
-public class LineInputter : Inputter<LineInputter, (Point P1, Point P2), CanvasInputContext, CanvasInputHelpers>
+public class LineInputter : Inputter<LineInputter, (Point P1, Point P2), CanvasInputHelpers>
 {
     protected override async Task<InputResult<(Vector, Vector)>> StartAsyncVirtual() 
         => await InputManager.Blank()

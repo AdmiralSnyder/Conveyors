@@ -4,12 +4,15 @@
 @using Microsoft.AspNetCore.SignalR.Client;
 @inject NavigationManager Navigation
 
-<BECanvas Width="500" Height="500" @ref=TheCanvas />
+<CanvasComponent Width="500" Height="500" Style="z-index:1;position:absolute;left:0;top:200px;" @ref=TheCanvas 
+CanvasClick=OnMouseClick 
+CanvasMouseMove=OnMouseMove/>
+@* <CanvasComponent Width="500" Height="500" Style="z-index:2;position:absolute;left:0;top:200px;" @ref=EventCaptureCanvas CanvasClick=OnMouseClick /> *@
+
 
 @code
 {
     private HubConnection? hubConnection;
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -29,16 +32,17 @@
 
             await hubConnection.StartAsync();
         }
+
+        AppContent.InputContext.OnNotify += () => InvokeAsync(StateHasChanged);
     }
 
     private BECanvasComponent TheCanvas { get; set; }
-    protected override void OnAfterRender(bool firstRender)
-    {
-        base.OnAfterRender(firstRender);
-    }
+    // private BECanvasComponent EventCaptureCanvas { get; set; }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+
         var ctx = await TheCanvas.CreateCanvas2DAsync();
         await ctx.BeginBatchAsync();
         await ctx.ClearRectAsync(0, 0, 500, 500);
@@ -50,28 +54,21 @@
             await obj.DrawAsync(ctx);
         }
 
-
-        // await ctx.MoveToAsync(100, 100);
-        // await ctx.LineToAsync(130, 100);
-        // await ctx.StrokeAsync();
-        // await ctx.BeginPathAsync();
-        // await ctx.ArcAsync(150, 150, 50, 0, Math.PI, false);
-        // await ctx.StrokeAsync();
-
-        // await ctx.BeginPathAsync();
-        // await ctx.ArcAsync(300, 300, 50, Math.PI / 2, Math.PI * 1.5, false);
-        // await ctx.StrokeAsync();
-        // await ctx.StrokeAsync();
-        // await ctx.LineToAsync(200, 200);
-        // await ctx.StrokeAsync();
-        // await ctx.LineToAsync(150, 150);
-        // await ctx.StrokeAsync();
-
-        // await ctx.ArcToAsync(300, 300, 350, 300, 50);
-
-        
-        
         await ctx.EndBatchAsync();
 
+        // var ctx2 = await EventCaptureCanvas.CreateCanvas2DAsync();
+        // await ctx2.ClearRectAsync(0, 0, 500, 500);
+        // await ctx2.SetFillStyleAsync("#80808080");
+        // await ctx2.FillRectAsync(100, 100, 200, 200);
+    }
+
+    private void OnMouseClick(MouseEventArgs mea)
+    {
+        AppContent.CanvasInfo.Canvas.DoMouseClick(mea);
+    }
+
+    private void OnMouseMove(MouseEventArgs mea)
+    {
+        AppContent.CanvasInfo.Canvas.DoMouseMove(mea);
     }
 }

@@ -1,44 +1,56 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Shapes;
 using CoreLib;
-using UILib;
 using UILib.Shapes;
 using WpfLib;
+using InputLib;
 
 namespace ConveyorApp;
 
-public class CanvasInputContext : InputContextBase
+public class WpfCanvasInputContext : InputContextBase
 {
     private WpfCanvasInfo _Canvas;
-    public WpfCanvasInfo Canvas 
-    { 
+    public WpfCanvasInfo Canvas
+    {
         get => _Canvas;
-        set => Func.Setter(ref _Canvas, value, RegisterCanvas); 
+        set => Func.Setter(ref _Canvas, value, RegisterCanvas);
     }
+
+    public override bool ShapesHaveEvents => true;
+
+    public override void AddTempShape(IShape shape) => Canvas.AddToCanvas(shape);
+    public override void RemoveTempShape(IShape shape) => Canvas.RemoveFromCanvas(shape);
 
     private void RegisterCanvas(WpfCanvasInfo oldCanvasInfo, WpfCanvasInfo newCanvasInfo)
     {
-        if (oldCanvasInfo is { Canvas :  { } oldCanvas})
+        if (oldCanvasInfo is { Canvas: { } oldCanvas })
         {
-            oldCanvas.MouseDown -= HandleMouseDown;
-            oldCanvas.MouseUp -= HandleMouseUp;
-            oldCanvas.MouseMove -= HandleMouseMove;
+            oldCanvas.MouseDown -= MouseDownEventHandler;
+            oldCanvas.MouseUp -= MouseUpEventHandler;
+            oldCanvas.MouseMove -= MouseMoveEventHandler;
         }
-        if (newCanvasInfo is { Canvas: { } newCanvas})
-        { 
-            newCanvas.MouseDown += HandleMouseDown;
-            newCanvas.MouseUp += HandleMouseUp;
-            newCanvas.MouseMove += HandleMouseMove;
+        if (newCanvasInfo is { Canvas: { } newCanvas })
+        {
+            newCanvas.MouseDown += MouseDownEventHandler;
+            newCanvas.MouseUp += MouseUpEventHandler;
+            newCanvas.MouseMove += MouseMoveEventHandler;
         }
     }
 
-    public TextBlock NotesLabel { get; set; }
+    protected void MouseMoveEventHandler(object sender, MouseEventArgs e) => HandleMouseMove(sender, e);
+    protected void MouseUpEventHandler(object sender, MouseButtonEventArgs e) => HandleMouseUp(sender, e);
+    protected void MouseDownEventHandler(object sender, MouseButtonEventArgs e) => HandleMouseDown(sender, e);
 
-    public override void SetCursor(Cursor cursor) => Canvas.Canvas.Cursor = cursor;
+    public override void SetCursor(InputCursors cursor) => Canvas.Canvas.Cursor = cursor switch
+    {
+        InputCursors.Normal => Cursors.Arrow,
+        InputCursors.Hand => Cursors.Hand,
+        InputCursors.Cross => Cursors.Cross,
+        _ => throw new NotImplementedException("Missing cursor")
+    };
 
     public override void CaptureMouse()
     {
@@ -71,22 +83,22 @@ public class CanvasInputContext : InputContextBase
         }
     }
 
-    protected override bool HandleMouseDownPanning(MouseButtonEventArgs e)
+    protected override bool HandleMouseDownPanning(EventArgs e)
     {
-        if (e.ChangedButton == MouseButton.Middle && PanPoint is null)
+        if (e is MouseButtonEventArgs mbea && mbea.ChangedButton == MouseButton.Middle && PanPoint is null)
         {
-            PanPoint = GetWindowPoint(e);
+            PanPoint = GetWindowPoint(mbea);
             PanValue = ViewModel.PanValue;
             return true;
         }
         return false;
     }
 
-    protected override bool HandleMouseMovePanning(MouseEventArgs e)
+    protected override bool HandleMouseMovePanning(EventArgs e)
     {
-        if (e.MiddleButton == MouseButtonState.Pressed && PanPoint.HasValue)
+        if (e is MouseEventArgs mea && mea.MiddleButton == MouseButtonState.Pressed && PanPoint.HasValue)
         {
-            var diff = GetWindowPoint(e) - PanPoint.Value;
+            var diff = GetWindowPoint(mea) - PanPoint.Value;
 
             ViewModel.PanValue = (PanValue.X + diff.X, PanValue.Y + diff.Y);
             return true;
@@ -105,7 +117,7 @@ public class CanvasInputContext : InputContextBase
 
 
 
-    
+
 
 
     //private const double SnapGridWidthDefault = 10;
@@ -119,19 +131,6 @@ public class CanvasInputContext : InputContextBase
     public Point SnapPoint(Point point, bool snap) => snap ? SnapPoint(point, snap, (int)ViewModel.SnapGridWidth) : point;
     public Point SnapPoint(Point point, bool snap, int snapGridWidth) => snap ? ((int)((point.X + snapGridWidth / 2) / snapGridWidth) * snapGridWidth, (int)((point.Y + snapGridWidth / 2) / snapGridWidth) * snapGridWidth) : point;
 
-    public void SetLineEnd(ILine line, Point point)
-    {
-        line.X2 = point.X;
-        line.Y2 = point.Y;
-    }
-
-    public ILine AddLine(Point from, Point to)
-    {
-        var line = ViewModel.ShapeProvider.CreateConveyorPositioningLine(((Point)from, (Point)to));
-        Canvas.AddToCanvas(line);
-        return line;
-    }
-
     public IShape AddPoint(Point point)
     {
         var pointShape = ViewModel.ShapeProvider.CreatePoint(point);
@@ -139,9 +138,9 @@ public class CanvasInputContext : InputContextBase
         return pointShape;
     }
 
-    protected override bool HandleMouseUpPanning(MouseButtonEventArgs e)
+    protected override bool HandleMouseUpPanning(EventArgs e)
     {
-        if (e.ChangedButton == MouseButton.Middle)
+        if (e is MouseButtonEventArgs mbea && mbea.ChangedButton == MouseButton.Middle)
         {
             PanPoint = null;
             return true;
@@ -149,20 +148,37 @@ public class CanvasInputContext : InputContextBase
         return false;
     }
 
-    protected override void HandleMouseDownVirtual(MouseButtonEventArgs e)
+    protected override void HandleMouseDownVirtual(EventArgs e)
     {
         base.HandleMouseDownVirtual(e);
-        if (e.LeftButton == MouseButtonState.Pressed)
+        if (e is MouseButtonEventArgs mbea)
         {
-            var point = GetCanvasPoint(e);
-            DoLeftMouseButtonClicked(new(point));
-        }
-
-        else if (e.RightButton == MouseButtonState.Pressed)
-        {
-            DoAbort();
+            if (mbea.LeftButton == MouseButtonState.Pressed)
+            {
+                var point = GetCanvasPoint(mbea);
+                DoLeftMouseButtonClicked(new(point));
+            }
+            else if (mbea.RightButton == MouseButtonState.Pressed)
+            {
+                DoAbort();
+            }
         }
     }
 
     internal void RemoveShape(Shape centerPointShape) => Canvas.RemoveFromCanvas(centerPointShape);
+
+    public override Point GetPoint(EventArgs args) => GetSnappedCanvasPoint((MouseEventArgs)args);
+    public override Point GetPoint(Point point) => SnapPoint(point);
+
+    public override bool IsShiftPressed() => Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+
+    public override bool IsRightClick(EventArgs args)
+        => args is MouseButtonEventArgs mbea
+        ? mbea.ChangedButton == MouseButton.Right
+        : throw new NotImplementedException("unknown event args");
+
+    public override bool IsMiddleClick(EventArgs args)
+        => args is MouseButtonEventArgs mbea
+        ? mbea.ChangedButton == MouseButton.Middle
+        : throw new NotImplementedException("unknown event args");
 }

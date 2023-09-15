@@ -35,7 +35,7 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
 
     private Canvas _TheCanvas;
 
-    public CanvasInputContext InputContext { get; private set; }
+    public WpfCanvasInputContext InputContext { get; private set; }
     internal IConveyorShapeProvider ShapeProvider { get; set; }
     public SelectionManager SelectionManager { get; set; }
     public CanvasPickManager PickManager { get; set; }
@@ -44,8 +44,6 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
 
     public CreationCommandManager CreationCommandManager { get; set; }
 
-    public IGeneratedConveyorAutomationObject AutoRoot { get; private set; }
-
     public Action<string> LogAction { get; set; }
 
     public Canvas TheCanvas
@@ -53,7 +51,7 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
         get => _TheCanvas;
         set => Func.Setter(ref _TheCanvas, value, theCanvas =>
         {
-            InputContext = new CanvasInputContext()
+            InputContext = new WpfCanvasInputContext()
             {
                 Canvas = new() { Canvas = theCanvas },
 

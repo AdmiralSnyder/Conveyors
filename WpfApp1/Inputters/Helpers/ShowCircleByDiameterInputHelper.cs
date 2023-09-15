@@ -1,10 +1,12 @@
-﻿namespace ConveyorApp.Inputters.Helpers;
+﻿using InputLib;
+
+namespace ConveyorApp.Inputters.Helpers;
 
 public class ShowCircleByDiameterInputHelper : ShowDynamicCircleInputHelper<ShowCircleByDiameterInputHelper>
 {
     public Point Point1 { get; set; }
 
-    internal static ShowCircleByDiameterInputHelper Create(CanvasInputContext context, Point point1)
+    internal static ShowCircleByDiameterInputHelper Create(InputContextBase context, Point point1)
     {
         var result = Create(context);
         result.Point1 = point1;

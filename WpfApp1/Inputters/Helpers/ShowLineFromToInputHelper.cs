@@ -30,5 +30,5 @@ where TThis : ShowLineFromToInputHelper<TThis>, new()
         });
     }
 
-    protected override ILine CreateShape() => Context.ViewModel.ShapeProvider.CreateTempLine(default);
+    protected override ILine CreateShape() => ShapeProvider.CreateTempLine(default);
 }

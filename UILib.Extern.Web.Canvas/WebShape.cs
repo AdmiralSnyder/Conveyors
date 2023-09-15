@@ -11,6 +11,8 @@ public abstract class WebShape
         await DrawAsyncVirtual(context);
     }
 
+    public abstract bool ContainsPoint(Point point);
+
     protected abstract Task DrawAsyncVirtual(Canvas2DContext context);
 
     protected async Task DrawStroke(Canvas2DContext context)
@@ -43,6 +45,10 @@ public abstract class WebShape
         await DrawFill(context);
         await DrawStroke(context);
     }
+
+    private Dictionary<MouseActions, Delegate> MouseActions = new();
+    public void AddMouseAction(MouseActions mouseAction, Delegate action) => this.MouseActions[mouseAction] = action;
+    public bool TryGetMouseAction(MouseActions mouseAction, out Delegate action) => this.MouseActions.TryGetValue(mouseAction, out action);
 
     public bool Visible { get; set; } = true;
     public double Height { get; set; }

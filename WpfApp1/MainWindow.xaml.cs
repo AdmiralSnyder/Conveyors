@@ -16,7 +16,6 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using UILib;
 using WpfLib;
-using ConveyorApp.Inputters;
 using CoreLib.Definition;
 using System.Windows.Controls;
 using System.Threading.Tasks;
@@ -24,6 +23,7 @@ using UILib.Shapes;
 using ScriptingLib;
 using Microsoft.AspNetCore.SignalR.Client;
 using WpfLib.Behaviors;
+using ConveyorInputLib;
 
 namespace ConveyorApp;
 
@@ -46,7 +46,7 @@ public partial class MainWindow
 
         ViewModel.CreationCommandManager.AddCommands(AddActionButton);
 
-        ScriptRunner.InitializeScriptingEnvironment(ViewModel.AutoRoot, 
+        ScriptRunner.InitializeScriptingEnvironment(AutoRoot, 
             async () => await RunB.Dispatcher.InvokeAsync(() => RunB.IsEnabled = true),
             async () => await Dispatcher.InvokeAsync(() => Mouse.OverrideCursor = Cursors.Wait),
             async () => await Dispatcher.InvokeAsync(() => Mouse.OverrideCursor = null),
@@ -146,9 +146,9 @@ public partial class MainWindow
 
     private void PutItemB_Click(object sender, RoutedEventArgs e)
     {
-        foreach (var conveyor in ViewModel.AutoRoot.Conveyors)
+        foreach (var conveyor in AutoRoot.Conveyors)
         {
-            conveyor.SpawnItems(ViewModel.ShapeProvider, FirstOnlyCB.IsChecked);
+            conveyor.SpawnItems(ShapeProvider, FirstOnlyCB.IsChecked);
         }
     }
 
@@ -157,7 +157,10 @@ public partial class MainWindow
     private async void MovePointB_Click(object sender, RoutedEventArgs e)
     {
         ViewModel.IsRunning = false;
-        await MoveInputter.StartInput(ViewModel.InputContext);
+        if ((await MoveConveyorPointInputter.StartInput(ViewModel.InputContext)).IsSuccess(out var info))
+        {
+            AutoRoot.MovePoint(info.Item1, info.Item2);
+        };
     }
 
     private async void RunB_Click(object sender, RoutedEventArgs e) => await ScriptRunner.RunScript(textEditor.Text);
@@ -186,7 +189,7 @@ public partial class MainWindow
             {
                 foreach (var strokecoords in charCoords)
                 {
-                    ViewModel.AutoRoot.AddConveyor(strokecoords.Scale(scaling + yOffset).Add((xOffset * 60 * (1 + (yOffset * 0.2)) + 40, yOffset * 90 + 40)), true, yOffset + 2);
+                    AutoRoot.AddConveyor(strokecoords.Scale(scaling + yOffset).Add((xOffset * 60 * (1 + (yOffset * 0.2)) + 40, yOffset * 90 + 40)), true, yOffset + 2);
                 }
                 xOffset++;
             }
@@ -205,9 +208,9 @@ public partial class MainWindow
         DebugHelper.PutLineSegmentVector(line2.RefPoints);
     }
 
-    private void SaveB_Click(object sender, RoutedEventArgs e) => ViewModel.AutoRoot.SaveCustom(@"T:\conveyorApp\conveyorApp.json");
+    private void SaveB_Click(object sender, RoutedEventArgs e) => AutoRoot.SaveCustom(@"T:\conveyorApp\conveyorApp.json");
 
-    private void LoadB_Click(object sender, RoutedEventArgs e) => ViewModel.AutoRoot.Load(@"T:\conveyorApp\conveyorApp.json");
+    private void LoadB_Click(object sender, RoutedEventArgs e) => AutoRoot.Load(@"T:\conveyorApp\conveyorApp.json");
 
     private void SelectB_Click(object sender, RoutedEventArgs e) => ViewModel.SelectionManager.ToggleSelectMode();
 

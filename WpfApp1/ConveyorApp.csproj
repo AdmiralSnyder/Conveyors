@@ -38,8 +38,10 @@
 	</Target>-->
 
 	<ItemGroup>
-		<Compile Include="..\GlobalUsings.cs" Link="GlobalUsings.cs" />
-		<Compile Include="..\GlobalUsings.WpfLib.cs" Link="GlobalUsings.WpfLib.cs" />
+		<Compile Include="..\GlobalUsings\GlobalUsings.AutoRoot.Conveyor.cs" Link="GlobalUsings.AutoRoot.Conveyor.cs" />
+		<Compile Include="..\GlobalUsings\GlobalUsings.cs" Link="GlobalUsings.cs" />
+		<Compile Include="..\GlobalUsings\GlobalUsings.ShapeProvider.Conveyor.cs" Link="GlobalUsings.ShapeProvider.Conveyor.cs" />
+		<Compile Include="..\GlobalUsings\GlobalUsings.WpfLib.cs" Link="GlobalUsings.WpfLib.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -52,10 +54,12 @@
 		<ProjectReference Include="..\AutomationLib\AutomationLib.csproj" />
     <ProjectReference Include="..\ControlsLib.Wpf\ControlsLib.Wpf.csproj" />
     <ProjectReference Include="..\ConveyorAutomationLib\ConveyorAutomationLib.csproj" />
+    <ProjectReference Include="..\ConveyorInputLib\ConveyorInputLib.csproj" />
 		<ProjectReference Include="..\ConveyorLib.Wpf\ConveyorLib.Wpf.csproj" />
 		<ProjectReference Include="..\ConveyorLib\ConveyorLib.csproj" />
 		<ProjectReference Include="..\CoreLib\CoreLib.csproj" />
 		<ProjectReference Include="..\GenerationLib\GenerationLib.csproj" />
+		<ProjectReference Include="..\InputLib\InputLib.csproj" />
 		<ProjectReference Include="..\ScriptingLib\ScriptingLib.csproj" />
 		<ProjectReference Include="..\UILib\UILib.csproj" />
 		<ProjectReference Include="..\WpfLib\WpfLib.csproj" />

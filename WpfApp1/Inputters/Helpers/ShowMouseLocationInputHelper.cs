@@ -7,9 +7,12 @@ public class ShowMouseLocationInputHelper : ShowPointInputHelper<ShowMouseLocati
     protected override void AttachEvents() => Context.MouseMovedInCanvas += Context_MouseMovedInCanvas;
     protected override void DetachEvents() => Context.MouseMovedInCanvas -= Context_MouseMovedInCanvas;
 
-    private void Context_MouseMovedInCanvas(object sender, MouseEventArgs e)
+    private void Context_MouseMovedInCanvas(object sender, EventArgs e)
     {
-        var point = Context.GetSnappedCanvasPoint(e);
-        TmpShape.SetCenterLocation(point);
+        if (e is MouseEventArgs mea)
+        {
+            var point = Context.GetPoint(mea);
+            TmpShape.SetCenterLocation(point);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using AutomationLib;
+﻿using System.Security.Cryptography.X509Certificates;
+using AutomationLib;
 using Blazor.Extensions.Canvas.Canvas2D;
 using ConveyorAutomationLib;
 using ConveyorLib;
@@ -6,6 +7,7 @@ using ConveyorLib.Shapes;
 using ConveyorLibWeb;
 using ConveyorLibWeb.Shapes;
 using CoreLib;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.CodeAnalysis.Scripting;
 using ScriptingLib;
 using UILib;
@@ -17,6 +19,13 @@ namespace ConveyorBlazorServerNet7;
 public class WebCanvas
 {
     public List<WebShape> Children { get; } = new();
+
+    public event Action<EventArgs> MouseDown;
+    public event Action<EventArgs> MouseMove;
+
+    public void DoMouseClick(MouseEventArgs args) => MouseDown?.Invoke(args);
+
+    public void DoMouseMove(MouseEventArgs args) => MouseMove?.Invoke(args);
 }
 
 public class WebCanvasInfo : CanvasInfo<WebCanvas>, IConveyorCanvasInfo
@@ -41,7 +50,7 @@ public class WebCanvasInfo : CanvasInfo<WebCanvas>, IConveyorCanvasInfo
 
     public override TShape RemoveFromCanvas<TShape>(TShape shape)
     {
-        //Canvas.Remove((IAppObject)shape);
+        Canvas.Children.Remove(((WebCanvasShape)(object)shape).BackingShape);
         return shape;
     }
 }
@@ -52,10 +61,13 @@ public class AppContent
     {
         AutoRoot = ConveyorAutomationObject.CreateAutomationObject(out var context);
         AutoContext = context;
-        ShapeProvider = new();
+        ShapeProvider = new WebCanvasConveyorShapeProvider();
 
-        CanvasInfo = new() { Canvas = new(), ShapeProvider = ShapeProvider };
+
+        CanvasInfo = new() { ShapeProvider = ShapeProvider };
         AutoRoot.Init(CanvasInfo);
+
+        InputContext = new();
 
         ScriptRunner.InitializeScriptingEnvironment(AutoRoot, null, null, null, ex =>
         {
@@ -63,13 +75,27 @@ public class AppContent
         },
             new[] { typeof(Point), typeof(ConveyorAutomationLib.ConveyorAutomationObject) },
             new[] { typeof(Point), typeof(ConveyorAutomationLib.ConveyorAutomationObject) });
+
+        Canvas = new();
     }
+
+    private static WebCanvas _Canvas;
+    public static WebCanvas Canvas
+    {
+        get =>_Canvas;
+        set
+        {
+            _Canvas = value;
+            CanvasInfo.Canvas = value;
+            InputContext.Canvas = CanvasInfo;
+        }
+    }
+
+    public static WebCanvasInputContext InputContext { get; private set; }
 
     public static WebCanvasInfo CanvasInfo { get; private set; }
 
     public static IAutomationContext AutoContext { get; private set; }
-    public static IGeneratedConveyorAutomationObject AutoRoot { get; private set; }
-    public static WebCanvasConveyorShapeProvider ShapeProvider { get; private set; }
 
     public static ScriptRunner ScriptRunner { get; private set; } = new();
 }
