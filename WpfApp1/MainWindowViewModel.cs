@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ConveyorAutomationLib;
+using ConveyorInputLib;
 using ConveyorLib.Shapes;
 using ConveyorLib.Wpf;
 using CoreLib;
@@ -42,7 +43,7 @@ public class MainWindowViewModel : INotifyPropertyChangedImpl
 
     public InputPickManager InputPickManager { get; set; }
 
-    public CreationCommandManager CreationCommandManager { get; set; }
+    public WpfCreationCommandManager CreationCommandManager { get; set; }
 
     public Action<string> LogAction { get; set; }
 

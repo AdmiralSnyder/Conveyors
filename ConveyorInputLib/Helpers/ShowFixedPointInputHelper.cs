@@ -1,7 +1,9 @@
-﻿using CoreLib;
+﻿using ConveyorInputLib.Helpers;
+using CoreLib;
 using InputLib;
+using UILib;
 
-namespace ConveyorApp.Inputters.Helpers;
+namespace ConveyorInputLib.Helpers;
 
 public class ShowFixedPointInputHelper : ShowPointInputHelper<ShowFixedPointInputHelper>
 {

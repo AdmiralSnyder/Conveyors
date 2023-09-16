@@ -1,7 +1,8 @@
 ﻿using UILib.Shapes;
 using ConveyorLib.Shapes;
+using UILib;
 
-namespace ConveyorApp.Inputters.Helpers;
+namespace ConveyorInputLib.Helpers;
 
 public abstract class ShowDynamicCircleInputHelper<TThis> : ShowDynamicShapeInputHelper<TThis>
     where TThis : ShowDynamicCircleInputHelper<TThis>, new()

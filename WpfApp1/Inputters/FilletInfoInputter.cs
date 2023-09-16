@@ -1,4 +1,5 @@
 ﻿using ConveyorApp.Inputters.Helpers;
+using ConveyorInputLib.Helpers;
 using ConveyorLib.Objects;
 using CoreLib;
 using CoreLib.Definition;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ConveyorApp.Inputters;
 
-internal class FilletInfoInputter : Inputter<FilletInfoInputter, ((LineDefinition LineDefinition, Point Point) LineInfo1, (LineDefinition LineDefinition, Point Point) LineInfo2), CanvasInputHelpers>
+internal class FilletInfoInputter : Inputter<FilletInfoInputter, ((LineDefinition LineDefinition, Point Point) LineInfo1, (LineDefinition LineDefinition, Point Point) LineInfo2), WpfCanvasInputHelpers>
 {
     protected override async Task<InputResult<((LineDefinition LineDefinition, Point Point) LineInfo1, (LineDefinition LineDefinition, Point Point) LineInfo2)>> StartAsyncVirtual()
         => await InputManager.Blank()

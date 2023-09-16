@@ -1,20 +1,20 @@
-﻿using ConveyorApp.Inputters.Helpers;
+﻿using ConveyorInputLib.Helpers;
 using CoreLib;
 using InputLib;
 using System.Threading.Tasks;
 
-namespace ConveyorApp.Inputters;
+namespace ConveyorInputLib.Inputters;
 
 /// <summary>
 /// lets the user input the three points that will be used to create a circle
 /// </summary>
-class CircleThreePointsInputter : Inputter<CircleThreePointsInputter, (Point Point1, Point Point2, Point Point3), CanvasInputHelpers>
+public class CircleThreePointsInputter : Inputter<CircleThreePointsInputter, (Point Point1, Point Point2, Point Point3), CanvasInputHelpers>
 {
-    protected override async Task<InputResult<(Point Point1, Point Point2, Point Point3)>> StartAsyncVirtual() 
+    protected override async Task<InputResult<(Point Point1, Point Point2, Point Point3)>> StartAsyncVirtual()
     => await InputManager.Blank()
         .Then(async _ => await PointInputter.StartInput(Context,
             Helpers.ShowMouseLocation()))
-        .Then(async ctx => await PointInputter.StartInput(Context, 
+        .Then(async ctx => await PointInputter.StartInput(Context,
             Helpers.ShowMouseLocation(),
             Helpers.FixedPoint(ctx.Second)))
         .Then(async ctx => await PointInputter.StartInput(Context,

@@ -69,7 +69,21 @@ public class WebCanvasInputContext : InputContextBase
 
     public override bool IsRightClick(EventArgs args) => args is MouseEventArgs mea && mea.Button == 2;
 
-    
+    protected override void HandleMouseDownVirtual(EventArgs e)
+    {
+        base.HandleMouseDownVirtual(e);
+        if (e is MouseEventArgs mea)
+        {
+            if (mea.Button == 0)
+            {
+                DoLeftMouseButtonClicked(new(GetPoint(mea)));
+            }
+            else if (mea.Button == 2)
+            {
+                DoAbort();
+            }
+        }
+    }
 
 
 

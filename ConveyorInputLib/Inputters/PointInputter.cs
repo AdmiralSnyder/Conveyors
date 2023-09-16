@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace ConveyorApp.Inputters;
+namespace ConveyorInputLib.Inputters;
 
 public class PointInputter : Inputter<PointInputter, Point>
 {

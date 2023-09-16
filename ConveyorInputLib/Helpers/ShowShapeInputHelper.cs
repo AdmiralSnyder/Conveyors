@@ -2,7 +2,7 @@
 using InputLib;
 using UILib.Shapes;
 
-namespace ConveyorApp.Inputters.Helpers;
+namespace ConveyorInputLib.Helpers;
 
 public abstract class ShowShapeInputHelper<TThis, TShape> : Inputter<TThis, Unit>
     where TThis : ShowShapeInputHelper<TThis, TShape>, new()

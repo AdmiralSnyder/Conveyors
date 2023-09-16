@@ -1,7 +1,7 @@
 ﻿using System.Windows.Input;
 using InputLib;
 
-namespace ConveyorApp.Inputters.Helpers;
+namespace ConveyorInputLib.Helpers;
 
 public class ShowLineFromToMouseInputHelper : ShowLineFromToInputHelper<ShowLineFromToMouseInputHelper>
 {
@@ -16,12 +16,5 @@ public class ShowLineFromToMouseInputHelper : ShowLineFromToInputHelper<ShowLine
     protected override void AttachEvents() => Context.MouseMovedInCanvas += Context_MouseMovedInCanvas;
     protected override void DetachEvents() => Context.MouseMovedInCanvas -= Context_MouseMovedInCanvas;
 
-    private void Context_MouseMovedInCanvas(object sender, EventArgs e)
-    {
-        if (e is MouseEventArgs mea)
-        {
-            var point = Context.GetPoint(mea);
-            EndPoint = point;
-        }
-    }
+    private void Context_MouseMovedInCanvas(object sender, (Point Point, EventArgs args) e) => EndPoint = e.Point;
 }

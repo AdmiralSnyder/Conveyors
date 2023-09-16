@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Windows.Input;
 using InputLib;
+using UILib;
 
-namespace ConveyorApp.Inputters.Helpers;
+namespace ConveyorInputLib.Helpers;
 
 public class ShowCalculatedPointInputHelper : ShowPointInputHelper<ShowCalculatedPointInputHelper>
 {
@@ -18,13 +19,9 @@ public class ShowCalculatedPointInputHelper : ShowPointInputHelper<ShowCalculate
         return result;
     }
 
-    private void Context_MouseMovedInCanvas(object sender, EventArgs e)
+    private void Context_MouseMovedInCanvas(object sender, (Point Point, EventArgs args) e)
     {
-        if (e is MouseEventArgs mea)
-        {
-            var mousePoint = Context.GetPoint(mea);
-            var point = CalculationOnMouse(mousePoint);
-            TmpShape.SetCenterLocation(point);
-        }
+        var point = CalculationOnMouse(e.Point);
+        TmpShape.SetCenterLocation(point);
     }
 }

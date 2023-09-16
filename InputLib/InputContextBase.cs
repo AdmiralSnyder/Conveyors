@@ -99,7 +99,8 @@ public abstract class InputContextBase
         if (HandleMouseMovePanning(e)) return;
 
         CurrentInputter?.HandleMouseMove(sender, e);
-        MouseMovedInCanvas?.Invoke(sender, e);
+        
+        MouseMovedInCanvas?.Invoke(sender, (GetPoint(e), e));
         Notify();
     }
 
@@ -112,7 +113,7 @@ public abstract class InputContextBase
     protected abstract bool HandleMouseDownPanning(EventArgs e);
     protected abstract bool HandleMouseMovePanning(EventArgs e);
 
-    public event EventHandler MouseMovedInCanvas;
+    public event EventHandler<(Point Point, EventArgs args)> MouseMovedInCanvas;
 
     //public event MouseButtonEventHandler LeftMouseButtonClicked;
     //public event MouseButtonEventHandler RightMouseButtonClicked;

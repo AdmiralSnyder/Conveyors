@@ -2,7 +2,8 @@
 using UILib.Shapes;
 using ConveyorLib.Objects.Conveyor;
 using UILib;
-namespace ConveyorInputLib;
+
+namespace ConveyorInputLib.Inputters;
 
 public class MoveConveyorPointInputter : MoveCanvasPointInputterBase<MoveConveyorPointInputter, ConveyorPoint>
 {

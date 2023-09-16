@@ -3,7 +3,7 @@ using UILib.Shapes;
 using ConveyorLib.Objects.Conveyor;
 using InputLib;
 
-namespace ConveyorInputLib;
+namespace ConveyorInputLib.Inputters;
 
 public abstract class MoveCanvasPointInputterBase<TInputter, TPoint> : StatefulInputter<TInputter, (TPoint, Point), MoveCanvasPointInputterBase<TInputter, TPoint>.InputStates>
     where TInputter : MoveCanvasPointInputterBase<TInputter, TPoint>, new()

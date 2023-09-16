@@ -3,13 +3,33 @@
 @using ConveyorBlazorServerNet7.Components
 @using ConveyorInputLib;
 @using Microsoft.AspNetCore.SignalR.Client;
+@using ConveyorInputLib.Inputters;
+
+
 
 <button @onclick=MoveButtonClick disabled=@MoveButtonDisabled>Move</button>
+@foreach(var x in CreationCommandManager.StaticCommands)
+{
+    <button @onclick=@(async () => await x.Value(CommandManager)())>@(x.Key.Item2 ?? x.Key.Item1)</button>
+}
+
 <Canvas />
 
 @code
 {
-    private bool MoveButtonDisabled{ get; set; }
+    private bool MoveButtonDisabled { get; set; }
+
+    private static CreationCommandManager CommandManager { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        CommandManager = new CreationCommandManager();
+        CommandManager.InputContext = AppContent.InputContext;
+        CommandManager.AutoRoot = AutoRoot;
+
+        return base.OnInitializedAsync();
+
+    }
 
     async void MoveButtonClick()
     {
@@ -21,5 +41,15 @@
         };
         MoveButtonDisabled = false;
         StateHasChanged();
+
+
+    }
+
+    async void AddCircleCenterRadiusButtonClick()
+    {
+        if ((await CircleCenterRadiusInputter.StartInput(AppContent.InputContext)).IsSuccess(out var info))
+        {
+            AutoRoot.AddCircleCenterRadius(info);
+        }
     }
 }

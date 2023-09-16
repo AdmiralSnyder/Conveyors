@@ -1,6 +1,6 @@
 ﻿using InputLib;
 
-namespace ConveyorApp.Inputters.Helpers;
+namespace ConveyorInputLib.Helpers;
 
 public class ShowCircleByDiameterInputHelper : ShowDynamicCircleInputHelper<ShowCircleByDiameterInputHelper>
 {

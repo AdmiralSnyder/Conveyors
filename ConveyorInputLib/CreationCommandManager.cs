@@ -5,10 +5,12 @@ using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using ConveyorApp.Inputters;
-using ConveyorApp.Inputters.Helpers;
 using ConveyorAutomationLib;
+using ConveyorInputLib.Helpers;
+using ConveyorInputLib.Inputters;
+using InputLib;
 
-namespace ConveyorApp;
+namespace ConveyorInputLib;
 
 public class CreationCommandManager
 {
@@ -27,12 +29,11 @@ public class CreationCommandManager
         [("Add Circle by Center+Circ Point", "O1")] = c => c.AddCircleCenterRadius,
         [("Add Circle by Diameter Points", "O2")] = c => c.AddCircleTwoPoints,
         [("Add Circle by Three Points", "O3")] = c => c.AddCircleThreePoints,
-        [("Add Fillet", "U")] = c => c.AddFillet,
-        [("Add Conveyor", @"\___/")] = c => c.AddConveyor,
     };
 
-    private Dictionary<string, (Func<Task> Command, string? Caption)> Commands;
-    internal void AddCommands(Action<Func<Task>, string, string?> addActionButton)
+    protected Dictionary<string, (Func<Task> Command, string? Caption)> Commands { get; }
+
+    public void AddCommands(Action<Func<Task>, string, string?> addActionButton)
     {
         foreach (var command in Commands)
         {
@@ -40,10 +41,11 @@ public class CreationCommandManager
         }
     }
 
-    public WpfCanvasInputContext InputContext { get; internal set; }
-    public IGeneratedConveyorAutomationObject AutoRoot { get; internal set; }
+    public InputContextBase InputContext { get; set; }
 
-    internal async Task AddCircleCenterRadius()
+    public IGeneratedConveyorAutomationObject AutoRoot { get; set; }
+
+    public async Task AddCircleCenterRadius()
     {
         if ((await CircleCenterRadiusInputter.StartInput(InputContext)).IsSuccess(out var info))
         {
@@ -51,7 +53,7 @@ public class CreationCommandManager
         }
     }
 
-    internal async Task AddCircleThreePoints()
+    public async Task AddCircleThreePoints()
     {
         if ((await CircleThreePointsInputter.StartInput(InputContext)).IsSuccess(out var info))
         {
@@ -59,7 +61,7 @@ public class CreationCommandManager
         }
     }
 
-    internal async Task AddCircleTwoPoints()
+    public async Task AddCircleTwoPoints()
     {
         if ((await CircleDiameterInputter.StartInput(InputContext)).IsSuccess(out var info))
         {
@@ -67,9 +69,7 @@ public class CreationCommandManager
         }
     }
 
-
-
-    internal async Task AddLine()
+    public async Task AddLine()
     {
         if ((await LineInputter.Create(InputContext).StartAsync()).IsSuccess(out var points))
         {
@@ -77,7 +77,7 @@ public class CreationCommandManager
         }
     }
 
-    internal async Task AddLineSegment()
+    public async Task AddLineSegment()
     {
         if ((await LineInputter.Create(InputContext).StartAsync()).IsSuccess(out var points))
         {
@@ -85,32 +85,11 @@ public class CreationCommandManager
         }
     }
 
-    internal async Task AddPoint()
+    public async Task AddPoint()
     {
         if ((await PointInputter.StartInput(InputContext, ShowMouseLocationInputHelper.Create(InputContext))).IsSuccess(out var point))
         {
             AutoRoot.AddPoint(point);
-        }
-    }
-
-    internal async Task AddFillet()
-    {
-        if ((await FilletInfoInputter.StartInput(InputContext)).IsSuccess(out var linesWithPoints))
-        {
-            var point1 = linesWithPoints.LineInfo1.Point;
-            var point2 = linesWithPoints.LineInfo2.Point;
-            if (Maths.CreateFilletInfo(linesWithPoints.LineInfo1.LineDefinition, linesWithPoints.LineInfo2.LineDefinition, (point1, point2), out var filletInfo))
-            {
-                AutoRoot.AddFillet(filletInfo.Points, filletInfo.Radius);
-            }
-        }
-    }
-
-    internal async Task AddConveyor()
-    {
-        if ((await ConveyorInputter.StartInput(InputContext)).IsSuccess(out var points))
-        {
-            AutoRoot.AddConveyor(points, InputContext.ViewModel.IsRunning, InputContext.ViewModel.LaneCount);
         }
     }
 }

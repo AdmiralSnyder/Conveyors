@@ -1,7 +1,8 @@
-﻿using CoreLib;
+﻿using ConveyorInputLib.Helpers;
+using CoreLib;
 using UILib.Shapes;
 
-namespace ConveyorApp.Inputters.Helpers;
+namespace ConveyorInputLib.Helpers;
 
 public abstract class ShowLineFromToInputHelper<TThis> : ShowShapeInputHelper<TThis, ILine>
 where TThis : ShowLineFromToInputHelper<TThis>, new()

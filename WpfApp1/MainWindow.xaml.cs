@@ -23,7 +23,7 @@ using UILib.Shapes;
 using ScriptingLib;
 using Microsoft.AspNetCore.SignalR.Client;
 using WpfLib.Behaviors;
-using ConveyorInputLib;
+using ConveyorInputLib.Inputters;
 
 namespace ConveyorApp;
 
