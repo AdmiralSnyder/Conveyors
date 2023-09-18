@@ -7,6 +7,19 @@ namespace WpfLib;
 
 public class UIHelpersInstanceWpf : IUIHelpers
 {
+    public bool TryGetLocation<TShape>(TShape shape, out Vector location) where TShape : IShape
+    {
+        if (shape is WpfShape wpfShape && wpfShape.BackingShape is Shape shp && shp.TryGetLocationWpf(out location))
+        {
+            return true;
+        }
+        else
+        {
+            location = default;
+            return false;
+        }
+    }
+
     public V2d GetSize(IShape shape) => ((WpfShape)shape).BackingShape.GetSizeWpf();
 
     public TShape SetLocation<TShape>(TShape shape, Point location) where TShape : IShape 

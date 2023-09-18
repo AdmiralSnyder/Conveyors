@@ -94,8 +94,10 @@ public class WebCanvasInputContext : InputContextBase
 
     public override void SetCursor(InputCursors cursor)
     {
-        //throw new NotImplementedException();
+        OnCursorChanged?.Invoke(null, cursor);
     }
+
+    public event EventHandler<InputCursors> OnCursorChanged;
 
     protected override bool HandleMouseDownPanning(EventArgs e) => false;
 

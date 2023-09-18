@@ -15,6 +15,22 @@ public static class WpfFunc
         return shape;
     }
 
+    public static bool TryGetLocationWpf(this Shape shape, out Point location)
+    {
+        var x = Canvas.GetLeft(shape);
+        var y = Canvas.GetTop(shape);
+        if (double.IsNaN(x) || double.IsNaN(y))
+        {
+            location = default;
+            return false;
+        }
+        else
+        {
+            location = (x, y);
+            return true;
+        }
+    }
+
     public static Line SetLocationWpf(this Line line, TwoPoints points)
     {
         if (points.P1.X != line.X1)

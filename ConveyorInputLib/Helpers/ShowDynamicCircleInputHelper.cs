@@ -10,8 +10,8 @@ public abstract class ShowDynamicCircleInputHelper<TThis> : ShowDynamicShapeInpu
     protected override IShape CreateShape() => ShapeProvider.CreateCircle(default, default).MarkAsTemporary();
     protected void UpdateCircle(Point center, double radius)
     {
-        TmpShape.SetCenterLocation(center);
         TmpShape.Height = 2 * radius + 1;
         TmpShape.Width = 2 * radius + 1;
+        TmpShape.SetCenterLocation(center);
     }
 }

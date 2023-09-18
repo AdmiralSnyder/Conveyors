@@ -1,12 +1,14 @@
 ﻿@using Blazor.Extensions.Canvas
 @using Blazor.Extensions;
 @using ConveyorLib.Objects;
+@using InputLib;
 @using Microsoft.AspNetCore.SignalR.Client;
 @inject NavigationManager Navigation
 
-<CanvasComponent Width="500" Height="500" Style="z-index:1;position:absolute;left:0;top:200px;" @ref=TheCanvas 
-CanvasClick=OnMouseClick 
-CanvasMouseMove=OnMouseMove/>
+<CanvasComponent Width="500" Height="500" 
+    Style=@($"z-index:1;position:absolute;left:0;top:200px;cursor:{(Cursor == InputCursors.Hand ? "move" : "unset" )};") @ref=TheCanvas 
+    CanvasClick=OnMouseClick 
+    CanvasMouseMove=OnMouseMove/>
 @* <CanvasComponent Width="500" Height="500" Style="z-index:2;position:absolute;left:0;top:200px;" @ref=EventCaptureCanvas CanvasClick=OnMouseClick /> *@
 
 
@@ -36,7 +38,7 @@ CanvasMouseMove=OnMouseMove/>
         AppContent.InputContext.OnNotify += () => InvokeAsync(StateHasChanged);
     }
 
-    private BECanvasComponent TheCanvas { get; set; }
+    private CanvasComponent TheCanvas { get; set; }
     // private BECanvasComponent EventCaptureCanvas { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -48,6 +50,7 @@ CanvasMouseMove=OnMouseMove/>
         await ctx.ClearRectAsync(0, 0, 500, 500);
         await ctx.SetFillStyleAsync("#008000");
         await ctx.FillRectAsync(0, 0, 500, 500);
+        AppContent.InputContext.OnCursorChanged += (sender, args) => Cursor = args;
 
         foreach (var obj in AppContent.CanvasInfo.Canvas.Children.ToList())
         {
@@ -70,5 +73,12 @@ CanvasMouseMove=OnMouseMove/>
     private void OnMouseMove(MouseEventArgs mea)
     {
         AppContent.CanvasInfo.Canvas.DoMouseMove(mea);
+    }
+
+    private InputCursors _Cursor = InputCursors.Arrow;
+    private InputCursors Cursor
+    {
+        get => _Cursor;
+        set => Func.Setter(ref _Cursor, value, StateHasChanged);
     }
 }

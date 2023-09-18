@@ -1,7 +1,7 @@
 ﻿@using Blazor.Extensions;
 @inherits BECanvasComponent
 
-<canvas id="@Id" width="@Width" height="@Height" @ref="_canvasRef" style=@Style @onclick=@CanvasClick @onmousemove=@CanvasMouseMove></canvas>
+<canvas id="@Id" width="@Width" height="@Height" @ref="_canvasRef" style=@Style @onmousedown=@CanvasClick @onmousemove=@CanvasMouseMove oncontextmenu="return false;"></canvas>
 @code
 {
     [Parameter]

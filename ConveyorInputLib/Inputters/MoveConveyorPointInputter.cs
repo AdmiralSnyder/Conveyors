@@ -35,9 +35,22 @@ public class MoveConveyorPointInputter : MoveCanvasPointInputterBase<MoveConveyo
     {
         base.HandleMouseMove(sender, e);
 
+        var point = Context.GetPoint(e);
+        if (MoveCircles.Any(mc => mc.GetCircleDefinition(out var cd) && Maths.PointIsInCircle(point, cd)))
+        {
+
+            Context.SetCursor(InputLib.InputCursors.Hand);
+
+
+
+        }
+        else
+        {
+            Context.SetCursor(InputLib.InputCursors.Arrow);
+        }
+
         if (MoveShapes.Any())
         {
-            var point = Context.GetPoint(e);
             foreach (var shape in MoveShapes)
             {
                 if (shape is IEllipse ellipse)

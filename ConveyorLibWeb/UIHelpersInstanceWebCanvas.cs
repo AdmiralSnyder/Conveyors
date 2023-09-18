@@ -8,6 +8,7 @@ namespace ConveyorLibWeb;
 
 public class UIHelpersInstanceWebCanvas : IUIHelpers
 {
+
     public Vector GetSize(IShape shape) => ((WebCanvasShape)shape).BackingShape.GetSizeWeb();
 
     public TShape SetLocation<TShape>(TShape shape, Point location) where TShape : IShape
@@ -20,5 +21,19 @@ public class UIHelpersInstanceWebCanvas : IUIHelpers
     {
         ((WebCanvasShape<WebLine>)(object)shape).BackingObject.SetLocationWeb(location);
         return shape;
+    }
+
+    public bool TryGetLocation<TShape>(TShape shape, out Point location) where TShape : IShape
+    {
+        if (shape is WebCanvasShape { BackingShape : WebShape ws})
+        {
+            location = ws.Location;
+            return true;
+        }
+        else
+        {
+            location = default;
+            return false;
+        }
     }
 }
