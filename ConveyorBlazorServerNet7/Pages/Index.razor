@@ -8,6 +8,7 @@
 
 
 <button @onclick=MoveButtonClick disabled=@MoveButtonDisabled>Move</button>
+<button @onclick=SelectButtonClick>Select</button>
 @foreach(var x in CreationCommandManager.StaticCommands)
 {
     <button @onclick=@(async () => await x.Value(CommandManager)())>@(x.Key.Item2 ?? x.Key.Item1)</button>
@@ -50,6 +51,17 @@
         if ((await CircleCenterRadiusInputter.StartInput(AppContent.InputContext)).IsSuccess(out var info))
         {
             AutoRoot.AddCircleCenterRadius(info);
+        }
+    }
+
+    ObjectHighlighter DummyHighlighter;
+
+    async void SelectButtonClick()
+    {
+        if (AutoRoot.Conveyors.FirstOrDefault() is ISelectObject first)
+        {
+            DummyHighlighter = UIHelpers.CreateObjectHighlighter(AppContent.CanvasInfo, first, ObjectHighlightTypes.Select);
+            AppContent.InputContext.Notify();
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using UILib;
 using UILib.Extern.Web.Canvas;
 using UILib.Shapes;
+using WebLibCanvas;
 
 namespace ConveyorLibWeb;
 
@@ -36,4 +37,7 @@ public class UIHelpersInstanceWebCanvas : IUIHelpers
             return false;
         }
     }
+
+    public ObjectHighlighter CreateObjectHighlighter(ICanvasInfo canvasInfo, ISelectObject selectObject, ObjectHighlightTypes highlightTypes)
+        => WebCanvasObjectHighlighter.Create(canvasInfo, selectObject, highlightTypes);
 }

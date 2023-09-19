@@ -39,4 +39,7 @@ public class UIHelpersInstanceWpf : IUIHelpers
         modifyFunc(shape, arg);
         return shape;
     }
+
+    public ObjectHighlighter CreateObjectHighlighter(ICanvasInfo canvasInfo, ISelectObject? selectObject, ObjectHighlightTypes highlightTypes) 
+        => WpfCanvasObjectHighlighter.Create(canvasInfo, selectObject, highlightTypes);
 }

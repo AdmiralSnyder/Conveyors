@@ -1,3 +1,3 @@
 ﻿namespace UILib.Shapes;
 
-public interface IRectangle : IShape { }
+public interface IRectangle : IShape, IStroke, IFill { }

@@ -5,6 +5,7 @@ namespace UILib;
 public interface ICanvasInfo
 { 
     TShape AddToCanvas<TShape>(TShape shape);
+    TShape RemoveFromCanvas<TShape>(TShape shape);
     void BeginInvoke<T>(IShape shape, Action<T> action, T value);
 }
 

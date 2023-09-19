@@ -36,6 +36,8 @@
         }
 
         AppContent.InputContext.OnNotify += () => InvokeAsync(StateHasChanged);
+
+        AppContent.InputContext.OnCursorChanged += (sender, args) => Cursor = args;
     }
 
     private CanvasComponent TheCanvas { get; set; }
@@ -50,7 +52,6 @@
         await ctx.ClearRectAsync(0, 0, 500, 500);
         await ctx.SetFillStyleAsync("#008000");
         await ctx.FillRectAsync(0, 0, 500, 500);
-        AppContent.InputContext.OnCursorChanged += (sender, args) => Cursor = args;
 
         foreach (var obj in AppContent.CanvasInfo.Canvas.Children.ToList())
         {

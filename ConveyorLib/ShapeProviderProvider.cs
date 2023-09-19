@@ -7,6 +7,7 @@ using ConveyorLib.Shapes;
 
 namespace ConveyorLib
 {
+
     public static class ShapeProviderProvider
     {
         public static IConveyorShapeProvider ShapeProvider { get; set; }

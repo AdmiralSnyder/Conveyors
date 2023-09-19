@@ -129,7 +129,7 @@ public abstract class InputContextBase
         }
     }
 
-    internal void Notify() => OnNotify?.Invoke();
+    public void Notify() => OnNotify?.Invoke();
 
     public event Action OnNotify;
 }

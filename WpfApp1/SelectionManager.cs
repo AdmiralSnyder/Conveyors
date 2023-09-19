@@ -6,38 +6,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using UILib;
 using WpfLib;
 
 namespace ConveyorApp;
-
-public abstract class ObjectHighlighter
-{
-    private ISelectObject? _SelectObject;
-
-    public ISelectObject? SelectObject
-    {
-        get => _SelectObject;
-        set
-        {
-            if (value == null && _SelectObject == null) return;
-            _SelectObject = value;
-            Highlight();
-        }
-    }
-
-    public void SetSelectObject(ISelectObject? selectObject) => SelectObject = selectObject;
-
-    public ObjectHighlightTypes HighlightType { get; set; }
-    protected abstract void Highlight();
-}
-
-public enum ObjectHighlightTypes
-{
-    None,
-    Target,
-    Select
-}
 
 public abstract class ChooseObjectManager : INotifyPropertyChangedImpl, IRefreshListener<ISelectable>
 {
