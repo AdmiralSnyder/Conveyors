@@ -101,7 +101,7 @@ public abstract class InputContextBase
         CurrentInputter?.HandleMouseMove(sender, e);
         
         MouseMovedInCanvas?.Invoke(sender, (GetPoint(e), e));
-        Notify();
+        //Notify();
     }
 
     protected void HandleMouseUp(object sender, EventArgs e)
@@ -130,8 +130,10 @@ public abstract class InputContextBase
     }
 
     public void Notify() => OnNotify?.Invoke();
+    public void NotifyTemp() => OnNotifyTemp?.Invoke();
 
     public event Action OnNotify;
+    public event Action OnNotifyTemp;
 }
 
 public enum InputCursors

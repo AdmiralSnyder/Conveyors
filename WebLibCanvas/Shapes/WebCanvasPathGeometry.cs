@@ -19,25 +19,37 @@ public class WebCanvasPathGeometry : WebCanvasGeometry<WebPathGeometry>, IPathGe
         LineDefinition fromTo = new((from, to));
         var mid = Maths.MidPoint((from, to));
         LineDefinition ortho = new(mid, fromTo.Vector.Orthogonal());
-        var points = Maths.CircleCrossesLine(cFrom, ortho);
-        var point = points[sweepDirection == ArcSweepDirections.Clockwise ? 0 : 1]; // TODO maybe find better condition
-        var startAngle = new Vector(point, from).Angle().Radians;
-        var endAngle = new Vector(point, to).Angle().Radians;
+        var crossType = Maths.CircleCrossesLine(cFrom, ortho, out var points);
+        if (crossType > Maths.LineCircleCrossTypes.OnePoint)
+        {
+            var point = points[sweepDirection == ArcSweepDirections.Clockwise ? 0 : 1]; // TODO maybe find better condition
+            var startAngle = new Vector(point, from).Angle().Radians;
+            var endAngle = new Vector(point, to).Angle().Radians;
 
-        bool anticlockwise = true;
-        var radians = degrees.Degrees().Radians;
-        if (degrees < 0)
-        {
-            anticlockwise = false;
-            startAngle *= -1;
-            endAngle *= -1;
+            bool anticlockwise = true;
+            var radians = degrees.Degrees().Radians;
+            if (degrees < 0)
+            {
+                anticlockwise = false;
+                startAngle *= -1;
+                endAngle *= -1;
+            }
+
+            BackingObject.Figures.Add(new WebPathFigure()
+            {
+                StartPoint = from,
+                Segments = { new WebArcSegment(point, radius, startAngle, endAngle, anticlockwise, true) }
+            });
         }
-        var x = new WebPathFigure()
+        else
         {
-            StartPoint = from,
-            Segments = { new WebArcSegment(point, radius, startAngle, endAngle, anticlockwise, true) }
-        };
-        BackingObject.Figures.Add(x);
+            // TODO rausfinden, wo der Mathefehler herkommt.
+            BackingObject.Figures.Add(new WebPathFigure()
+            {
+                StartPoint = from,
+                Segments = { new WebLineSegment(to, true) }
+            });
+        }
     }
 
     public void AddLineFigure(Vector prevEnd, Vector nextStart)

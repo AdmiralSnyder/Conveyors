@@ -55,7 +55,7 @@ public class WebCanvasInputContext : InputContextBase
     private void MouseDownEventHandler(EventArgs args) => HandleMouseDown(null, args);
     private void MouseMoveEventHandler(EventArgs args) => HandleMouseMove(null, args);
 
-    public override void AddTempShape(IShape shape) => Canvas.AddToCanvas(shape);
+    public override void AddTempShape(IShape shape) => Canvas.AddToCanvasTemporary(shape);
 
     public override void RemoveTempShape(IShape shape) => Canvas.RemoveFromCanvas(shape);
     public override Point GetPoint(EventArgs args)

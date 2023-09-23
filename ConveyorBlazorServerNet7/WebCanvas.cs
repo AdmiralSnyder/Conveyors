@@ -7,6 +7,8 @@ public class WebCanvas
 {
     public List<WebShape> Children { get; } = new();
 
+    public List<WebShape> TempChildren { get; } = new();
+
     public event Action<EventArgs> MouseDown;
     public event Action<EventArgs> MouseMove;
 

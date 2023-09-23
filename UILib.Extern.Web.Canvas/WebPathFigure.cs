@@ -41,10 +41,10 @@ public class WebLineSegment : WebPathSegment
     private Vector End { get; set; }
     private bool IsStroked { get; set; }
 
-    public WebLineSegment(Vector end, bool v)
+    public WebLineSegment(Vector end, bool isStroked)
     {
         End = end;
-        IsStroked = v;
+        IsStroked = isStroked;
     }
 
     public override async Task DrawAsync(Canvas2DContext context)

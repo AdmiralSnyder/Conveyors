@@ -1,4 +1,5 @@
-﻿@using Blazor.Extensions.Canvas
+﻿@using Blazor.Extensions.Canvas;
+@using Blazor.Extensions.Canvas.Canvas2D;
 @using Blazor.Extensions;
 @using ConveyorLib.Objects;
 @using InputLib;
@@ -6,10 +7,12 @@
 @inject NavigationManager Navigation
 
 <CanvasComponent Width="500" Height="500" 
-    Style=@($"z-index:1;position:absolute;left:0;top:200px;cursor:{(Cursor == InputCursors.Hand ? "move" : "unset" )};") @ref=TheCanvas 
-    CanvasClick=OnMouseClick 
-    CanvasMouseMove=OnMouseMove/>
-@* <CanvasComponent Width="500" Height="500" Style="z-index:2;position:absolute;left:0;top:200px;" @ref=EventCaptureCanvas CanvasClick=OnMouseClick /> *@
+    Style=@($"z-index:1;position:absolute;left:0;top:200px;") @ref=TheCanvas 
+    />
+    @* CanvasClick=OnMouseClick  *@
+<CanvasComponent Width="500" Height="500" 
+    Style=@($"z-index:2;position:absolute;left:0;top:200px;cursor:{(Cursor == InputCursors.Hand ? "move" : "unset" )};") @ref=EventCaptureCanvas 
+    CanvasClick=OnMouseClick CanvasMouseMove=OnMouseMove />
 
 
 @code
@@ -29,41 +32,77 @@
             hubConnection.On<string, string>("ReceiveMessage", async (user, message) =>
             {
                 await AppContent.ScriptRunner.RunScript(message);
-                await InvokeAsync(StateHasChanged);
+                await InvokeAsync(DoReRender);
             });
 
             await hubConnection.StartAsync();
         }
 
-        AppContent.InputContext.OnNotify += () => InvokeAsync(StateHasChanged);
+        AppContent.InputContext.OnNotify += () => InvokeAsync(DoReRender);
+        AppContent.InputContext.OnNotifyTemp += () => InvokeAsync(DoReRenderTemp);
 
         AppContent.InputContext.OnCursorChanged += (sender, args) => Cursor = args;
     }
 
     private CanvasComponent TheCanvas { get; set; }
-    // private BECanvasComponent EventCaptureCanvas { get; set; }
+    private BECanvasComponent EventCaptureCanvas { get; set; }
+
+
+    private void DoReRender()
+    {
+        renderNeeded = true;
+        tempRenderNeeded = true;
+        StateHasChanged();
+    }
+
+    private void DoReRenderTemp()
+    {
+        tempRenderNeeded = true;
+        StateHasChanged();
+    }
+
+    private Canvas2DContext CanvasContext;
+    private Canvas2DContext CanvasContextTemp;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-
-        var ctx = await TheCanvas.CreateCanvas2DAsync();
-        await ctx.BeginBatchAsync();
-        await ctx.ClearRectAsync(0, 0, 500, 500);
-        await ctx.SetFillStyleAsync("#008000");
-        await ctx.FillRectAsync(0, 0, 500, 500);
-
-        foreach (var obj in AppContent.CanvasInfo.Canvas.Children.ToList())
+        if (renderNeeded)
         {
-            await obj.DrawAsync(ctx);
+            CanvasContext ??= await TheCanvas.CreateCanvas2DAsync();
+            await CanvasContext.BeginBatchAsync();
+            await CanvasContext.ClearRectAsync(0, 0, 500, 500);
+            await CanvasContext.SetFillStyleAsync("#008000");
+            await CanvasContext.FillRectAsync(0, 0, 500, 500);
+
+            foreach (var obj in AppContent.CanvasInfo.Canvas.Children.ToList())
+            {
+                await obj.DrawAsync(CanvasContext);
+            }
+
+            await CanvasContext.EndBatchAsync();
         }
 
-        await ctx.EndBatchAsync();
+        CanvasContextTemp = await EventCaptureCanvas.CreateCanvas2DAsync();
+        if (tempRenderNeeded || AppContent.CanvasInfo.Canvas.TempChildren.Any())
+        {
+            tempRenderNeeded = false;
+            await CanvasContextTemp.BeginBatchAsync();
+            await CanvasContextTemp.ClearRectAsync(0, 0, 500, 500);
+            foreach (var obj in AppContent.CanvasInfo.Canvas.TempChildren.ToList())
+            {
+                await obj.DrawAsync(CanvasContextTemp);
+            }
+            await CanvasContextTemp.EndBatchAsync();
+        }
+        else
+        {
+            // await CanvasContextTemp.BeginBatchAsync();
 
-        // var ctx2 = await EventCaptureCanvas.CreateCanvas2DAsync();
-        // await ctx2.ClearRectAsync(0, 0, 500, 500);
-        // await ctx2.SetFillStyleAsync("#80808080");
-        // await ctx2.FillRectAsync(100, 100, 200, 200);
+            await CanvasContextTemp.ClearRectAsync(0, 0, 500, 500);
+            // await CanvasContextTemp.EndBatchAsync();
+
+        }
     }
 
     private void OnMouseClick(MouseEventArgs mea)
@@ -71,15 +110,29 @@
         AppContent.CanvasInfo.Canvas.DoMouseClick(mea);
     }
 
+    private bool renderNeeded = true;
+    private bool tempRenderNeeded = false;
+
+    private void SkipRender() => renderNeeded = false;
+
     private void OnMouseMove(MouseEventArgs mea)
     {
+        SkipRender();
         AppContent.CanvasInfo.Canvas.DoMouseMove(mea);
+
     }
+
+    // protected override bool ShouldRender()
+    // {
+    //     var result = renderNeeded && base.ShouldRender();
+
+    //     return result;
+    // }
 
     private InputCursors _Cursor = InputCursors.Arrow;
     private InputCursors Cursor
     {
         get => _Cursor;
-        set => Func.Setter(ref _Cursor, value, StateHasChanged);
+        set => Func.Setter(ref _Cursor, value, async () => await InvokeAsync(DoReRender));
     }
 }

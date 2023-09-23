@@ -47,7 +47,10 @@ GeometryProvider.Instance = new GeometryProviderInstanceWebCanvas();
 MouseBehaviorManager.Instance = new MouseBehaviorManagerWebCanvas();
 
 AppContent.Init();
-AutoRoot.AddConveyor(new V2d[] { (100, 50), (170, 110), (240, 50), (270, 140) }, false, 2);
+for (int i = 1; i < 10; i+= 10)
+{
+    AutoRoot.AddConveyor(new V2d[] { (100 + i, 50), (170 + i, 110), (240 + i, 50), /*(270 + i, 140)*/ }, false, 2);
+}
 
 //AppContent.AutoRoot.AddLine(((0, 0), (200, 200)));
 //AppContent.AutoRoot.AddLine(((100, 100), (0, 200)));

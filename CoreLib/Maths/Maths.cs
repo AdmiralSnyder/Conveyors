@@ -639,28 +639,50 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         }
     }
 
-    public static Point[] CircleCrossesLine(CircleDefinition circle, LineDefinition line)
+    public enum LineCircleCrossTypes
     {
-        if (circle.IsDegenerated) return null;
+        Error = -1, // is this bad?
+        NoPoint = 0,
+        OnePoint = 1,
+        TwoPoints = 2,
+    }
+
+    public static LineCircleCrossTypes CircleCrossesLine(CircleDefinition circle, LineDefinition line, out Point[] result)
+    {
+        result = default;
+
+        if (circle.IsDegenerated) return LineCircleCrossTypes.Error;
         var (c, r) = circle.CenterRadius;
-        if (LineCrossesPoint(line, c)) return new[]
+
+        if (LineCrossesPoint(line, c))
         {
-            c.Add(line.Vector.Normalize().Multiply(r)),
-            c.Add(line.Vector.Normalize().Multiply(-r)),
-        };
+            result = [
+                c.Add(line.Vector.Normalize().Multiply(r)),
+                c.Add(line.Vector.Normalize().Multiply(-r)),
+            ];
+            return LineCircleCrossTypes.TwoPoints;
+        }
 
         LineDefinition normalThroughCenter = new(c, line.Vector.Orthogonal());
         var lineCrossPoint = LineCrossesLine(line, normalThroughCenter)[0];
         var distance = new Vector(c, lineCrossPoint).Length();
-        if (distance == r) return new[] { lineCrossPoint };
-        else
+        if (distance == r) // TODO rounding, maybe?
+        {
+            result = [lineCrossPoint];
+            return LineCircleCrossTypes.OnePoint;
+        }
+        else if (distance < r)
         {
             Pythagoras(distance, out var kath, r);
-            return new[]
-            {
+            result = [
                 lineCrossPoint.Add(line.Vector.Normalize().Multiply(kath)),
                 lineCrossPoint.Add(line.Vector.Normalize().Multiply(-kath))
-            };
+            ];
+            return LineCircleCrossTypes.TwoPoints;
+        }
+        else
+        {
+            return LineCircleCrossTypes.NoPoint;
         }
     }
 
@@ -668,7 +690,7 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
     {
         c = Math.Sqrt(a * a + b * b);
     }
-    
+
     public static void Pythagoras(double a, out double b, double c)
     {
         // a^2+b^2=c^2

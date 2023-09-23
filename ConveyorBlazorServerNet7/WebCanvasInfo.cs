@@ -14,6 +14,12 @@ public class WebCanvasInfo : CanvasInfo<WebCanvas>, IConveyorCanvasInfo
         return shape;
     }
 
+    public TShape AddToCanvasTemporary<TShape>(TShape shape)
+    {
+        Canvas.TempChildren.Add(((WebCanvasShape)(object)shape).BackingShape);
+        return shape;
+    }
+
     public override void BeginInvoke<T>(IShape shape, Action<T> action, T value)
     {
         throw new NotImplementedException();
@@ -28,6 +34,7 @@ public class WebCanvasInfo : CanvasInfo<WebCanvas>, IConveyorCanvasInfo
     public override TShape RemoveFromCanvas<TShape>(TShape shape)
     {
         Canvas.Children.Remove(((WebCanvasShape)(object)shape).BackingShape);
+        Canvas.TempChildren.Remove(((WebCanvasShape)(object)shape).BackingShape);
         return shape;
     }
 }

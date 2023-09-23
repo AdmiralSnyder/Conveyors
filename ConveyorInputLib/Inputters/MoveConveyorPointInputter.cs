@@ -2,6 +2,7 @@
 using UILib.Shapes;
 using ConveyorLib.Objects.Conveyor;
 using UILib;
+using System.Diagnostics;
 
 namespace ConveyorInputLib.Inputters;
 
@@ -29,20 +30,23 @@ public class MoveConveyorPointInputter : MoveCanvasPointInputterBase<MoveConveyo
             Context.RemoveTempShape(shape);
         }
         MoveShapes.Clear();
+        Context.Notify();
     }
-
+    static int moveCount = 0;
     public override void HandleMouseMove(object sender, EventArgs e)
     {
+        
+        moveCount++;
         base.HandleMouseMove(sender, e);
 
         var point = Context.GetPoint(e);
-        if (MoveCircles.Any(mc => mc.GetCircleDefinition(out var cd) && Maths.PointIsInCircle(point, cd)))
+        //var sw = Stopwatch.StartNew();
+        var match = MoveCircles.Any(mc => mc.GetCircleDefinition(out var cd) && Maths.PointIsInCircle(point, cd));
+        //sw.Stop();
+        if (match)
         {
 
             Context.SetCursor(InputLib.InputCursors.Hand);
-
-
-
         }
         else
         {
@@ -56,10 +60,12 @@ public class MoveConveyorPointInputter : MoveCanvasPointInputterBase<MoveConveyo
                 if (shape is IEllipse ellipse)
                 {
                     ellipse.SetCenterLocation(point);
+                    Context.NotifyTemp();
                 }
                 if (shape is ILine line)
                 {
                     line.SetEnd(point);
+                    Context.NotifyTemp();
                 }
             }
         }
