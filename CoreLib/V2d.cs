@@ -62,10 +62,7 @@ public struct V2d
 
     public override bool Equals(object? obj) => obj is V2d objV2d && objV2d.X == X && objV2d.Y == Y;
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(X, Y);
-    }
+    public override int GetHashCode() => HashCode.Combine(X, Y);
 
     private void Deconstruct(out double x, out double y) => (x, y) = (X, Y);
 }

@@ -4,6 +4,7 @@ using ConveyorLib.Objects;
 using CoreLib;
 using CoreLib.Definition;
 using InputLib;
+using InputLib.Inputters;
 using System;
 using System.Collections.Generic;
 using System.Linq;

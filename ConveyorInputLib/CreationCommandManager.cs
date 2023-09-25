@@ -45,6 +45,14 @@ public class CreationCommandManager
 
     public IGeneratedConveyorAutomationObject AutoRoot { get; set; }
 
+    public Action AfterCommandAction { get; set; }
+
+    public async Task Invoke(Func<CreationCommandManager, Func<Task>> func)
+    {
+        await func(this)();
+        AfterCommandAction();
+    }
+
     public async Task AddCircleCenterRadius()
     {
         if ((await CircleCenterRadiusInputter.StartInput(InputContext)).IsSuccess(out var info))

@@ -38,4 +38,7 @@ public class LineDefinition : IDefinition<TwoPoints>
     public bool IsVertical { get; private set; }
     public double Slope { get; private set; }
     public double OffsetY { get; private set; }
+
+    public bool IsSelectionMatch(Vector point) => Maths.IsSelectionMatch(this, point);
+
 }

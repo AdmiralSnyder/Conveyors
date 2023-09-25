@@ -19,7 +19,10 @@ public class AppContent
         ShapeProvider = new WebCanvasConveyorShapeProvider();
 
 
-        CanvasInfo = new() { ShapeProvider = ShapeProvider };
+        CanvasInfo = new()
+        {
+            ShapeProvider = ShapeProvider,
+        };
         AutoRoot.Init(CanvasInfo);
 
         InputContext = new();

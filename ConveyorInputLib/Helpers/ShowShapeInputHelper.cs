@@ -1,5 +1,5 @@
 ﻿using CoreLib;
-using InputLib;
+using InputLib.Inputters;
 using UILib.Shapes;
 
 namespace ConveyorInputLib.Helpers;

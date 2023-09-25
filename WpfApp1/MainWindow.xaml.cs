@@ -113,19 +113,6 @@ public partial class MainWindow
         }
     }
 
-    #region Create Actions
-
-    private async void AddCircleCenterRadiusB_Click(object sender, RoutedEventArgs e) => await ViewModel.CreationCommandManager.AddCircleCenterRadius();
-    private async void AddCircle2PointsB_Click(object sender, RoutedEventArgs e) => await ViewModel.CreationCommandManager.AddCircleTwoPoints();
-    private async void AddCircle3PointsB_Click(object sender, RoutedEventArgs e) => await ViewModel.CreationCommandManager.AddCircleThreePoints();
-    private async void AddLineB_Click(object sender, RoutedEventArgs e) => await ViewModel.CreationCommandManager.AddLine();
-    private async void AddLineSegmentB_Click(object sender, RoutedEventArgs e) => await ViewModel.CreationCommandManager.AddLineSegment();
-    private async void AddPointB_Click(object sender, RoutedEventArgs e) => await ViewModel.CreationCommandManager.AddPoint();
-
-    #endregion
-
-
-
     // TODO put the zoom functionality into a behavior
     private void TheCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
     {

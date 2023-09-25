@@ -58,6 +58,8 @@ public class CircleDefinition : IDefinition<CircleDefinitionSource>
         }
         ThreePoints = (source.P1, source.P2, source.P3);
     }
+
+    public bool IsSelectionMatch(Vector point) => Maths.IsSelectionMatch(this, point);
 }
 
 public enum CircleDefinitionKinds

@@ -6,6 +6,8 @@ namespace ConveyorLib.Objects.Conveyor;
 
 public class Conveyor : ISelectObject, IRefreshable, IAppObject<ConveyorAppApplication>
 {
+    public string ID { get; set; } = Guid.NewGuid().ToString(); 
+
     private static int NextConveyorNumber = 0;
 
     private bool _IsRunning;
@@ -257,4 +259,7 @@ public class Conveyor : ISelectObject, IRefreshable, IAppObject<ConveyorAppAppli
         staleAge = 0;
         return laneNode.Value.GetPointAbsolute(length);
     }
+
+    // TODO use a better approach
+    public bool IsSelectionMatch(Vector point) => true;
 }

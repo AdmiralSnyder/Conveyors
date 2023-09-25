@@ -8,6 +8,8 @@ namespace ConveyorLib.Objects.Conveyor;
 
 public class Item : ISelectObject, IRefreshable, ITextAdornable
 {
+    public string ID { get; } = Guid.NewGuid().ToString();
+
     public string DebugText => $"Item {Number}";
 
     public string Text => $"Item {Number}";
@@ -100,4 +102,6 @@ public class Item : ISelectObject, IRefreshable, ITextAdornable
         Shape.SetCenterLocation(point);
         ((ISelectObject)this).SetSelectionPoints(point);
     }
+
+    public bool IsSelectionMatch(Vector point) => Maths.IsSelectionMatch(this.Location, point);
 }

@@ -2,21 +2,9 @@
 
 namespace ConveyorLib.Objects.Conveyor;
 
-public interface IMovable { }
-
-public interface IElementsNode<T>
-{
-    public LinkedListNode<IPathPart> ElementsNode { get; }
-}
-
-public interface IListNode<T>
-{
-    public LinkedListNode<T> Node { get; }
-}
-
 public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IElementsNode<IPathPart>, IListNode<ConveyorPoint>, IRefreshable, IAutomationOutByID, IMovable
 {
-    public string ID => $"{Conveyor.Number}.{Number}";
+    public string ID { get; } = Guid.NewGuid().ToString();
 
     public string Text => $"Point {ID} ({Location})";
 
@@ -32,6 +20,9 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
         Number = Conveyor.Points.Count;
         PointsByID[ID] = this;
     }
+
+    public bool IsSelectionMatch(Vector point) => (Location - point).Length() < 2;
+
 
     public bool IsLast { get; internal set; }
     public bool IsFirst { get; internal set; }
@@ -174,7 +165,6 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
 
     private Point[] SelectionBoundsPoints = new Point[1];
     public Point[] GetSelectionBoundsPoints() => SelectionBoundsPoints;
-
 
     public ISelectObject? SelectionParent => Conveyor;
 

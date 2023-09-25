@@ -1,10 +1,9 @@
 ﻿using CoreLib;
 using System;
 using System.Threading.Tasks;
-using InputLib;
 using UILib.Shapes;
 
-namespace InputLib;
+namespace InputLib.Inputters;
 
 public abstract class Inputter : IInputter
 {
@@ -26,14 +25,14 @@ public abstract class InputterBase<TThis, TTask> : Inputter
 {
     private InputContextBase? _Context;
 
-    public InputContextBase Context 
+    public InputContextBase Context
     {
         get => _Context ?? throw new NullReferenceException("Context darf nicht null sein");
         private set => Func.Setter(ref _Context, value, ContextAssigned);
     }
 
     protected virtual void ContextAssigned() { }
-    
+
     public static TThis Create(InputContextBase context) => new() { Context = context };
 
     public override void Start() => AttachEvents();

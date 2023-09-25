@@ -6,6 +6,7 @@ using AutomationLib;
 using CoreLib;
 using GenerationLib;
 using ConveyorLib.TypeResolvers;
+using UILib;
 
 namespace ConveyorAutomationLib;
 
@@ -13,8 +14,13 @@ public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomatio
 {
     List<Conveyor> Conveyors { get; }
     //List<IAppObject> /*AutomationObjects*/ { get; }
+
+    IEnumerable<ISelectObject> GetSelectObjects();
     
     IConveyorCanvasInfo CanvasInfo { get; }
+
+    void SelectItem(string id);
+    void ClearSelection();
     
     Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes);
 
@@ -50,6 +56,8 @@ public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomatio
 public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppApplication>
 {
     public List<IAppObject<ConveyorAppApplication>> AutomationObjects { get; } = new();
+
+    public HashSet<IAppObject<ConveyorAppApplication>> SelectedObjects { get; } = new();
 
     [Generated]
     public void Init(object obj)
@@ -93,9 +101,26 @@ public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppAppli
 
     public partial void OffsetPoint(ConveyorPoint conveyorPoint, Point point) => conveyorPoint.Location += point;
 
+    public partial void SelectItem(string id)
+    {
+        ClearSelection();
+        if (AutomationObjects.FirstOrDefault(x => x.ID == id) is { } obj)
+        {
+            SelectedObjects.Add(obj);
+            CanvasInfo?.SelectionChanged();
+        }
+    }
+
+    public partial void ClearSelection()
+    {
+        SelectedObjects.Clear();
+        CanvasInfo?.SelectionChanged();
+    }
+
+    public partial IEnumerable<ISelectObject> GetSelectObjects() => SelectedObjects.OfType<ISelectObject>();
+
     public partial bool SaveJSON(string fileName)
     {
-
         var json = JsonSerializer.Serialize(AutomationObjects, new JsonSerializerOptions()
         {
             TypeInfoResolver = new PolymorphicTypeResolver(),

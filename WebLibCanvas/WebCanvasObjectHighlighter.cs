@@ -19,13 +19,13 @@ public class WebCanvasObjectHighlighter : ObjectHighlighter
         return result;
     }
 
-    protected override void HighlightVirtual(TwoPoints locationSize)
+    protected override void HighlightVirtual(Bounds locationSize)
     {
         // TODO get this from the ShapeProvider
         SelectionRect = new WebCanvasRectangle()
         {
-            Width = locationSize.P2.X + 8,
-            Height = locationSize.P2.Y + 8,
+            Width = locationSize.Size.X + 8,
+            Height = locationSize.Size.Y + 8,
             StrokeColor = HighlightType switch
             {
                 ObjectHighlightTypes.None => null,
@@ -33,6 +33,6 @@ public class WebCanvasObjectHighlighter : ObjectHighlighter
                 ObjectHighlightTypes.Select => Color.Chartreuse,
                 _ => null,
             },
-        }.SetLocation(locationSize.P2 - (4, 4));
+        }.SetLocation(locationSize.Location - (4, 4));
     }
 }

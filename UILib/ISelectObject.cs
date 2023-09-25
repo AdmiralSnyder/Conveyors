@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using CoreLib;
 
 namespace UILib;
 
-public interface ISelectObject : ISelectable
+public interface ISelectObject : ISelectable, IIdentity
 {
     string Text { get; }
     Point[] GetSelectionBoundsPoints();
@@ -18,6 +19,8 @@ public interface ISelectObject : ISelectable
 
         NotifyRefresh();
     }
+
+    bool IsSelectionMatch(Point point);
 
     ISelectObject GetSelectRoot()
     {

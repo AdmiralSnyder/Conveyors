@@ -1,9 +1,12 @@
-﻿using UILib.Shapes;
+﻿using CoreLib.Definition;
+using UILib.Shapes;
 
 namespace ConveyorLib.Objects.Conveyor;
 
 public class ConveyorSegment : IConveyorCanvasable, IPathPart, ISelectObject, IRefreshable
 {
+    public string ID { get; } = Guid.NewGuid().ToString();
+
     public string Text => $"Segment {Conveyor.Number}.{Number} ({StartEnd})";
 
     public ConveyorSegment(Conveyor conv, double length, TwoPoints startEnd)
@@ -163,4 +166,7 @@ public class ConveyorSegment : IConveyorCanvasable, IPathPart, ISelectObject, IR
 
         ElementsNode.Next?.Value?.UpdateLengths();
     }
+    
+    // TODO Cache Line Definition
+    public bool IsSelectionMatch(Vector point) => Maths.IsSelectionMatchSegment(new LineDefinition(StartEnd), point);
 }

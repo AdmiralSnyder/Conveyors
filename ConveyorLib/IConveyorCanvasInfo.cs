@@ -5,5 +5,5 @@ namespace ConveyorLib;
 
 public interface IConveyorCanvasInfo : ICanvasInfo
 {
-    public IConveyorShapeProvider ShapeProvider { get; set; }
+    IConveyorShapeProvider ShapeProvider { get; set; }
 }

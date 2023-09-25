@@ -5,6 +5,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using CoreLib.Definition;
+using PointDef;
+using PointDef.twopoints;
 
 namespace CoreLib.Maths;
 
@@ -101,6 +103,7 @@ public static class Maths
         return Math.Atan2(sin, cos).Radians();
     }
 
+
     public static Angle PosAngleBetween(double ax, double ay, double bx, double by)
     {
         double sin = ax * by - bx * ay;
@@ -159,7 +162,7 @@ public static class Maths
 
     public static Vector Halve(this Vector vect) => vect.Divide(2);
     public static Vector Multiply(this Vector vect, double factor) => (vect.X * factor, vect.Y * factor);
-    public static Vector Divide(this Vector vect, double factor) => (vect.X / factor, vect.Y / factor);
+    public static Vector Divide(this Vector vect, double divisor) => (vect.X / divisor, vect.Y / divisor);
     public static Point Subtract(this Point point, Vector vect) => (point.X - vect.X, point.Y - vect.Y);
     public static Point Add(this Point point, Vector vect) => (point.X + vect.X, point.Y + vect.Y);
     public static TwoPoints Add(this TwoPoints twoPoints, Vector vect) => (twoPoints.P1.Add(vect), twoPoints.P2.Add(vect));
@@ -167,6 +170,45 @@ public static class Maths
 
     public static IEnumerable<Point> Add(this IEnumerable<Point> points, Vector vect) => points.Select(p => p.Add(vect));
     public static IEnumerable<Point> Scale(this IEnumerable<Point> points, double factor) => points.Select(p => p.Multiply(factor));
+
+    public static bool IsSelectionMatch(this Point point, Point selectCoords) => (point - selectCoords).Length() <= 2;
+    public static bool IsSelectionMatch(this CircleDefinition circle, Point selectCoords) => (circle.CenterRadius.Center - selectCoords).Length() <= 2 + circle.CenterRadius.Radius;
+
+    public static bool IsSelectionMatch(this LineDefinition line, Point selectCoords)
+    {
+        var closestPoint = line.GetClosestPointOnLine(selectCoords);
+        return (closestPoint - selectCoords).Length() <= 2;
+    }
+
+    public static bool IsSelectionMatch(this PointObjDefinition pointDefinition, Point selectCoords) 
+        => pointDefinition.Point.IsSelectionMatch(selectCoords);
+
+    public static bool IsSelectionMatchSegment(LineDefinition segmentDefinition, Point selectCoords)
+    {
+        if (segmentDefinition.ReferencePoint1.IsSelectionMatch(selectCoords)) return true;
+        if (segmentDefinition.ReferencePoint2.IsSelectionMatch(selectCoords)) return true;
+
+        var closestPoint = segmentDefinition.GetClosestPointOnLine(selectCoords);
+        if (!closestPoint.IsSelectionMatch(selectCoords)) return false;
+        return closestPoint.IsInBounds(segmentDefinition.RefPoints.AsBounds());
+    }
+
+    public static Bounds AsBounds(this TwoPoints points) 
+        => new((points.P1.X.Min(points.P2.X), points.P1.Y.Min(points.P2.Y)), (Math.Abs(points.P1.X - points.P2.X), Math.Abs(points.P1.Y - points.P2.Y)));
+
+    public static double Min(this double value, double otherValue) => Math.Min(value, otherValue);
+    public static bool IsPointOnLineSegment(Point p, Point start, Point end)
+{
+    // Set up internal values
+    var minX = Math.Min(start.X, end.X);
+    var maxX = Math.Max(start.X, end.X);
+    var minY = Math.Min(start.Y, end.Y);
+    var maxY = Math.Max(start.Y, end.Y);
+
+    // Check if the point is within the bounds of the line segment
+    return p.X >= minX && p.X <= maxX && p.Y >= minY && p.Y <= maxY && (p.X - start.X) * (end.Y - start.Y) == (end.X - start.X) * (p.Y - start.Y);
+}
+
     public static double DotProduct(this Vector a, Vector b) => a.X * b.X + a.Y * b.Y;
 
     public static double Determinant(this Vector a, Vector b) => a.X * b.X - a.Y * b.Y;
@@ -205,6 +247,16 @@ public static class Maths
     };
 
     public static Point GetMidPoint(Point point1, Point point2) => point1 + (point2 - point1).Divide(2);
+
+    public static Bounds GetBounds(TwoPoints twoPoints)
+    {
+        var x = Math.Min(twoPoints.P1.X, twoPoints.P2.X);
+        var y = Math.Min(twoPoints.P1.Y, twoPoints.P2.Y);
+
+        var width = Math.Max(twoPoints.P1.X, twoPoints.P2.X) - x;
+        var height = Math.Max(twoPoints.P1.Y, twoPoints.P2.Y) - y;
+        return new((x, y), (width, height));
+    }
 
     public enum Quadrants
     {
@@ -255,14 +307,14 @@ public static class Maths
         }
     }
 
-    public static TwoPoints GetBoundingRectTopLeftSize(IEnumerable<Point> points)
+    public static Bounds GetBoundingRectTopLeftSize(IEnumerable<Point> points)
     {
         var pointsArr = points.ToArray();
         return pointsArr.Length switch
         {
             0 => throw new NotImplementedException("case for 0 points missing"),
-            1 => (pointsArr[0], default),
-            _ => (GetTopLeft(pointsArr), GetSize(pointsArr)),
+            1 => new(pointsArr[0], default),
+            _ => new(GetTopLeft(pointsArr), GetSize(pointsArr)),
         };
     }
 
@@ -704,6 +756,51 @@ private static (double x, double y) Normalize((double x, double y) vect) => Divi
         var (c, r) = definition.CenterRadius;
         return new Vector(point, c).Length() < r;
     }
+
+    public static bool IsInInterval(this double value, double minIncluding, double maxIncluding) 
+        => minIncluding <= value && value <= maxIncluding;
+    public static bool IsInInterval(this double value, Interval interval) => IsInInterval(value, interval.Min, interval.Max);
+    public static bool IsInIntervalExcluding(this double value, double minExcluding, double maxExcluding) 
+        => minExcluding < value && value < maxExcluding;
+
+    public static bool IsInIntervalIncludingExcluding(this double value, double minIncluding, double maxExcluding) 
+        => minIncluding <= value && value < maxExcluding;
+    public static bool IsInIntervalExcludingIncluding(this double value, double minExcluding, double maxIncluding) 
+        => minExcluding < value && value <= maxIncluding;
+
+    public static bool IsInBounds(this Point point, Bounds bounds) 
+        => point.X.IsInInterval(bounds.Location.X, bounds.Location.X + bounds.Size.X) 
+        && point.Y.IsInInterval(bounds.Location.Y, bounds.Location.Y + bounds.Size.Y);
+
+    public static bool IsInBounds(this Point point, Point boundsPoint1, Point boundsPoint2) => point.IsInBounds(new Bounds(boundsPoint1, (boundsPoint2 - boundsPoint1)));
+    public static bool Contains(this Bounds bounds, Point point) => point.IsInBounds(bounds);
+
+    public static bool Contains(this Bounds bounds, Bounds otherBounds)
+        => otherBounds.Location.IsInBounds(bounds) && otherBounds.BottomRight().IsInBounds(bounds);
+
+    public static bool Intersects(this Bounds bounds, Bounds otherBounds)
+        => bounds.IntersectsX(otherBounds) && bounds.IntersectsY(otherBounds);
+
+    public static bool IntersectsX(this Bounds bounds, Bounds otherBounds) => bounds.IntervalX().Intersects(otherBounds.IntervalX());
+    public static bool IntersectsY(this Bounds bounds, Bounds otherBounds) => bounds.IntervalY().Intersects(otherBounds.IntervalY());
+
+    public static Point BottomRight(this Bounds bounds) => bounds.Location + bounds.Size;
+    public static Interval IntervalX(this Bounds bounds) => new(bounds.Location.X, bounds.Location.X + bounds.Size.X);
+    public static Interval IntervalY(this Bounds bounds) => new(bounds.Location.Y, bounds.Location.Y + bounds.Size.Y);
+
+    public static bool Intersects(this Interval interval, Interval otherInterval) 
+        => interval.Min <= otherInterval.Max && otherInterval.Min <= interval.Max;
+    public static bool Contains(this Interval interval, Interval otherInterval) 
+        => interval.Min <= otherInterval.Min && otherInterval.Max <= interval.Max;
+    public static bool ContainsExcluding(this Interval interval, Interval otherInterval) 
+        => interval.Min < otherInterval.Min && otherInterval.Max < interval.Max;
+
+    public static Point Min(this Point point, Point otherPoint) => new(Math.Min(point.X, otherPoint.X), Math.Min(point.Y, otherPoint.Y));
+    public static Point Max(this Point point, Point otherPoint) => new(Math.Max(point.X, otherPoint.X), Math.Max(point.Y, otherPoint.Y));
+
+    // TODO maybe change it to branch into dimensions first?
+    public static Bounds Union(this Bounds bounds, Bounds otherBounds) 
+        => new(bounds.Location.Min(otherBounds.Location), bounds.BottomRight().Max(otherBounds.BottomRight()));
 }
 
 public class MathsException : Exception

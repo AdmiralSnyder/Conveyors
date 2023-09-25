@@ -1,9 +1,10 @@
 ﻿using System.Drawing;
 using Blazor.Extensions.Canvas.Canvas2D;
+using CoreLib;
 
 namespace UILib.Extern.Web.Canvas;
 
-public abstract class WebShape
+public abstract class WebShape : IBounded
 {
     public async Task DrawAsync(Canvas2DContext context)
     {
@@ -57,4 +58,6 @@ public abstract class WebShape
     public Color? Fill { get; set; }
     public Color? StrokeColor { get; set; } = Color.Black;
     public double StrokeThickness { get; set; } = 1;
+
+    public Bounds Bounds => new(Location, (Width, Height));
 }

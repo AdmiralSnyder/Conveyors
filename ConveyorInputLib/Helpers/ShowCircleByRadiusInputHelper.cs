@@ -6,10 +6,10 @@ public class ShowCircleByRadiusInputHelper : ShowDynamicCircleInputHelper<ShowCi
 {
     public Point Center { get; set; }
 
-    internal static ShowCircleByRadiusInputHelper Create(InputContextBase context, Point point1)
+    internal static ShowCircleByRadiusInputHelper Create(InputContextBase context, Point center)
     {
         var result = Create(context);
-        result.Center = point1;
+        result.Center = center;
         return result;
     }
 

@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using ConveyorInputLib.Helpers;
 using InputLib;
+using InputLib.Inputters;
 
 namespace ConveyorInputLib.Inputters;
 
@@ -14,8 +15,8 @@ public class CircleCenterRadiusInputter : Inputter<CircleCenterRadiusInputter, (
             .Then(async ctx => await PointInputter.StartInput(Context,
                 Helpers.ShowUserNotes("Please select a point on the circle"),
                 Helpers.ShowMouseLocation(),
-                Helpers.LineFromToMouse(ctx.Second),
                 Helpers.FixedPoint(ctx.Second),
+                Helpers.LineFromToMouse(ctx.Second),
                 Helpers.ShowCircleByRadius(ctx.Second)))
             .Do(ctx => InputResult.SuccessTask((ctx.First.Second, (ctx.Second - ctx.First.Second).Length())));
 }

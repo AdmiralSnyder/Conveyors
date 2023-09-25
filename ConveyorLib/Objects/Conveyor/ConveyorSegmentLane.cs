@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using CoreLib.Definition;
 using UILib.Shapes;
 
 namespace ConveyorLib.Objects.Conveyor;
@@ -6,6 +7,8 @@ namespace ConveyorLib.Objects.Conveyor;
 [DebuggerDisplay($"{"SegLane"} ({{{nameof(DebugText)}}})")]
 public class ConveyorSegmentLane : IConveyorCanvasable, ILanePart, IDebugText, ISelectObject, IRefreshable
 {
+    public string ID { get; } = Guid.NewGuid().ToString();
+
     public string Text => $"Lane ({DebugText})";
 
     public ConveyorSegmentLane(int lane, ConveyorSegment segment)
@@ -130,4 +133,6 @@ public class ConveyorSegmentLane : IConveyorCanvasable, ILanePart, IDebugText, I
     }
 
     public Point GetPointAbsolute(double length, bool overshoot = false) => StartEnd.GetPointOnLine(length - BeginLength, UnitVector, Length, overshoot);
+
+    public bool IsSelectionMatch(Vector point) => Maths.IsSelectionMatch(new LineDefinition(StartEnd), point);
 }

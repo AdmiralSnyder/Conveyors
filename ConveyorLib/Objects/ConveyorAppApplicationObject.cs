@@ -30,5 +30,7 @@ public abstract class ConveyorAppApplicationObject<TThis, TShape, TDefinition, T
         return new() { Definition = definition };
     }
 
+    public override bool IsSelectionMatch(Vector point) => Definition.IsSelectionMatch(point);
+
     public StorageObject Store() => StorageObject.Create(typeof(TThis), Definition.GetSource());
 }

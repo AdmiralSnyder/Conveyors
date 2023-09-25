@@ -1,4 +1,6 @@
-﻿namespace InputLib;
+﻿using InputLib.Inputters;
+
+namespace InputLib;
 
 public abstract class StatefulInputter<TThis, TResult, TInputState> : Inputter<TThis, TResult>
     where TThis : StatefulInputter<TThis, TResult, TInputState>, new()

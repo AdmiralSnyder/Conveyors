@@ -23,13 +23,13 @@ public class WpfCanvasObjectHighlighter : ObjectHighlighter
         return result;
     }
 
-    protected override void HighlightVirtual(TwoPoints locationSize)
+    protected override void HighlightVirtual(Bounds locationSize)
     {
         // TODO get this from the ShapeProvider
         var rect = new WpfRectangle
         {
-            Width = locationSize.P2.X + 8,
-            Height = locationSize.P2.Y + 8,
+            Width = locationSize.Size.X + 8,
+            Height = locationSize.Size.Y + 8,
             StrokeColor= HighlightType switch
             {
                 ObjectHighlightTypes.None => null,

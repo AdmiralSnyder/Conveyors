@@ -1,6 +1,7 @@
 ﻿using ConveyorInputLib.Helpers;
 using CoreLib;
 using InputLib;
+using InputLib.Inputters;
 using System.Threading.Tasks;
 
 namespace ConveyorInputLib.Inputters;

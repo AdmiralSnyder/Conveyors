@@ -1,4 +1,4 @@
-﻿using InputLib;
+﻿using InputLib.Inputters;
 
 namespace ConveyorApp.Inputters.Helpers;
 

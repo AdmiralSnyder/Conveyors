@@ -6,6 +6,7 @@ namespace ConveyorLib.Objects.Conveyor;
 [DebuggerDisplay($"{"PointLane"} ({{{nameof(DebugText)}}})")]
 public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISelectObject, IRefreshable
 {
+    public string ID { get; } = Guid.NewGuid().ToString();
     public ConveyorPointLane(ConveyorPoint point)
     {
         Point = point;
@@ -219,4 +220,8 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
             }
         }
     }
+
+    // TODO
+    public bool IsSelectionMatch(Vector point)
+        => true;
 }

@@ -8,7 +8,6 @@ public class CanvasInputHelpers : InputHelpers
     public ShowFixedPointInputHelper FixedPoint(Point point)
         => ShowFixedPointInputHelper.Create(Context, point);
 
-
     public ShowCircleByRadiusInputHelper ShowCircleByRadius(Point center)
         => ShowCircleByRadiusInputHelper.Create(Context, center);
 
@@ -22,10 +21,11 @@ public class CanvasInputHelpers : InputHelpers
         => ShowCalculatedPointInputHelper.Create(Context, calcFunction);
 
     public ShowMouseLocationInputHelper ShowMouseLocation()
-    => ShowMouseLocationInputHelper.Create(Context);
+        => ShowMouseLocationInputHelper.Create(Context);
 
     public ShowLineFromToMouseInputHelper LineFromToMouse(Point point)
-    => ShowLineFromToMouseInputHelper.Create(Context, point);
+        => ShowLineFromToMouseInputHelper.Create(Context, point);
 
-    
+    public WaitForSelectionInputHelper WaitForSelection()
+        => WaitForSelectionInputHelper.Create(Context);
 }

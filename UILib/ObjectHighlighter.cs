@@ -25,7 +25,7 @@ public abstract class ObjectHighlighter
 
     public ICanvasInfo? CanvasInfo { get; init; }
 
-    protected virtual void HighlightVirtual(TwoPoints locationSize) { }
+    protected virtual void HighlightVirtual(Bounds locationSize) { }
 
     protected void Highlight()
     {
@@ -40,7 +40,7 @@ public abstract class ObjectHighlighter
         
         if (SelectionRect is not null)
         {
-            SelectionRect.SetLocation(locationSize.P1.Subtract((4, 4)));
+            SelectionRect.SetLocation(locationSize.Location.Subtract((4, 4)));
 
             CanvasInfo?.AddToCanvas(SelectionRect);
         }

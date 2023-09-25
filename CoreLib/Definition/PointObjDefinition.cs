@@ -14,4 +14,7 @@ public class PointObjDefinition : IDefinition<Point>
         // TODO hier Checks ggf.
         Point = source;
     }
+
+    public bool IsSelectionMatch(Vector point) => Maths.Maths.IsSelectionMatch(Point, point);
+
 }

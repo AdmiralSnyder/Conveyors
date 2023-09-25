@@ -32,6 +32,7 @@ public class MoveConveyorPointInputter : MoveCanvasPointInputterBase<MoveConveyo
         MoveShapes.Clear();
         Context.Notify();
     }
+
     static int moveCount = 0;
     public override void HandleMouseMove(object sender, EventArgs e)
     {

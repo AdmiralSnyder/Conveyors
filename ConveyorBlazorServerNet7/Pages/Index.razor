@@ -1,17 +1,17 @@
 ﻿@page "/"
-
 @using ConveyorBlazorServerNet7.Components
 @using ConveyorInputLib;
+@using ConveyorLib.Objects.Conveyor;
 @using Microsoft.AspNetCore.SignalR.Client;
 @using ConveyorInputLib.Inputters;
-
-
+@using ConveyorBlazorServerNet7.Inputters;
+@using UILib.Shapes;
 
 <button @onclick=MoveButtonClick disabled=@MoveButtonDisabled>Move</button>
 <button @onclick=SelectButtonClick>Select</button>
 @foreach(var x in CreationCommandManager.StaticCommands)
 {
-    <button @onclick=@(async () => await x.Value(CommandManager)())>@(x.Key.Item2 ?? x.Key.Item1)</button>
+    <button @onclick=@(async () => await CommandManager.Invoke(x.Value))>@(x.Key.Item2 ?? x.Key.Item1)</button>
 }
 
 <Canvas />
@@ -27,9 +27,9 @@
         CommandManager = new CreationCommandManager();
         CommandManager.InputContext = AppContent.InputContext;
         CommandManager.AutoRoot = AutoRoot;
+        CommandManager.AfterCommandAction = () => AppContent.InputContext.Notify();
 
         return base.OnInitializedAsync();
-
     }
 
     async void MoveButtonClick()
@@ -42,8 +42,6 @@
         };
         MoveButtonDisabled = false;
         StateHasChanged();
-
-
     }
 
     async void AddCircleCenterRadiusButtonClick()
@@ -58,10 +56,59 @@
 
     async void SelectButtonClick()
     {
-        if (AutoRoot.Conveyors.FirstOrDefault() is ISelectObject first)
+        if ((await SingleClickSelectInputter.StartInput(AppContent.InputContext)).IsSuccess(out var selectedObjects))
         {
-            DummyHighlighter = UIHelpers.CreateObjectHighlighter(AppContent.CanvasInfo, first, ObjectHighlightTypes.Select);
-            AppContent.InputContext.Notify();
+            var currentID = AutoRoot.GetSelectObjects().FirstOrDefault()?.ID ?? null; 
+            string id = null;
+            var firstObj = selectedObjects.First();
+            var firstId = firstObj.ID;
+            if (selectedObjects.Count() == 1)
+            {
+                var x = firstObj.GetSelectRoot();
+                id = x.ID;
+            }
+            else
+            {
+                bool found = false;
+                foreach (var selObj in selectedObjects)
+                {
+                    var x = selObj;
+                    x = x.GetSelectRoot();
+                    if (found)
+                    {
+                        id = x.ID;
+                        found = false;
+                        break;
+                    }
+                    if (x is IIdentity iid)
+                    {
+                        if (iid.ID == currentID)
+                        {
+                            found = true;
+                            continue;
+                        }
+                    }
+                }
+                if (found)
+                {
+                    id = firstId;
+                }
+            }
+            
+            if (id is not null)
+            {
+                AutoRoot.SelectItem(id);
+                AppContent.InputContext.Notify();
+            }            
         }
+
+        // if (AutoRoot.Conveyors.FirstOrDefault() is { } first)
+        // {
+        //     AutoRoot.SelectItem(first.ID);
+        //     AppContent.InputContext.Notify();
+
+        //     // DummyHighlighter = UIHelpers.CreateObjectHighlighter(AppContent.CanvasInfo, first, ObjectHighlightTypes.Select);
+        //     // AppContent.InputContext.Notify();
+        // }
     }
 }

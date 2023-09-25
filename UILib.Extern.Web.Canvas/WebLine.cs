@@ -1,11 +1,27 @@
 ﻿using System.Drawing;
 using Blazor.Extensions.Canvas.Canvas2D;
+using CoreLib;
+using PointDef.twopoints;
 
 namespace UILib.Extern.Web.Canvas;
 
 public class WebLine : WebShape
 {
-    public TwoPoints FromTo { get; set; }
+    private TwoPoints<Vector> fromTo;
+
+    public TwoPoints FromTo 
+    {
+        get => fromTo;
+        set => Func.Setter(ref fromTo, value, UpdateLocationAndSize);
+    }
+
+    private void UpdateLocationAndSize(TwoPoints definingPoints)
+    {
+        var bounds = Maths.GetBounds(definingPoints);
+        Location = bounds.Location;
+        Width = bounds.Size.X;
+        Height = bounds.Size.Y;
+    }
 
     protected override async Task DrawAsyncVirtual(Canvas2DContext context)
     {

@@ -2,18 +2,19 @@
 using CoreLib;
 using CoreLib.Definition;
 using InputLib;
+using InputLib.Inputters;
 using System;
 using System.Threading.Tasks;
 using UILib;
 
 namespace ConveyorApp.Inputters;
 
-public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : Inputter<TThis, (TLineType, Point)>
+public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : AbortingInputter<TThis, (TLineType, Point)>
     where TThis : TargetLineDefinitionInputterBase<TThis, TLineType>, new()
 {
     protected override void AttachEvents()
     {
-        Context.Abort += Context_Abort;
+        base.AttachEvents();
         Context.ObjectPicked += Context_ObjectPicked;
     }
 
@@ -22,11 +23,10 @@ public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : Input
 
     protected virtual TLineType GetLineType(ISelectObject obj) => (TLineType)obj;
 
-    private void Context_Abort(object? sender, EventArgs e) => Abort();
 
     protected override void DetachEvents()
     {
-        Context.Abort -= Context_Abort;
+        base.DetachEvents();
         Context.ObjectPicked -= Context_ObjectPicked;
     }
 

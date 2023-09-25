@@ -1,4 +1,6 @@
-﻿namespace InputLib;
+﻿using InputLib.Inputters;
+
+namespace InputLib;
 
 public class ShowUserNotesInputHelper : Inputter<ShowUserNotesInputHelper, InputContextBase>
 {
