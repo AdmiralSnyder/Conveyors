@@ -8,8 +8,9 @@
 @using UILib.Shapes;
 
 <button @onclick=MoveButtonClick disabled=@MoveButtonDisabled>Move</button>
-<button @onclick=SelectButtonClick>Select</button>
-@foreach(var x in CreationCommandManager.StaticCommands)
+<button @onclick=SelectButtonClick>Select 1</button>
+<button @onclick=SelectButtonInfinityClick>Select ∞</button>
+@foreach (var x in CreationCommandManager.StaticCommands)
 {
     <button @onclick=@(async () => await CommandManager.Invoke(x.Value))>@(x.Key.Item2 ?? x.Key.Item1)</button>
 }
@@ -36,72 +37,72 @@
     {
         MoveButtonDisabled = true;
         StateHasChanged();
-        if ((await MoveConveyorPointInputter.StartInput(AppContent.InputContext)).IsSuccess(out var info))
-        {
-            AutoRoot.MovePoint(info.Item1, info.Item2);
-        };
+        await MoveConveyorPointInputter.StartInputOnce(AppContent.InputContext).Then(AutoRoot.MovePoint);
+
         MoveButtonDisabled = false;
         StateHasChanged();
     }
 
-    async void AddCircleCenterRadiusButtonClick()
-    {
-        if ((await CircleCenterRadiusInputter.StartInput(AppContent.InputContext)).IsSuccess(out var info))
-        {
-            AutoRoot.AddCircleCenterRadius(info);
-        }
-    }
+    async void AddCircleCenterRadiusButtonClick() => await CircleCenterRadiusInputter.StartInputOnce(AppContent.InputContext)
+        .Then(x => AutoRoot.AddCircleCenterRadius(x));
 
     ObjectHighlighter DummyHighlighter;
 
-    async void SelectButtonClick()
+    void SelectItem(IEnumerable<ISelectObject> selectedObjects)
     {
-        while ((await SingleClickSelectInputter.StartInput(AppContent.InputContext)).IsSuccess(out var selectedObjects))
+        var currentID = AutoRoot.GetSelectObjects().FirstOrDefault()?.ID ?? null;
+        string id = null;
+        var firstObj = selectedObjects.First();
+        var firstId = firstObj.ID;
+        if (selectedObjects.Count() == 1)
         {
-            var currentID = AutoRoot.GetSelectObjects().FirstOrDefault()?.ID ?? null; 
-            string id = null;
-            var firstObj = selectedObjects.First();
-            var firstId = firstObj.ID;
-            if (selectedObjects.Count() == 1)
+            var x = firstObj.GetSelectRoot();
+            id = x.ID;
+        }
+        else
+        {
+            id = firstId;
+            bool found = false;
+            foreach (var selObj in selectedObjects)
             {
-                var x = firstObj.GetSelectRoot();
-                id = x.ID;
-            }
-            else
-            {
-                id = firstId;
-                bool found = false;
-                foreach (var selObj in selectedObjects)
-                {
-                    var x = selObj;
-                    x = x.GetSelectRoot();
-                    if (found)
-                    {
-                        id = x.ID;
-                        found = false;
-                        break;
-                    }
-                    if (x is IIdentity iid)
-                    {
-                        if (iid.ID == currentID)
-                        {
-                            found = true;
-                            continue;
-                        }
-                    }
-                }
+                var x = selObj;
+                x = x.GetSelectRoot();
                 if (found)
                 {
-                    id = firstId;
+                    id = x.ID;
+                    found = false;
+                    break;
+                }
+                if (x is IIdentity iid)
+                {
+                    if (iid.ID == currentID)
+                    {
+                        found = true;
+                        continue;
+                    }
                 }
             }
-            
-            if (id is not null)
+            if (found)
             {
-                AutoRoot.SelectItem(id);
-                AppContent.InputContext.Notify();
-            }            
+                id = firstId;
+            }
         }
+
+        if (id is not null)
+        {
+            AutoRoot.SelectItem(id);
+            AppContent.InputContext.Notify();
+        }
+
+    }
+
+    async void SelectButtonClick() => await SingleClickSelectInputter.StartInputOnce(AppContent.InputContext).Then(SelectItem);
+    async void SelectButtonInfinityClick() => await SingleClickSelectInputter.StartInputContinuous(AppContent.InputContext).Then(SelectItem);
+    
+
+        // await SingleClickSelectInputter.StartInputContinuous(AppContent.InputContext).Then(SelectItem);
+
+        
 
         // if (AutoRoot.Conveyors.FirstOrDefault() is { } first)
         // {
@@ -111,5 +112,5 @@
         //     // DummyHighlighter = UIHelpers.CreateObjectHighlighter(AppContent.CanvasInfo, first, ObjectHighlightTypes.Select);
         //     // AppContent.InputContext.Notify();
         // }
-    }
+    
 }

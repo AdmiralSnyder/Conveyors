@@ -133,7 +133,7 @@ public static class Func
 
     public static Dictionary<char, Point[][]> TextLocations = new()
     {
-        ['H'] = [[(0, 0), (0, 10)], [(0, 5), (5, 5)], [(5, 0), (5, 10)] ],
+        ['H'] = [[(0, 0), (0, 10)], [(0, 5), (5, 5)], [(5, 0), (5, 10)]],
         ['A'] = [[(0, 10), (2.5, 0), (5, 10)], [(0, 5), (5, 5)]],
         ['P'] = [[(0, 10), (0, 0), (4, 0), (5, 2.5), (4, 5), (0, 5)]],
         ['Y'] = [[(0, 0), (2.5, 5), (5, 0)], [(2.5, 5), (2.5, 10)]],
@@ -151,4 +151,34 @@ public static class Func
     public static IEnumerable<IEnumerable<Point[][]>> GetTextLocations(IEnumerable<string> strings) => strings.Select(GetTextLocations);
 
     public static IEnumerable<IEnumerable<Point[][]>> GetTextLocations(params string[] strings) => strings.Select(GetTextLocations);
+
+    public static async Task Then<T>(this Task<T> task, Action<T> continuationAction)
+        => await task.ContinueWith(t =>
+        {
+            if (t.IsCompletedSuccessfully)
+            {
+                continuationAction(t.Result);
+            }
+        });
+
+    public static async Task<TResult> Then<T, TResult>(this Task<T> task, Func<T, TResult> continuationFunc)
+        => await task.ContinueWith<TResult>(t =>
+        {
+            if (t.IsCompletedSuccessfully)
+            {
+                return continuationFunc(t.Result);
+            }
+            else
+            {
+                return default;
+            }
+        });
+
+    public static async Task Then<T>(this IAsyncEnumerable<T> items, Action<T> continuationAction)
+    {
+        await foreach (var t in items)
+        {
+            continuationAction(t);
+        }
+    }
 }

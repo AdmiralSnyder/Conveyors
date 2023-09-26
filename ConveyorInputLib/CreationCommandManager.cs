@@ -9,6 +9,7 @@ using ConveyorAutomationLib;
 using ConveyorInputLib.Helpers;
 using ConveyorInputLib.Inputters;
 using InputLib;
+using CoreLib;
 
 namespace ConveyorInputLib;
 
@@ -53,29 +54,10 @@ public class CreationCommandManager
         AfterCommandAction();
     }
 
-    public async Task AddCircleCenterRadius()
-    {
-        if ((await CircleCenterRadiusInputter.StartInput(InputContext)).IsSuccess(out var info))
-        {
-            AutoRoot.AddCircleCenterRadius(info);
-        }
-    }
+    public async Task AddCircleCenterRadius() => await CircleCenterRadiusInputter.StartInputOnce(InputContext).Then(AutoRoot.AddCircleCenterRadius);
 
-    public async Task AddCircleThreePoints()
-    {
-        if ((await CircleThreePointsInputter.StartInput(InputContext)).IsSuccess(out var info))
-        {
-            AutoRoot.AddCircleThreePoints(info);
-        }
-    }
-
-    public async Task AddCircleTwoPoints()
-    {
-        if ((await CircleDiameterInputter.StartInput(InputContext)).IsSuccess(out var info))
-        {
-            AutoRoot.AddCircleDiameter(info);
-        }
-    }
+    public async Task AddCircleThreePoints() => await CircleThreePointsInputter.StartInputOnce(InputContext).Then(AutoRoot.AddCircleThreePoints);
+    public async Task AddCircleTwoPoints() => await CircleDiameterInputter.StartInputOnce(InputContext).Then(AutoRoot.AddCircleDiameter);
 
     public async Task AddLine()
     {

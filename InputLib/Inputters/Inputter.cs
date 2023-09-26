@@ -90,7 +90,6 @@ public abstract class InputterBase<TThis, TTask> : Inputter
         inputter.SubInputters = subInputters;
         return inputter.StartAsync();
     }
-
 }
 
 public abstract class Inputter<TThis> : InputterBase<TThis, Task>
@@ -143,6 +142,27 @@ public abstract class Inputter<TThis, TResult> : InputterBase<TThis, Task<InputR
         Start();
         TaskCompletionSource = new();
         return TaskCompletionSource.Task;
+    }
+
+    public static async Task<TResult> StartInputOnce(InputContextBase inputContext)
+    {
+        if ((await (StartInput(inputContext))).IsSuccess(out var result))
+        {
+            return result;
+        }
+        else
+        {
+            return await Task.FromCanceled<TResult>(CancellationToken.None);
+            //throw new InvalidOperationException("Input failed");
+        }
+    }
+
+    public static async IAsyncEnumerable<TResult> StartInputContinuous(InputContextBase inputContext)
+    {
+        while ((await (StartInput(inputContext))).IsSuccess(out var result))
+        {
+            yield return result;
+        }
     }
 }
 

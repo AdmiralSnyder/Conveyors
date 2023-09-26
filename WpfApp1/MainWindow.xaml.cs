@@ -144,10 +144,7 @@ public partial class MainWindow
     private async void MovePointB_Click(object sender, RoutedEventArgs e)
     {
         ViewModel.IsRunning = false;
-        if ((await MoveConveyorPointInputter.StartInput(ViewModel.InputContext)).IsSuccess(out var info))
-        {
-            AutoRoot.MovePoint(info.Item1, info.Item2);
-        };
+        await MoveConveyorPointInputter.StartInputOnce(ViewModel.InputContext).Then(AutoRoot.MovePoint);
     }
 
     private async void RunB_Click(object sender, RoutedEventArgs e) => await ScriptRunner.RunScript(textEditor.Text);

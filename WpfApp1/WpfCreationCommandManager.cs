@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ConveyorApp.Inputters;
 using ConveyorInputLib;
+using CoreLib;
 
 namespace ConveyorApp;
 
@@ -27,14 +28,9 @@ public class WpfCreationCommandManager : CreationCommandManager
         [("Add Conveyor", @"\___/")] = c => c.AddConveyor,
     };
 
-    internal async Task AddConveyor()
-    {
-        if ((await ConveyorInputter.StartInput(InputContext)).IsSuccess(out var points))
-        {
-            AutoRoot.AddConveyor(points, ((WpfCanvasInputContext)InputContext).ViewModel.IsRunning, 
-                ((WpfCanvasInputContext)InputContext).ViewModel.LaneCount);
-        }
-    }
+    internal async Task AddConveyor() => await ConveyorInputter.StartInputOnce(InputContext).Then(points
+        => AutoRoot.AddConveyor(points, ((WpfCanvasInputContext)InputContext).ViewModel.IsRunning,
+            ((WpfCanvasInputContext)InputContext).ViewModel.LaneCount));
 
     internal async Task AddFillet()
     {

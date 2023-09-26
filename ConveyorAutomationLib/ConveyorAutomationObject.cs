@@ -43,8 +43,10 @@ public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomatio
     Fillet AddFillet(TwoPoints points, double radius);
 
     void MovePoint(ConveyorPoint conveyorPoint, Point point);
+    void MovePoint((ConveyorPoint conveyorPoint, Point point) tuple);
 
     void OffsetPoint(ConveyorPoint conveyorPoint, Point point);
+    void OffsetPoint((ConveyorPoint conveyorPoint, Point point) tuple);
 
     bool SaveCustom(string fileName);
     bool SaveJSON(string fileName);
@@ -98,8 +100,10 @@ public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppAppli
     public partial Fillet AddFillet(TwoPoints points, double radius) => AddAppObject(Fillet.Create((points, radius)));
 
     public partial void MovePoint(ConveyorPoint conveyorPoint, Point point) => conveyorPoint.Location = point;
+    public partial void MovePoint((ConveyorPoint conveyorPoint, Point point) info) => MovePoint(info.conveyorPoint, info.point);
 
     public partial void OffsetPoint(ConveyorPoint conveyorPoint, Point point) => conveyorPoint.Location += point;
+    public partial void OffsetPoint((ConveyorPoint conveyorPoint, Point point) info) => OffsetPoint(info.conveyorPoint, info.point);
 
     public partial void SelectItem(string id)
     {
