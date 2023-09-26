@@ -98,6 +98,10 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
         // This is utterly dirty - the conveyor should be a listener on the point's locations - or rather, all locations...
         ((ISelectObject)Conveyor).SetSelectionPoints();
 
+        if (Conveyor.CanvasInfo is not null)
+        {
+            Conveyor.AddToCanvas(Conveyor, Conveyor.CanvasInfo);
+        }
     }
 
     private Point _Location;
@@ -170,6 +174,11 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
 
     public void AddToCanvas(IConveyorCanvasInfo canvasInfo)
     {
+        if (PointCircle is not null)
+        {
+            canvasInfo.RemoveFromCanvas(PointCircle);
+        }
+
         PointCircle = canvasInfo.ShapeProvider.CreateConveyorPointEllipse(Location, IsFirst, IsLast, IsClockwise, IsStraight);
         PointCircle.Tag = this;
         canvasInfo.AddToCanvas(PointCircle);

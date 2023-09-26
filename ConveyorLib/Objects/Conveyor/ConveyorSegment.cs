@@ -115,9 +115,13 @@ public class ConveyorSegment : IConveyorCanvasable, IPathPart, ISelectObject, IR
 
     public void AddToCanvas(IConveyorCanvasInfo canvasInfo)
     {
+        if (DefinitionLine is not null)
+        {
+            canvasInfo.RemoveFromCanvas(DefinitionLine);
+        }
+
         DefinitionLine = canvasInfo.ShapeProvider.CreateConveyorSegmentLine(StartEnd);
         DefinitionLine.Tag = this;
-
         canvasInfo.AddToCanvas(DefinitionLine);
         foreach (var lane in Lanes)
         {

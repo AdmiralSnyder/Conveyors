@@ -127,8 +127,14 @@ public class ConveyorSegmentLane : IConveyorCanvasable, ILanePart, IDebugText, I
 
     public void AddToCanvas(IConveyorCanvasInfo canvasInfo)
     {
+        if (Line is not null)
+        {
+            canvasInfo.RemoveFromCanvas(Line);
+        }
+
         Line = canvasInfo.ShapeProvider.CreateConveyorSegmentLaneLine(StartEnd);
         Line.Tag = this;
+        canvasInfo.RemoveFromCanvas(Line);
         canvasInfo.AddToCanvas(Line);
     }
 

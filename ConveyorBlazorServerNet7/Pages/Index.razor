@@ -56,7 +56,7 @@
 
     async void SelectButtonClick()
     {
-        if ((await SingleClickSelectInputter.StartInput(AppContent.InputContext)).IsSuccess(out var selectedObjects))
+        while ((await SingleClickSelectInputter.StartInput(AppContent.InputContext)).IsSuccess(out var selectedObjects))
         {
             var currentID = AutoRoot.GetSelectObjects().FirstOrDefault()?.ID ?? null; 
             string id = null;
@@ -69,6 +69,7 @@
             }
             else
             {
+                id = firstId;
                 bool found = false;
                 foreach (var selObj in selectedObjects)
                 {

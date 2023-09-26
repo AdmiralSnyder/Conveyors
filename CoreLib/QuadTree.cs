@@ -11,6 +11,8 @@ public class QuadTree<TElement>
     public bool Extendable { get; set; }
     public int MaxItemsPerNode { get; private set; }
 
+    public Dictionary<TElement, QuadTree<TElement>> NodeLookup = new();
+
     //public List<TElement> Items { get; } = new List<TElement>();
 
     // possible optimization: use a linked list for items, so we can remove items from the middle of the list
@@ -42,11 +44,11 @@ public class QuadTree<TElement>
         // TODO invoke split from here, with the direction we wanna split into
 
         if (Bounds.Contains(bounds)) return ExtendResults.NoExtensionNeeded;
-        
-        if (!Extendable) return ExtendResults.CannotExtend; 
+
+        if (!Extendable) return ExtendResults.CannotExtend;
 
         Bounds = Bounds.Union(bounds);
-        
+
         return ExtendResults.Extended;
     }
 
@@ -67,6 +69,7 @@ public class QuadTree<TElement>
                 Split();
             }
 
+            NodeLookup[item] = this;
             return true;
         }
 
@@ -75,7 +78,8 @@ public class QuadTree<TElement>
         {
             if (node.Bounds.Contains(item.Bounds))
             {
-                
+
+                NodeLookup[item] = node;
                 return node.AddInternal(item);
             }
         }
@@ -94,21 +98,39 @@ public class QuadTree<TElement>
 
     public void Remove(TElement item)
     {
-        if (!_Nodes.Any())
-        {
-            Items.RemoveFrom(item.Bounds, item);
-            return;
-        }
 
-        // Determine which node the item belongs to
-        foreach (var node in _Nodes)
+        if (NodeLookup.TryGetValue(item, out var subNode))
         {
-            if (node.Bounds.Contains(item.Bounds))
+            if (subNode == this)
             {
-                node.Remove(item);
-                break;
+                if (!Items.RemoveFrom(item.Bounds, item))
+                {
+
+                    Bounds? oldKey = default;
+                    foreach (var kvp in Items)
+                    {
+                        if (kvp.Value.Remove(item) && kvp.Value.Count == 0)
+                        {
+                            oldKey = kvp.Key;
+                        }
+
+                    }
+                    if (oldKey.HasValue)
+                    {
+                        Items.Remove(oldKey.Value);
+                    }
+                }
+            }
+            else
+            {
+                subNode.Remove(item);
             }
         }
+
+
+        // TODO delete empty nodes?
+
+        NodeLookup.Remove(item);
     }
 
     private void Split()
@@ -135,6 +157,7 @@ public class QuadTree<TElement>
                     foreach (var itemValue in item.Value)
                     {
                         node.Add(itemValue);
+                        NodeLookup[itemValue] = node;
                     }
                     Items.Remove(item.Key);
                     break;

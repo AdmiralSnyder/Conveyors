@@ -116,13 +116,19 @@ public static class Func
         return value;
     }
 
-    public static void RemoveFrom<TKey, TValue>(this Dictionary<TKey, List<TValue>> dict, TKey key, TValue value)
+    public static bool RemoveFrom<TKey, TValue>(this Dictionary<TKey, List<TValue>> dict, TKey key, TValue value)
         where TKey : notnull
     {
         if (dict.TryGetValue(key, out var lst))
         {
             lst.Remove(value);
+            if (lst.Count == 0)
+            {
+                dict.Remove(key);
+                return true;
+            }
         }
+        return false;
     }
 
     public static Dictionary<char, Point[][]> TextLocations = new()

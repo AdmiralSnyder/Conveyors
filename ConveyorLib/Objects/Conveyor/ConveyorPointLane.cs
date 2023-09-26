@@ -33,6 +33,11 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
 
     public void AddToCanvas(IConveyorCanvasInfo canvasInfo)
     {
+        if (Arc is not null)
+        {
+            canvasInfo.RemoveFromCanvas(Arc);
+        }
+
         Arc = canvasInfo.ShapeProvider.CreateConveyorPointPath(ArcGeometry, IsLeft);
         canvasInfo.AddToCanvas(Arc);
         Arc!.Tag = this;
@@ -189,8 +194,6 @@ public class ConveyorPointLane : IConveyorCanvasable, ILanePart, IDebugText, ISe
                     ArcGeometry.AddArcFigure(prevEnd, nextStart, radius, Point.Angle.Degrees, largeArc, swDir);
                 }
             }
-
-
 
             Length = (Angle.HalfCircle - Point.AbsoluteAngle).Radians * radius;
         }
