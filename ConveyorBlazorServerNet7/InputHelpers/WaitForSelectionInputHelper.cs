@@ -11,6 +11,11 @@ using UILib.Shapes;
 
 namespace ConveyorBlazorServerNet7.InputHelpers;
 
+public class StartDrawingInputHelper : AbortingInputter<StartDrawingInputHelper, object>
+{
+
+}
+
 public class WaitForSelectionInputHelper : AbortingInputter<WaitForSelectionInputHelper, IEnumerable<ISelectObject>>
 {
     protected override void AttachEvents()

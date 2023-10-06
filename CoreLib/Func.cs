@@ -161,6 +161,25 @@ public static class Func
             }
         });
 
+    public static async Task<TResult> ThenWithoutConinueWith<T, TResult>(this Task<T> task, Func<T, TResult> continuationFunc)
+    {
+        var taskResult = await task;
+        return continuationFunc(taskResult);
+        //return await task.ContinueWith<TResult>(t =>
+        //    {
+        //        if (t.IsCompletedSuccessfully)
+        //        {
+        //            return continuationFunc(t.Result);
+        //        }
+        //        else
+        //        {
+        //            return default;
+        //        }
+        //    }
+        //        //, scheduler: new CustomTaskScheduler()
+        //        );
+    }
+
     public static async Task<TResult> Then<T, TResult>(this Task<T> task, Func<T, TResult> continuationFunc)
         => await task.ContinueWith<TResult>(t =>
         {
@@ -172,7 +191,46 @@ public static class Func
             {
                 return default;
             }
-        });
+        }
+        , scheduler: new CustomTaskScheduler()
+            );
+
+    public static async Task<TResult> ThenWithContinuation<T, TResult>(this Task<T> task, Func<T, TResult> continuationFunc)
+        => await task.ContinueWith<TResult>(t =>
+        {
+            if (t.IsCompletedSuccessfully)
+            {
+                return continuationFunc(t.Result);
+            }
+            else
+            {
+                return default;
+            }
+        }
+        , scheduler: new CustomTaskScheduler()
+            );
+
+
+    class CustomTaskScheduler : TaskScheduler
+{
+    protected override IEnumerable<Task> GetScheduledTasks()
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override void QueueTask(Task task)
+    {
+        // Run the task on the current thread
+        TryExecuteTask(task);
+    }
+
+    protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
+    {
+        // Run the task on the current thread
+        return TryExecuteTask(task);
+    }
+}
+
 
     public static async Task Then<T>(this IAsyncEnumerable<T> items, Action<T> continuationAction)
     {
@@ -181,4 +239,12 @@ public static class Func
             continuationAction(t);
         }
     }
+
+    //public static async Task<TResult> Then<T, TResult>(this IAsyncEnumerable<T> items, Func<T, TResult> continuationFunc)
+    //{
+    //    await foreach (var t in items)
+    //    {
+    //        return await continuationFunc(t);
+    //    }
+    //}
 }

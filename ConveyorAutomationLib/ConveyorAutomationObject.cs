@@ -92,9 +92,10 @@ public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppAppli
     public partial Circle AddCircleDiameter((Point Point1, Point Point2) diameter) => AddAppObject(Circle.Create(diameter));
     public partial Circle AddCircleThreePoints((Point Point1, Point Point2, Point Point3) threePoints) => AddAppObject(Circle.Create(threePoints));
 
-
     public partial Line AddLine(TwoPoints points) => AddAppObject(Line.Create(points));
+    
     public partial LineSegment AddLineSegment(TwoPoints points) => AddAppObject(LineSegment.Create(points));
+
     public partial PointObj AddPoint(Point point) => AddAppObject(PointObj.Create(point));
 
     public partial Fillet AddFillet(TwoPoints points, double radius) => AddAppObject(Fillet.Create((points, radius)));

@@ -157,6 +157,16 @@ public abstract class Inputter<TThis, TResult> : InputterBase<TThis, Task<InputR
         }
     }
 
+    public static CancellationTokenSource Cts = new();
+
+    public static async IAsyncEnumerable<TResult> StartInputOnceNew(InputContextBase inputContext)
+    {
+        if ((await (StartInput(inputContext))).IsSuccess(out var result))
+        {
+            yield return result;
+        }
+    }
+
     public static async IAsyncEnumerable<TResult> StartInputContinuous(InputContextBase inputContext)
     {
         while ((await (StartInput(inputContext))).IsSuccess(out var result))
