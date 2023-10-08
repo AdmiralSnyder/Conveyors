@@ -17,6 +17,9 @@ public interface IConveyorShapeProvider : IShapeProvider
     ILine CreateConveyorSegmentLine(TwoPoints points);
     ILine CreateConveyorSegmentLaneLine(TwoPoints points);
     IShape CreateFillet(TwoPoints points, double radius);
+    
+    IPath CreateFreeHandLine(IEnumerable<Point> points);
+
     ILine CreateLine(TwoPoints points);
     ILine CreateLineSegment(TwoPoints points);
     ILine CreateDebugThinLineSegment(TwoPoints points);

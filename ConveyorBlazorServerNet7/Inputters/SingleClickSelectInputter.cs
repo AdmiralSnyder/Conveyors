@@ -13,9 +13,9 @@ public class SingleClickSelectInputter : AbortingInputter<SingleClickSelectInput
 {
     protected override async Task<InputResult<IEnumerable<ISelectObject>>> StartAsyncVirtual()
     {
-        var result = await InputManager.Blank()
-            .Then(async _ => await WaitForSelectionInputHelper.StartInput(Context))
-            .Do(ctx => InputResult.SuccessTask(ctx.Second));
+        var result = await InputManager.BlankContext()
+            .Then(async _ => await WaitForSelectionInputHelper.StartInput(InputContext))
+            .Do(ctx => InputResult.SuccessTask(ctx.Last));
 
         return result;
     }

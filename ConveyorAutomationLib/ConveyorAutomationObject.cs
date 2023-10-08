@@ -42,6 +42,8 @@ public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomatio
     /// <returns></returns>
     Fillet AddFillet(TwoPoints points, double radius);
 
+    FreeHandLine AddFreeHand(IEnumerable<Point> points);
+
     void MovePoint(ConveyorPoint conveyorPoint, Point point);
     void MovePoint((ConveyorPoint conveyorPoint, Point point) tuple);
 
@@ -99,6 +101,8 @@ public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppAppli
     public partial PointObj AddPoint(Point point) => AddAppObject(PointObj.Create(point));
 
     public partial Fillet AddFillet(TwoPoints points, double radius) => AddAppObject(Fillet.Create((points, radius)));
+
+    public partial FreeHandLine AddFreeHand(IEnumerable<Point> points) => AddAppObject(FreeHandLine.Create(points));
 
     public partial void MovePoint(ConveyorPoint conveyorPoint, Point point) => conveyorPoint.Location = point;
     public partial void MovePoint((ConveyorPoint conveyorPoint, Point point) info) => MovePoint(info.conveyorPoint, info.point);

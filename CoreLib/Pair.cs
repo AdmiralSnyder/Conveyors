@@ -2,6 +2,6 @@
 
 public class Pair<TFirst, TSecond>
 {
-    public TFirst First { get; set; }
-    public TSecond Second { get; set; }
+    public TFirst Previous { get; set; }
+    public TSecond Last { get; set; }
 }

@@ -13,6 +13,6 @@ public class ShowUserNotesInputHelper : Inputter<ShowUserNotesInputHelper, Input
     protected override void CleanupVirtual()
     {
         base.CleanupVirtual();
-        Context.UserNotes = "";
+        InputContext.UserNotes = "";
     }
 }

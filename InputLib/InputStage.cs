@@ -35,11 +35,24 @@ public class InputStage<TInput, TOutput> : InputStage<TOutput>
         {
             Input = lastOutput;
         }
-        var result = await StageFunc(Input);
-        Output = result;
-        if (result.IsSuccess(out var resResult))
+        try
         {
-            NextInput = new Pair<TInput, TOutput>() { First = Input, Second = resResult };
+            var task = StageFunc(Input);
+            //var awaiter = task.GetAwaiter();
+            //var result = awaiter.GetResult();
+            if (task.Status == TaskStatus.Created)
+            {
+                task.Start();
+            }
+            var result = await task;
+            Output = result;
+            if (result.IsSuccess(out var resResult))
+            {
+                NextInput = new Pair<TInput, TOutput>() { Previous = Input, Last = resResult };
+            }
+        }
+        catch
+        {
         }
     }
 

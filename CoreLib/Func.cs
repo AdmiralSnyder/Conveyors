@@ -152,66 +152,7 @@ public static class Func
 
     public static IEnumerable<IEnumerable<Point[][]>> GetTextLocations(params string[] strings) => strings.Select(GetTextLocations);
 
-    public static async Task Then<T>(this Task<T> task, Action<T> continuationAction)
-        => await task.ContinueWith(t =>
-        {
-            if (t.IsCompletedSuccessfully)
-            {
-                continuationAction(t.Result);
-            }
-        });
-
-    public static async Task<TResult> ThenWithoutConinueWith<T, TResult>(this Task<T> task, Func<T, TResult> continuationFunc)
-    {
-        var taskResult = await task;
-        return continuationFunc(taskResult);
-        //return await task.ContinueWith<TResult>(t =>
-        //    {
-        //        if (t.IsCompletedSuccessfully)
-        //        {
-        //            return continuationFunc(t.Result);
-        //        }
-        //        else
-        //        {
-        //            return default;
-        //        }
-        //    }
-        //        //, scheduler: new CustomTaskScheduler()
-        //        );
-    }
-
-    public static async Task<TResult> Then<T, TResult>(this Task<T> task, Func<T, TResult> continuationFunc)
-        => await task.ContinueWith<TResult>(t =>
-        {
-            if (t.IsCompletedSuccessfully)
-            {
-                return continuationFunc(t.Result);
-            }
-            else
-            {
-                return default;
-            }
-        }
-        , scheduler: new CustomTaskScheduler()
-            );
-
-    public static async Task<TResult> ThenWithContinuation<T, TResult>(this Task<T> task, Func<T, TResult> continuationFunc)
-        => await task.ContinueWith<TResult>(t =>
-        {
-            if (t.IsCompletedSuccessfully)
-            {
-                return continuationFunc(t.Result);
-            }
-            else
-            {
-                return default;
-            }
-        }
-        , scheduler: new CustomTaskScheduler()
-            );
-
-
-    class CustomTaskScheduler : TaskScheduler
+    class SameThreadTaskScheduler : TaskScheduler
 {
     protected override IEnumerable<Task> GetScheduledTasks()
     {
@@ -237,6 +178,25 @@ public static class Func
         await foreach (var t in items)
         {
             continuationAction(t);
+        }
+    }
+
+    public static async Task<TResult> Then<T, TResult>(this Task<T> task, Func<T, TResult> continuationFunc)
+    {
+        var result = await task;
+        if (task.IsCompletedSuccessfully)
+        {
+            return continuationFunc(result);
+        }
+        return default;
+    }
+
+    public static async Task Then<T>(this Task<T> task, Action<T> continuationAction)
+    {
+        var result = await task;
+        if (task.IsCompletedSuccessfully)
+        {
+            continuationAction(result);
         }
     }
 

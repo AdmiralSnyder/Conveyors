@@ -6,7 +6,7 @@ public class InputManager
 
     private Queue<InputStage> DoneStages = new();
 
-    public static BlankInputEntry Blank()
+    public static BlankInputEntry BlankContext()
     {
         var manager = new InputManager();
         var blankEntry = new BlankInputEntry(manager);

@@ -1,11 +1,21 @@
 ﻿using System;
+using CoreLib;
 using InputLib;
 
 namespace ConveyorInputLib.Helpers;
 
 public class CanvasInputHelpers : InputHelpers
 {
-    public ShowFixedPointInputHelper FixedPoint(Point point)
+    public void AddToList<TData>(List<TData> list, TData data) => list.Add(data);
+
+    public TData AddData<TData>(TData data) => data;
+
+    public TData AddData<TData>() where TData : new() => new();
+
+    public ShowPathInputHelper ShowPath(IEnumerable<Point> points)
+        => ShowPathInputHelper.Create(Context, points);
+
+    public ShowFixedPointInputHelper ShowFixedPoint(Point point)
         => ShowFixedPointInputHelper.Create(Context, point);
 
     public ShowCircleByRadiusInputHelper ShowCircleByRadius(Point center)

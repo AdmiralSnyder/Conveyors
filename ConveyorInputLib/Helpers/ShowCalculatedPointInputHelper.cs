@@ -9,8 +9,8 @@ public class ShowCalculatedPointInputHelper : ShowPointInputHelper<ShowCalculate
 {
     private Func<Vector, Vector> CalculationOnMouse;
 
-    protected override void AttachEvents() => Context.MouseMovedInCanvas += Context_MouseMovedInCanvas;
-    protected override void DetachEvents() => Context.MouseMovedInCanvas -= Context_MouseMovedInCanvas;
+    protected override void AttachEvents() => InputContext.MouseMovedInCanvas += Context_MouseMovedInCanvas;
+    protected override void DetachEvents() => InputContext.MouseMovedInCanvas -= Context_MouseMovedInCanvas;
 
     public static ShowCalculatedPointInputHelper Create(InputContextBase context, Func<Point, Point> calculationOnMouse)
     {

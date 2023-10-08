@@ -4,18 +4,18 @@ namespace CoreLib;
 
 public static class PairFunc
 {
-    public static (T1 Item1, T2 Item2) Flatten<T1, T2>(this Pair<T1, T2> with) => (with.First, with.Second);
+    public static (T1 Item1, T2 Item2) Flatten<T1, T2>(this Pair<T1, T2> with) => (with.Previous, with.Last);
     public static bool Flatten<T1, T2>(this Pair<T1, T2> with, out (T1 Item1, T2 Item2) flattened)
     {
-        flattened = (with.First, with.Second);
+        flattened = (with.Previous, with.Last);
         return true;
     }
 
-    public static (T1 Item1, T2 Item2, T3 Item3) Flatten2<T1, T2, T3>(this Pair<Pair<T1, T2>, T3> with) => (with.First.First, with.First.Second, with.Second);
+    public static (T1 Item1, T2 Item2, T3 Item3) Flatten2<T1, T2, T3>(this Pair<Pair<T1, T2>, T3> with) => (with.Previous.Previous, with.Previous.Last, with.Last);
 
     public static bool Flatten2<T1, T2, T3>(this Pair<Pair<T1, T2>, T3> with, out (T1 Item1, T2 Item2, T3 Item3) flattened)
     {
-        flattened = (with.First.First, with.First.Second, with.Second);
+        flattened = (with.Previous.Previous, with.Previous.Last, with.Last);
         return true;
     }
 

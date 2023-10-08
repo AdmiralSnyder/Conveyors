@@ -15,7 +15,7 @@ public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : Abort
     protected override void AttachEvents()
     {
         base.AttachEvents();
-        Context.ObjectPicked += Context_ObjectPicked;
+        InputContext.ObjectPicked += Context_ObjectPicked;
     }
 
     private void Context_ObjectPicked(object? sender, EventArgs<(ISelectObject, Point)> e)
@@ -27,13 +27,13 @@ public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : Abort
     protected override void DetachEvents()
     {
         base.DetachEvents();
-        Context.ObjectPicked -= Context_ObjectPicked;
+        InputContext.ObjectPicked -= Context_ObjectPicked;
     }
 
     protected override void CleanupVirtual()
     {
-        ((WpfCanvasInputContext)Context).StopObjectPickingListener();
-        ((WpfCanvasInputContext)Context).ViewModel.InputPickManager.Disable();
+        ((WpfCanvasInputContext)InputContext).StopObjectPickingListener();
+        ((WpfCanvasInputContext)InputContext).ViewModel.InputPickManager.Disable();
 
         base.CleanupVirtual();
     }
@@ -42,8 +42,8 @@ public abstract class TargetLineDefinitionInputterBase<TThis, TLineType> : Abort
 
     protected override Task<InputResult<(TLineType, Point)>> StartAsyncVirtual()
     {
-        ((WpfCanvasInputContext)Context).ViewModel.InputPickManager.Enable(ObjectCanBePicked);
-        ((WpfCanvasInputContext)Context).StartObjectPickingListener();
+        ((WpfCanvasInputContext)InputContext).ViewModel.InputPickManager.Enable(ObjectCanBePicked);
+        ((WpfCanvasInputContext)InputContext).StartObjectPickingListener();
 
         return base.StartAsyncVirtual();
     }

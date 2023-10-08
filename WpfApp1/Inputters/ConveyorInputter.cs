@@ -24,7 +24,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
     {
         base.Start();
         InputState = InputStates.SelectFirstPoint;
-        Context.CurrentInputter = this;
+        InputContext.CurrentInputter = this;
     }
 
     protected override void InputStateChanged(InputStates newValue)
@@ -34,20 +34,20 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
         switch (newValue)
         {
             case InputStates.SelectFirstPoint:
-                Context.SetCursor(InputCursors.Cross);
-                Context.UserNotes = "Please select the starting point.";
-                Context.CaptureMouse();
+                InputContext.SetCursor(InputCursors.Cross);
+                InputContext.UserNotes = "Please select the starting point.";
+                InputContext.CaptureMouse();
                 break;
 
             case InputStates.SelectLastPoint:
-                Context.SetCursor(InputCursors.Cross);
-                Context.UserNotes = "Please select the ending point.";
+                InputContext.SetCursor(InputCursors.Cross);
+                InputContext.UserNotes = "Please select the ending point.";
                 break;
 
             case InputStates.None:
-                Context.SetCursor(InputCursors.Arrow);
-                Context.ReleaseMouseCapture();
-                Context.UserNotes = "Click around. Have fun!";
+                InputContext.SetCursor(InputCursors.Arrow);
+                InputContext.ReleaseMouseCapture();
+                InputContext.UserNotes = "Click around. Have fun!";
                 break;
         }
     }
@@ -56,7 +56,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
     {
         base.HandleMouseDown(sender, e);
 
-        var isShiftPressed = Context.IsShiftPressed();
+        var isShiftPressed = InputContext.IsShiftPressed();
         switch (InputState)
         {
             case InputStates.SelectFirstPoint:
@@ -94,11 +94,11 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
         {
             if (TempLines.TryPop(out var last))
             {
-                Context.RemoveTempShape(last);
+                InputContext.RemoveTempShape(last);
             }
             if (TempLines.TryPeek(out last))
             {
-                last.SetEnd(Context.GetPoint(e));
+                last.SetEnd(InputContext.GetPoint(e));
             }
             else
             {
@@ -114,7 +114,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
         {
             foreach (var line in TempLines)
             {
-                Context.RemoveTempShape(line);
+                InputContext.RemoveTempShape(line);
             }
             TempLines.Clear();
             InputState = InputStates.None;
@@ -123,14 +123,14 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
 
         ActionResults AddPoint()
         {
-            if (Context.IsRightClick(e)) return isShiftPressed
+            if (InputContext.IsRightClick(e)) return isShiftPressed
                 ? ActionResults.AbortAll
                 : ActionResults.Abort;
 
-            var point = Context.GetPoint(e);
+            var point = InputContext.GetPoint(e);
 
             var line = ShapeProvider.CreateConveyorPositioningLine((point, point));  // das ist geschummelt, damit ich nicht umständlich Zustände speichern muss
-            Context.AddTempShape(line);
+            InputContext.AddTempShape(line);
             TempLines.Push(line);
 
             return isShiftPressed ? ActionResults.Continue : ActionResults.Finish;
@@ -142,7 +142,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
             Point lastPoint = (double.NaN, double.NaN);
             foreach (var line in TempLines.Reverse())
             {
-                Context.RemoveTempShape(line);
+                InputContext.RemoveTempShape(line);
                 line.StrokeColor = System.Drawing.Color.Red;
                 if (line.X1 != line.X2 || line.Y1 != line.Y2)
                 {
@@ -178,7 +178,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
 
         if (InputState != InputStates.None && TempLines.TryPeek(out var tl))
         {
-            tl.SetEnd(Context.GetPoint(e));
+            tl.SetEnd(InputContext.GetPoint(e));
         }
     }
 }

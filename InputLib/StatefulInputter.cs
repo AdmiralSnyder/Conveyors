@@ -23,5 +23,5 @@ public abstract class StatefulInputter<TThis, TResult, TInputState> : Inputter<T
 
     protected virtual void InputStateChanged(TInputState oldValue, TInputState newValue) => InputStateChanged(newValue);
 
-    protected virtual void InputStateChanged(TInputState newValue) => Context.Notify();
+    protected virtual void InputStateChanged(TInputState newValue) => InputContext.Notify();
 }

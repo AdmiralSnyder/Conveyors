@@ -89,10 +89,31 @@ public abstract class ConveyorShapeProvider<TEllipse, TLine, TPath> : IConveyorS
         StrokeThickness = 2,
     }.WithSelectBehavior();
 
+    public IPath CreatePath(IPathGeometry geometry) => new TPath
+    {
+        Geometry = geometry,
+        StrokeColor = Color.Bisque
+    }.WithSelectBehavior();
+
     public IShape CreateFillet(TwoPoints points, double radius)
     {
         var pg = GeometryProvider.CreatePathGeometry();
         pg.AddArcFigure(points.P1, points.P2, radius, 0, false, ArcSweepDirections.Clockwise);
         return CreateCircleSectorArc(pg, true);
+    }
+
+    public IPath CreateFreeHandLine(IEnumerable<Point> points)
+    {
+        var pg = GeometryProvider.CreatePathGeometry();
+        if (points.Any())
+        {
+            var from = points.First();
+            foreach(var point in points.Skip(1))
+            {
+                pg.AddLineFigure(from, point);
+                from = point;
+            }
+        }
+        return CreatePath(pg);
     }
 }

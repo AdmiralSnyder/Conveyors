@@ -11,7 +11,7 @@ public abstract class ShowShapeInputHelper<TThis, TShape> : Inputter<TThis, Unit
     protected override void CleanupVirtual()
     {
         base.CleanupVirtual();
-        Context.RemoveTempShape(_TmpShape);
+        InputContext.RemoveTempShape(_TmpShape);
     }
 
     private TShape? _TmpShape;
@@ -25,7 +25,7 @@ public abstract class ShowShapeInputHelper<TThis, TShape> : Inputter<TThis, Unit
             if (_TmpShape is null)
             {
                 _TmpShape = CreateShape();
-                Context.AddTempShape(_TmpShape);
+                InputContext.AddTempShape(_TmpShape);
             }
             return _TmpShape;
         }

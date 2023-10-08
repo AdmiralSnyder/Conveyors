@@ -13,8 +13,8 @@ public class ShowLineFromToMouseInputHelper : ShowLineFromToInputHelper<ShowLine
         return result;
     }
 
-    protected override void AttachEvents() => Context.MouseMovedInCanvas += Context_MouseMovedInCanvas;
-    protected override void DetachEvents() => Context.MouseMovedInCanvas -= Context_MouseMovedInCanvas;
+    protected override void AttachEvents() => InputContext.MouseMovedInCanvas += Context_MouseMovedInCanvas;
+    protected override void DetachEvents() => InputContext.MouseMovedInCanvas -= Context_MouseMovedInCanvas;
 
     private void Context_MouseMovedInCanvas(object sender, (Point Point, EventArgs args) e) => EndPoint = e.Point;
 }

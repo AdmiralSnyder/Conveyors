@@ -25,7 +25,7 @@ public abstract class InputterBase<TThis, TTask> : Inputter
 {
     private InputContextBase? _Context;
 
-    public InputContextBase Context
+    public InputContextBase InputContext
     {
         get => _Context ?? throw new NullReferenceException("Context darf nicht null sein");
         private set => Func.Setter(ref _Context, value, ContextAssigned);
@@ -33,7 +33,7 @@ public abstract class InputterBase<TThis, TTask> : Inputter
 
     protected virtual void ContextAssigned() { }
 
-    public static TThis Create(InputContextBase context) => new() { Context = context };
+    public static TThis Create(InputContextBase context) => new() { InputContext = context };
 
     public override void Start() => AttachEvents();
 
@@ -74,7 +74,7 @@ public abstract class InputterBase<TThis, TTask> : Inputter
         CleanupVirtual();
     }
 
-    protected virtual void CleanupVirtual() => Context.ClearInputter(this);
+    protected virtual void CleanupVirtual() => InputContext.ClearInputter(this);
 
     protected virtual void AbortVirtual() { }
 
@@ -87,8 +87,19 @@ public abstract class InputterBase<TThis, TTask> : Inputter
     public static TTask StartInput(InputContextBase context, params Inputter[] subInputters)
     {
         var inputter = Create(context);
-        inputter.SubInputters = subInputters;
-        return inputter.StartAsync();
+        return inputter.RunWithSubInputters(subInputters);
+    }
+
+    private TTask RunWithSubInputters(params Inputter[] subInputters)
+    {
+        SubInputters = subInputters;
+        return StartAsync();
+    }
+
+    public TTask Run(InputContextBase context, params Inputter[] subInputters)
+    {
+        InputContext = context;
+        return RunWithSubInputters(subInputters);
     }
 }
 
@@ -144,32 +155,28 @@ public abstract class Inputter<TThis, TResult> : InputterBase<TThis, Task<InputR
         return TaskCompletionSource.Task;
     }
 
+    private static async Task<(bool Success, TResult Result)> StartedSuccessful(InputContextBase inputContext) 
+        => ((await StartInput(inputContext)).IsSuccess(out var result), result);
+
     public static async Task<TResult> StartInputOnce(InputContextBase inputContext)
     {
-        if ((await (StartInput(inputContext))).IsSuccess(out var result))
+        // TODO what is better?
+        //if((await StartInput(inputContext)).IsSuccess(out var result))
+
+        var b = await StartedSuccessful(inputContext);
+        if (b.Success)
         {
-            return result;
+            return b.Result;
         }
         else
         {
             return await Task.FromCanceled<TResult>(CancellationToken.None);
-            //throw new InvalidOperationException("Input failed");
-        }
-    }
-
-    public static CancellationTokenSource Cts = new();
-
-    public static async IAsyncEnumerable<TResult> StartInputOnceNew(InputContextBase inputContext)
-    {
-        if ((await (StartInput(inputContext))).IsSuccess(out var result))
-        {
-            yield return result;
         }
     }
 
     public static async IAsyncEnumerable<TResult> StartInputContinuous(InputContextBase inputContext)
     {
-        while ((await (StartInput(inputContext))).IsSuccess(out var result))
+        while ((await StartInput(inputContext)).IsSuccess(out var result))
         {
             yield return result;
         }
@@ -181,5 +188,5 @@ public abstract class Inputter<TThis, TResult, THelpers> : Inputter<TThis, TResu
     where THelpers : InputHelpers, new()
 {
     public THelpers Helpers { get; private set; }
-    protected override void ContextAssigned() => Helpers = new() { Context = Context };
+    protected override void ContextAssigned() => Helpers = new() { Context = InputContext };
 }

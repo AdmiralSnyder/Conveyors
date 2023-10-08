@@ -17,7 +17,7 @@ public class MoveConveyorPointInputter : MoveCanvasPointInputterBase<MoveConveyo
 
         if (MoveShapes.FirstOrDefault() is { Tag: ConveyorPoint point })
         {
-            Result = (Result.Item1, Context.GetPoint(e));
+            Result = (Result.Item1, InputContext.GetPoint(e));
             Complete();
         }
     }
@@ -27,10 +27,10 @@ public class MoveConveyorPointInputter : MoveCanvasPointInputterBase<MoveConveyo
         base.CleanupVirtual();
         foreach (var shape in MoveShapes)
         {
-            Context.RemoveTempShape(shape);
+            InputContext.RemoveTempShape(shape);
         }
         MoveShapes.Clear();
-        Context.Notify();
+        InputContext.Notify();
     }
 
     static int moveCount = 0;
@@ -40,18 +40,18 @@ public class MoveConveyorPointInputter : MoveCanvasPointInputterBase<MoveConveyo
         moveCount++;
         base.HandleMouseMove(sender, e);
 
-        var point = Context.GetPoint(e);
+        var point = InputContext.GetPoint(e);
         //var sw = Stopwatch.StartNew();
         var match = MoveCircles.Any(mc => mc.GetCircleDefinition(out var cd) && Maths.PointIsInCircle(point, cd));
         //sw.Stop();
         if (match)
         {
 
-            Context.SetCursor(InputLib.InputCursors.Hand);
+            InputContext.SetCursor(InputLib.InputCursors.Hand);
         }
         else
         {
-            Context.SetCursor(InputLib.InputCursors.Arrow);
+            InputContext.SetCursor(InputLib.InputCursors.Arrow);
         }
 
         if (MoveShapes.Any())
@@ -61,12 +61,12 @@ public class MoveConveyorPointInputter : MoveCanvasPointInputterBase<MoveConveyo
                 if (shape is IEllipse ellipse)
                 {
                     ellipse.SetCenterLocation(point);
-                    Context.NotifyTemp();
+                    InputContext.NotifyTemp();
                 }
                 if (shape is ILine line)
                 {
                     line.SetEnd(point);
-                    Context.NotifyTemp();
+                    InputContext.NotifyTemp();
                 }
             }
         }

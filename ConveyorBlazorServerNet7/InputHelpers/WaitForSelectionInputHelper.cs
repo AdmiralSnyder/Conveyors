@@ -11,23 +11,18 @@ using UILib.Shapes;
 
 namespace ConveyorBlazorServerNet7.InputHelpers;
 
-public class StartDrawingInputHelper : AbortingInputter<StartDrawingInputHelper, object>
-{
-
-}
-
 public class WaitForSelectionInputHelper : AbortingInputter<WaitForSelectionInputHelper, IEnumerable<ISelectObject>>
 {
     protected override void AttachEvents()
     {
         base.AttachEvents();
-        Context.LeftMouseButtonClicked += Context_LeftMouseButtonClicked;
+        InputContext.LeftMouseButtonClicked += Context_LeftMouseButtonClicked;
     }
 
     protected override void DetachEvents()
     {
         base.DetachEvents();
-        Context.LeftMouseButtonClicked -= Context_LeftMouseButtonClicked;
+        InputContext.LeftMouseButtonClicked -= Context_LeftMouseButtonClicked;
     }
 
     private void Context_LeftMouseButtonClicked(object? sender, EventArgs<Point> e)

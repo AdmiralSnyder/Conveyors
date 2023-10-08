@@ -12,16 +12,16 @@ namespace ConveyorInputLib.Inputters;
 public class CircleThreePointsInputter : Inputter<CircleThreePointsInputter, (Point Point1, Point Point2, Point Point3), CanvasInputHelpers>
 {
     protected override async Task<InputResult<(Point Point1, Point Point2, Point Point3)>> StartAsyncVirtual()
-    => await InputManager.Blank()
-        .Then(async _ => await PointInputter.StartInput(Context,
+    => await InputManager.BlankContext()
+        .Then(async _ => await PointInputter.StartInput(InputContext,
             Helpers.ShowMouseLocation()))
-        .Then(async ctx => await PointInputter.StartInput(Context,
+        .Then(async ctx => await PointInputter.StartInput(InputContext,
             Helpers.ShowMouseLocation(),
-            Helpers.FixedPoint(ctx.Second)))
-        .Then(async ctx => await PointInputter.StartInput(Context,
+            Helpers.ShowFixedPoint(ctx.Last)))
+        .Then(async ctx => await PointInputter.StartInput(InputContext,
             Helpers.ShowMouseLocation(),
-            Helpers.FixedPoint(ctx.First.Second),
-            Helpers.FixedPoint(ctx.Second),
-            Helpers.ShowThreePointCircleOnMouseLocation(ctx.First.Second, ctx.Second)))
+            Helpers.ShowFixedPoint(ctx.Previous.Last),
+            Helpers.ShowFixedPoint(ctx.Last),
+            Helpers.ShowThreePointCircleOnMouseLocation(ctx.Previous.Last, ctx.Last)))
         .Do(ctx => InputResult.SuccessTask(ctx.Flatten()));
 }

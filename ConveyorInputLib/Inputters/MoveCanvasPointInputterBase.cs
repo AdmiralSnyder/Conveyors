@@ -18,7 +18,7 @@ public abstract class MoveCanvasPointInputterBase<TInputter, TPoint> : StatefulI
     public override void Start()
     {
         InputState = InputStates.Move;
-        Context.CurrentInputter = this;
+        InputContext.CurrentInputter = this;
     }
 
     protected readonly List<IEllipse> MoveCircles = new();
@@ -35,7 +35,7 @@ public abstract class MoveCanvasPointInputterBase<TInputter, TPoint> : StatefulI
                 {
                     var circle = ShapeProvider.CreatePointMoveCircle(point.Location, MoveCircleClicked);
                     circle.Tag = point;
-                    Context.AddTempShape(circle);
+                    InputContext.AddTempShape(circle);
                     MoveCircles.Add(circle);
                 }
             }
@@ -53,7 +53,7 @@ public abstract class MoveCanvasPointInputterBase<TInputter, TPoint> : StatefulI
             var newCircle = ShapeProvider.CreateCircle(point.Location, size / 2);
             newCircle.Tag = point;
             newCircle.FillColor = System.Drawing.Color.Yellow;
-            Context.AddTempShape(newCircle);
+            InputContext.AddTempShape(newCircle);
 
             MoveShapes.Add(newCircle);
             var (prev, last) = point.GetAdjacentSegments();
@@ -63,7 +63,7 @@ public abstract class MoveCanvasPointInputterBase<TInputter, TPoint> : StatefulI
                 var prevLine = ShapeProvider.CreateLineSegment(prev.StartEnd);
                 prevLine.StrokeColor = System.Drawing.Color.Yellow;
                 prevLine.Tag = point;
-                Context.AddTempShape(prevLine);
+                InputContext.AddTempShape(prevLine);
                 MoveShapes.Add(prevLine);
             }
             if (last is { })
@@ -71,7 +71,7 @@ public abstract class MoveCanvasPointInputterBase<TInputter, TPoint> : StatefulI
                 var nextLine = ShapeProvider.CreateLineSegment((last.StartEnd.P2, last.StartEnd.P1));
                 nextLine.StrokeColor = System.Drawing.Color.Yellow;
                 nextLine.Tag = point;
-                Context.AddTempShape(nextLine);
+                InputContext.AddTempShape(nextLine);
                 MoveShapes.Add(nextLine);
             }
 
@@ -81,7 +81,7 @@ public abstract class MoveCanvasPointInputterBase<TInputter, TPoint> : StatefulI
 
         foreach (var circle in MoveCircles)
         {
-            Context.RemoveTempShape(circle);
+            InputContext.RemoveTempShape(circle);
         }
         MoveCircles.Clear();
 
