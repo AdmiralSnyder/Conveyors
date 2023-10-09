@@ -1,10 +1,8 @@
-﻿using ConveyorBlazorServerNet7.InputHelpers;
-using ConveyorInputLib.Helpers;
-using ConveyorInputLib.Inputters;
+﻿using ConveyorInputLib.Helpers;
 using InputLib;
 using InputLib.Inputters;
 
-namespace ConveyorBlazorServerNet7.Inputters;
+namespace ConveyorInputLib.Inputters;
 
 public class DrawInputter : AbortingInputter<DrawInputter, IEnumerable<Point>, CanvasInputHelpers>
 {
@@ -12,13 +10,12 @@ public class DrawInputter : AbortingInputter<DrawInputter, IEnumerable<Point>, C
     {
         var result = await InputManager.BlankContext()
             .Then(_ => Helpers.AddData<List<Point>>())
-            .Then(async ctx => await PointInputter.StartInput(InputContext, 
+            .Then(async ctx => await PointInputter.StartInput(InputContext,
                 Helpers.ShowMouseLocation()))
             .Then(ctx => Helpers.AddToList(ctx.Previous.Last, ctx.Last))
-            .Then(async ctx => await new StartDrawingInputHelper() { PointList = ctx.Previous.Last}.Run(InputContext,  // TODO NRE ctx.Previous
+            .Then(async ctx => await new StartDrawingInputHelper() { PointList = ctx.Previous.Last }.Run(InputContext,  // TODO NRE ctx.Previous
                 Helpers.ShowFixedPoint(ctx.Last),
                 Helpers.ShowPath(ctx.Previous.Last)
-                //,Helpers.ShowPath
                 ))
             .Do(ctx => InputResult.SuccessTask(ctx.Last));
 

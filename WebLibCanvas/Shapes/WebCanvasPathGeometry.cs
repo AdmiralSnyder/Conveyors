@@ -59,7 +59,6 @@ public class WebCanvasPathGeometry : WebCanvasGeometry<WebPathGeometry>, IPathGe
             StartPoint = prevEnd,
             Segments = { new WebLineSegment(nextStart, true) }
         });
-        throw new NotImplementedException();
     }
 
     public void ClearFigures() => BackingObject.Figures.Clear();

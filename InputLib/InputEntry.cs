@@ -42,7 +42,7 @@ public class InputEntry<TIn, TOut> : InputEntryBase
             thenAction(tOut);
             return new Task<InputResult<TOut>>(() => new InputResult<TOut>(tOut));
         });
-        InputManager.AddStage(theTaskFunc, name);
+        InputManager.AddStage(theTaskFunc, name, true);
         InputEntry<TOut, TOut> newState = new() { InputManager = InputManager };
         return newState;
     }

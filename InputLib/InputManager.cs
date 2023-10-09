@@ -13,32 +13,28 @@ public class InputManager
         return blankEntry;
     }
 
-    public void AddStage<TInput, T>(Func<TInput, Task<InputResult<T>>> stageFunc, string? name = null)
+    public void AddStage<TInput, T>(Func<TInput, Task<InputResult<T>>> stageFunc, string? name = null, bool skipNesting = false)
     {
-        Stages.Enqueue(new InputStage<TInput, T>() { StageFunc = stageFunc, Name = name });
+        Stages.Enqueue(new InputStage<TInput, T>() { StageFunc = stageFunc, Name = name, SkipNesting = skipNesting });
     }
 
     internal async Task<InputResult<T>> Run<T>()
     {
         InputStage lastStage = InputStage.Initial;
-        while (true)
+        while (Stages.Any())
         {
-            if (Stages.Any())
+            var stage = Stages.Dequeue();
+            await stage.Invoke(lastStage);
+            if (stage.IsSuccess())
             {
-                var stage = Stages.Dequeue();
-                await stage.Invoke(lastStage);
-                if (stage.IsSuccess())
-                {
-                    DoneStages.Enqueue(stage);
-                    lastStage = stage;
-                }
-                else
-                {
-                    // TODO else retry depending on strategy
-                    return InputResult.Failure;
-                }
+                DoneStages.Enqueue(stage);
+                lastStage = stage;
             }
-            else break;
+            else
+            {
+                // TODO else retry depending on strategy
+                return InputResult.Failure;
+            }
         }
 
         if (lastStage is InputStage<T> lastStageT)

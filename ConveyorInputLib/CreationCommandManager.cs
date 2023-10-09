@@ -26,6 +26,8 @@ public class CreationCommandManager
     {
         [("Add Point", ".")] = c => c.AddPoint,
         [("Add Line", "―")] = c => c.AddLine,
+        [("Draw", "~~")] = c => c.AddFreeHandLine,
+        [("Draw infinitely", "~~ ∞")] = c => c.AddFreeHandLineInfinitely,
         [("Add Line Segment", null)] = c => c.AddLineSegment,
         [("Add Circle by Center+Circ Point", "O1")] = c => c.AddCircleCenterRadius,
         [("Add Circle by Diameter Points", "O2")] = c => c.AddCircleTwoPoints,
@@ -48,10 +50,12 @@ public class CreationCommandManager
 
     public Action AfterCommandAction { get; set; }
 
+    private void InvokeAfterCommandAction() => AfterCommandAction?.Invoke();
+
     public async Task Invoke(Func<CreationCommandManager, Func<Task>> func)
     {
         await func(this)();
-        AfterCommandAction();
+        InvokeAfterCommandAction();
     }
 
     public async Task AddCircleCenterRadius() => await CircleCenterRadiusInputter.StartInputOnce(InputContext).Then(AutoRoot.AddCircleCenterRadius);
@@ -73,6 +77,18 @@ public class CreationCommandManager
         {
             AutoRoot.AddLineSegment(points);
         }
+    }
+
+    public async Task AddFreeHandLine() => await DrawInputter.StartInputOnce(InputContext).Then(AutoRoot.AddFreeHand);
+    public async Task AddFreeHandLineInfinitely() => await FetchAll(DrawInputter.StartInputContinuous(InputContext).Then(AutoRoot.AddFreeHand));
+
+    private async Task FetchAll<T>(IAsyncEnumerable<T> items)
+    {
+        await foreach (var item in items)
+        {
+            InvokeAfterCommandAction();
+        }
+
     }
 
     public async Task AddPoint()

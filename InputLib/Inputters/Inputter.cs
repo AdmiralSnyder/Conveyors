@@ -155,26 +155,55 @@ public abstract class Inputter<TThis, TResult> : InputterBase<TThis, Task<InputR
         return TaskCompletionSource.Task;
     }
 
-    private static async Task<(bool Success, TResult Result)> StartedSuccessful(InputContextBase inputContext) 
-        => ((await StartInput(inputContext)).IsSuccess(out var result), result);
-
-    public static async Task<TResult> StartInputOnce(InputContextBase inputContext)
+    public static async Task<Option<TResult>> StartInputOnce(InputContextBase inputContext)
     {
-        // TODO what is better?
-        //if((await StartInput(inputContext)).IsSuccess(out var result))
-
-        var b = await StartedSuccessful(inputContext);
-        if (b.Success)
+        if ((await (StartInput(inputContext))).IsSuccess(out var result))
         {
-            return b.Result;
+            return result;
         }
         else
         {
-            return await Task.FromCanceled<TResult>(CancellationToken.None);
+            return default;
+            //return await Task.FromCanceled<TResult>(CancellationToken.None);
+            //throw new InvalidOperationException("Input failed");
         }
     }
 
-    public static async IAsyncEnumerable<TResult> StartInputContinuous(InputContextBase inputContext)
+    private static async Task<Option<TResult>> StartedSuccessful(InputContextBase inputContext)
+        => (await StartInput(inputContext)).IsSuccess(out var result) ? result : default;
+
+    //public static async Task<Option<TResult>> StartInputOnce2(InputContextBase inputContext)
+    //{
+    //    // TODO what is better?
+    //    //if((await StartInput(inputContext)).IsSuccess(out var result))
+
+    //    var b = await StartedSuccessful(inputContext);
+    //    if (b.Success)
+    //    {
+    //        return b.Result;
+    //    }
+    //    else
+    //    {
+    //        //var task = Task.FromResult<TResult>(default);
+            
+    //        //return await task;
+    //        //return Task.FromCanceled<TResult>(new(true));
+    //        //TResult result;
+    //        try
+    //        {
+    //            return await Task.FromCanceled<TResult>(new(true));
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            throw;
+    //            //result = default;
+    //        }
+    //        //await Task.Delay(1);
+    //        //return result;
+    //    }
+    //}
+
+    public static async IAsyncEnumerable<Option<TResult>> StartInputContinuous(InputContextBase inputContext)
     {
         while ((await StartInput(inputContext)).IsSuccess(out var result))
         {
@@ -188,5 +217,6 @@ public abstract class Inputter<TThis, TResult, THelpers> : Inputter<TThis, TResu
     where THelpers : InputHelpers, new()
 {
     public THelpers Helpers { get; private set; }
+
     protected override void ContextAssigned() => Helpers = new() { Context = InputContext };
 }

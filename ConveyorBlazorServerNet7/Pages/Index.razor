@@ -10,7 +10,7 @@
 <button @onclick=MoveButtonClick disabled=@MoveButtonDisabled>Move</button>
 <button @onclick=SelectButtonClick>Select 1</button>
 <button @onclick=SelectButtonInfinityClick>Select ∞</button>
-<button @onclick=DrawButtonClick>Draw</button>
+
 @foreach (var x in CreationCommandManager.StaticCommands)
 {
     <button @onclick=@(async () => await CommandManager.Invoke(x.Value))>@(x.Key.Item2 ?? x.Key.Item1)</button>
@@ -99,22 +99,5 @@
 
     async void SelectButtonClick() => await SingleClickSelectInputter.StartInputOnce(AppContent.InputContext).Then(SelectItem);
 
-    async void SelectButtonInfinityClick() => await SingleClickSelectInputter.StartInputContinuous(AppContent.InputContext).Then(SelectItem);
-
-    async void DrawButtonClick() => await DrawInputter.StartInputOnce(AppContent.InputContext).Then(AutoRoot.AddFreeHand);
-    
-
-        // await SingleClickSelectInputter.StartInputContinuous(AppContent.InputContext).Then(SelectItem);
-
-        
-
-        // if (AutoRoot.Conveyors.FirstOrDefault() is { } first)
-        // {
-        //     AutoRoot.SelectItem(first.ID);
-        //     AppContent.InputContext.Notify();
-
-        //     // DummyHighlighter = UIHelpers.CreateObjectHighlighter(AppContent.CanvasInfo, first, ObjectHighlightTypes.Select);
-        //     // AppContent.InputContext.Notify();
-        // }
-    
+    async void SelectButtonInfinityClick() => await SingleClickSelectInputter.StartInputContinuous(AppContent.InputContext).Then(SelectItem);    
 }

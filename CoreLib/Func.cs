@@ -173,30 +173,62 @@ public static class Func
 }
 
 
-    public static async Task Then<T>(this IAsyncEnumerable<T> items, Action<T> continuationAction)
+    public static async Task<Unit> Then<T>(this IAsyncEnumerable<Option<T>> items, Action<T> continuationAction)
     {
         await foreach (var t in items)
         {
-            continuationAction(t);
+            if (t.Success)
+            {
+                continuationAction(t.Value);
+            }
+            else
+            {
+                return default;
+            }
         }
+        return Unit.Value;
     }
 
-    public static async Task<TResult> Then<T, TResult>(this Task<T> task, Func<T, TResult> continuationFunc)
+    public static async IAsyncEnumerable<Option<TResult>> Then<T, TResult>(this IAsyncEnumerable<Option<T>> items, Func<T, TResult> continuationFunc)
+    {
+        await foreach (var t in items)
+        {
+            if (t.Success)
+            {
+                yield return continuationFunc(t.Value);
+            }
+            else
+            {
+                yield return default;
+            }
+        }
+        yield return default;
+    }
+
+    public static async Task<Option<TResult>> Then<T, TResult>(this Task<Option<T>> task, Func<T, TResult> continuationFunc)
+    {
+        var result = await task;
+        if (result.Success)
+        {
+            return continuationFunc(result.Value);
+        }
+        else
+        {
+            return default;
+        }        
+    }
+
+    public static async Task<Option<Unit>> Then<T>(this Task<Option<T>> task, Action<T> continuationAction)
     {
         var result = await task;
         if (task.IsCompletedSuccessfully)
         {
-            return continuationFunc(result);
+            continuationAction(result.Value);
+            return Unit.Value;
         }
-        return default;
-    }
-
-    public static async Task Then<T>(this Task<T> task, Action<T> continuationAction)
-    {
-        var result = await task;
-        if (task.IsCompletedSuccessfully)
+        else 
         {
-            continuationAction(result);
+            return default; 
         }
     }
 

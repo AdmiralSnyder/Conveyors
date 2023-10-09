@@ -14,6 +14,7 @@ public class InputStage
     public static readonly InputStage<InitialInputState> Initial = new() { Output = InitialInputState.Instance };
 
     public object? NextInput { get; set; }
+    public bool SkipNesting { get; set; }
 }
 
 public class InputStage<TOutput> : InputStage
@@ -35,6 +36,10 @@ public class InputStage<TInput, TOutput> : InputStage<TOutput>
         {
             Input = lastOutput;
         }
+        else if (typeof(TInput) == typeof(InitialInputState)) 
+        {
+            Input = (TInput)(object)InitialInputState.Instance;
+        }
         try
         {
             var task = StageFunc(Input);
@@ -48,7 +53,14 @@ public class InputStage<TInput, TOutput> : InputStage<TOutput>
             Output = result;
             if (result.IsSuccess(out var resResult))
             {
-                NextInput = new Pair<TInput, TOutput>() { Previous = Input, Last = resResult };
+                if (!SkipNesting)
+                {
+                    NextInput = new Pair<TInput, TOutput>() { Previous = Input, Last = resResult };
+                }
+                else
+                {
+                    NextInput = Input;
+                }
             }
         }
         catch

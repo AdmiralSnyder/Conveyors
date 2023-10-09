@@ -12,51 +12,44 @@ public class BlankInputEntry : InputEntryBase
         return newState;
     }
 
+    //public InputEntry<InitialInputState, Pair<InitialInputState, TNext>> Then2<TNext>(Func<InitialInputState, TNext> thenFunc, string? name = null)
+    //{
+    //    Func<InitialInputState, Task<InputResult<TNext>>> theTaskFunc =
+    //        new(
+    //            (init) => new Task<InputResult<TNext>>(
+    //            state =>
+    //            {
+    //                var (_init, _thenFunc) = ((InitialInputState, Func<InitialInputState, TNext>))state;
+    //                return _thenFunc(_init);
+    //                //(new Pair<InitialInputState, TNext>()
+    //                //{
+    //                //    Previous = _init,
+    //                //    Last = _thenFunc(_init)
+    //                //});
+    //            }, (init, thenFunc)));
+
+
+    //    InputManager.AddStage(theTaskFunc, name);
+    //    InputEntry<InitialInputState, Pair<InitialInputState, TNext>> newState = new() { InputManager = InputManager };
+    //    return newState;
+    //}
+
     public InputEntry<InitialInputState, Pair<InitialInputState, TNext>> Then<TNext>(Func<InitialInputState, TNext> thenFunc, string? name = null)
     {
-        Func<InitialInputState, Task<InputResult<Pair<InitialInputState, TNext>>>> theTaskFunc =
+        Func<InitialInputState, Task<InputResult<TNext>>> theTaskFunc =
             new(
-                (init) => new Task<InputResult<Pair<InitialInputState, TNext>>>(
+                (init) => new Task<InputResult<TNext>>(
                 state =>
                 {
                     var (_init, _thenFunc) = ((InitialInputState, Func<InitialInputState, TNext>))state;
-                    return (new Pair<InitialInputState, TNext>()
-                    {
-                        Previous = _init,
-                        Last = _thenFunc(_init)
-                    });
+                    return _thenFunc(_init);
+                    
                 }, (init, thenFunc)));
 
 
-        InputManager.AddStage<InitialInputState, Pair<InitialInputState, TNext>>(theTaskFunc, name);
+        InputManager.AddStage(theTaskFunc, name);
         InputEntry<InitialInputState, Pair<InitialInputState, TNext>> newState = new() { InputManager = InputManager };
         return newState;
-    }
-
-    private object ThenFunc;
-
-
-    private Task<InputResult<Pair<InitialInputState, TNext>>> TheTaskFunc<TNext>(InitialInputState init)
-    {
-        var thenFunc = (Func<InitialInputState, TNext>)ThenFunc;
-
-        // this gets returned when awaited
-        //return Task.FromResult<InputResult<Pair<InitialInputState, TNext>>>(default);
-        // this is waiting forever
-        //return SomeTask<TNext>();
-        return new Task<InputResult<Pair<InitialInputState, TNext>>>(
-                state =>
-                {
-                    Task.Delay(1000);
-                    return new Pair<InitialInputState, TNext>(); // this also isn't
-                    var input = ((InitialInputState _init, Func<InitialInputState, TNext> _thenFunc))state;
-                    return (new Pair<InitialInputState, TNext>()
-                    {
-                        Previous = input._init,
-                        Last = input._thenFunc(input._init)
-                    });
-                }, (init, ThenFunc));
-
     }
 
     private async Task<InputResult<Pair<InitialInputState, TNext>>> SomeTask<TNext>()
