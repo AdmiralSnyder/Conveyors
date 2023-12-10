@@ -5,8 +5,8 @@ namespace UILib;
 public static class RefreshManager<TNotification>
     where TNotification : INotification<TNotification>
 {
-    private static Dictionary<TNotification, HashSet<IRefreshListener<TNotification>>> ListenerResolver = new();
-    private static HashSet<IRefreshListener<TNotification>> RegisteredListeners = new();
+    private static Dictionary<TNotification, HashSet<IRefreshListener<TNotification>>> ListenerResolver = [];
+    private static HashSet<IRefreshListener<TNotification>> RegisteredListeners = [];
 
     public static void DoARefresh(TNotification obj)
     {

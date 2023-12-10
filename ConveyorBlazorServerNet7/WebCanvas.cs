@@ -6,10 +6,10 @@ namespace ConveyorBlazorServerNet7;
 public class WebCanvas
 {
     public QuadTree<WebShape> QuadTree { get; } = new(new((-1000, -1000), (2000, 2000)), 4);
-    private List<WebShape> _Children { get; } = new();
+    private List<WebShape> _Children { get; } = [];
     public IEnumerable<WebShape> Children => _Children;
 
-    public List<WebShape> TempChildren { get; } = new();
+    public List<WebShape> TempChildren { get; } = [];
 
     public void AddChild(WebShape child)
     {

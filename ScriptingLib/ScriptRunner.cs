@@ -83,7 +83,7 @@ public class ScriptRunner
         {
 
             var refsToAdd = references.Where(r => !Script.Options.MetadataReferences.Any(mr => mr.Display.EndsWith(r)));
-            List<string> existingFiles = new();
+            List<string> existingFiles = [];
             foreach (var file in refsToAdd)
             {
                 if (File.Exists(file))

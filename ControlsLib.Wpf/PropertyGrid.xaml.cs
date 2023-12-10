@@ -50,7 +50,7 @@ public partial class PropertyGrid : UserControl, IRefreshListener<IRefreshable>
 
     private static List<PropertyGridRowInfo> InitTypeRowList(Type type)
     {
-        List<PropertyGridRowInfo> result = new();
+        List<PropertyGridRowInfo> result = [];
 
         foreach (var property in type.GetProperties())
         {
@@ -167,9 +167,9 @@ public partial class PropertyGrid : UserControl, IRefreshListener<IRefreshable>
     }
 
     private List<PropertyGridRowInfo> Rows { get; set; } = EmptyRows;
-    private static readonly List<PropertyGridRowInfo> EmptyRows = new();
+    private static readonly List<PropertyGridRowInfo> EmptyRows = [];
 
-    private static readonly Dictionary<Type, Control> ControlResolvers = new();
+    private static readonly Dictionary<Type, Control> ControlResolvers = [];
 
-    private readonly Dictionary<Type, List<PropertyGridRowInfo>> RowInfosByType = new();
+    private readonly Dictionary<Type, List<PropertyGridRowInfo>> RowInfosByType = [];
 }

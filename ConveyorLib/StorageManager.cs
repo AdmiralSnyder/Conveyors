@@ -63,12 +63,12 @@ public interface IStorable
 
 public static class StorageManager
 {
-    private static HashSet<Type> _StorableTypes = new()
-    {
+    private static HashSet<Type> _StorableTypes =
+    [
         typeof(LineSegment),
         typeof(Line),
         typeof(Fillet),
-    };
+    ];
 
     public static StorageObject Store<TObject>(TObject obj) where TObject : IStorable => obj.Store();
 

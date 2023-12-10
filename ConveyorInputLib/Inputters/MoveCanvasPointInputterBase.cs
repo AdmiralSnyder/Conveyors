@@ -21,9 +21,9 @@ public abstract class MoveCanvasPointInputterBase<TInputter, TPoint> : StatefulI
         InputContext.CurrentInputter = this;
     }
 
-    protected readonly List<IEllipse> MoveCircles = new();
+    protected readonly List<IEllipse> MoveCircles = [];
 
-    protected readonly List<IShape> MoveShapes = new();
+    protected readonly List<IShape> MoveShapes = [];
 
     protected override void InputStateChanged(InputStates newValue)
     {

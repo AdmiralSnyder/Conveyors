@@ -15,7 +15,7 @@ namespace ConveyorApp
     {
         public Point Origin { get; set; } = default;
 
-        List<Shape> Shapes = new();
+        List<Shape> Shapes = [];
         public Canvas Canvas { get; set; }
         public IConveyorShapeProvider ShapeProvider { get; internal set; }
 

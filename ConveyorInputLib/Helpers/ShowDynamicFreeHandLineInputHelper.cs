@@ -8,7 +8,7 @@ public class ShowDynamicFreeHandLineInputHelper : ShowDynamicShapeInputHelper<Sh
 {
     protected override IShape CreateShape() => ShapeProvider.CreateFreeHandLine(Points).MarkAsTemporary();
 
-    private List<Point> Points { get; } = new();
+    private List<Point> Points { get; } = [];
 
     internal static ShowDynamicFreeHandLineInputHelper Create(InputContextBase context, Point start)
     {

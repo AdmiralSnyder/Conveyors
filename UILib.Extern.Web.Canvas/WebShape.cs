@@ -47,7 +47,7 @@ public abstract class WebShape : IBounded
         await DrawStroke(context);
     }
 
-    private Dictionary<MouseActions, Delegate> MouseActions = new();
+    private Dictionary<MouseActions, Delegate> MouseActions = [];
     public void AddMouseAction(MouseActions mouseAction, Delegate action) => this.MouseActions[mouseAction] = action;
     public bool TryGetMouseAction(MouseActions mouseAction, out Delegate action) => this.MouseActions.TryGetValue(mouseAction, out action);
 

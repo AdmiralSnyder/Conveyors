@@ -11,14 +11,14 @@ public class QuadTree<TElement>
     public bool Extendable { get; set; }
     public int MaxItemsPerNode { get; private set; }
 
-    public Dictionary<TElement, QuadTree<TElement>> NodeLookup = new();
+    public Dictionary<TElement, QuadTree<TElement>> NodeLookup = [];
 
     //public List<TElement> Items { get; } = new List<TElement>();
 
     // possible optimization: use a linked list for items, so we can remove items from the middle of the list
-    public Dictionary<Bounds, List<TElement>> Items = new();
+    public Dictionary<Bounds, List<TElement>> Items = [];
     public IReadOnlyCollection<QuadTree<TElement>> Nodes => _Nodes.AsReadOnly();
-    private readonly List<QuadTree<TElement>> _Nodes = new();
+    private readonly List<QuadTree<TElement>> _Nodes = [];
 
     public QuadTree(Bounds bounds, int maxItemsPerNode)
     {

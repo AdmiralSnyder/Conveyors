@@ -2,5 +2,5 @@
 
 public class WebPathGeometry : WebGeometry
 {
-    public List<WebPathFigure> Figures { get; } = new();
+    public List<WebPathFigure> Figures { get; } = [];
 }

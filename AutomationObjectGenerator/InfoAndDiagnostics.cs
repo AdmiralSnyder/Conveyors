@@ -7,7 +7,7 @@ namespace AutomationObjectGenerator
     {
         public TInfo? Info { get; set; }
 
-        public List<Diagnostic> Diagnostics = new();
+        public List<Diagnostic> Diagnostics = [];
 
         internal void AddDiagnostic(string title, string? text = null, Location? location = null)
         {

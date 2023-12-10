@@ -138,7 +138,7 @@ public class ConveyorInputter : StatefulInputter<ConveyorInputter, IEnumerable<P
 
         void Finish()
         {
-            List<Point> points = new();
+            List<Point> points = [];
             Point lastPoint = (double.NaN, double.NaN);
             foreach (var line in TempLines.Reverse())
             {

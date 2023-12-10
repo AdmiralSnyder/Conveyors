@@ -22,7 +22,7 @@ public class WebCanvasInfo : CanvasInfo<WebCanvas>, IConveyorCanvasInfo
     }
 
     // TODO this is dirty
-    private Dictionary<WebShape, object> ShapeResolver = new();
+    private Dictionary<WebShape, object> ShapeResolver = [];
 
     public override TShape AddToCanvas<TShape>(TShape shape)
     {
@@ -38,7 +38,7 @@ public class WebCanvasInfo : CanvasInfo<WebCanvas>, IConveyorCanvasInfo
         return shape;
     }
 
-    private List<WebCanvasShape> SelectionShapes = new();
+    private List<WebCanvasShape> SelectionShapes = [];
 
     public override void SelectionChanged()
     {

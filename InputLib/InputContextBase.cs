@@ -1,6 +1,5 @@
 ﻿using CoreLib;
 using InputLib.Inputters;
-using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +35,6 @@ public abstract class InputContextBase
         }
     }
 
-    
     public virtual void CaptureMouse() { }
     public virtual void ReleaseMouseCapture() { }
 

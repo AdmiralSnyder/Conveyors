@@ -67,7 +67,7 @@ public abstract class WebPathSegment
 public class WebPathFigure
 {
     public Point StartPoint { get; set; }
-    public List<WebPathSegment> Segments { get; } = new();
+    public List<WebPathSegment> Segments { get; } = [];
 
     public async Task DrawAsync(Canvas2DContext context)
     {

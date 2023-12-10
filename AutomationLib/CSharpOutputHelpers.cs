@@ -10,7 +10,7 @@ public static class CSharpOutputHelpers
 {
     static CSharpOutputHelpers()
     {
-        TypeOutputters = new();
+        TypeOutputters = [];
 
         Register<double>(d => d.Out());
     }

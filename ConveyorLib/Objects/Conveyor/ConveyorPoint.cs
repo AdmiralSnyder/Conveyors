@@ -8,7 +8,7 @@ public class ConveyorPoint : IConveyorCanvasable, IPathPart, ISelectObject, IEle
 
     public string Text => $"Point {ID} ({Location})";
 
-    public static Dictionary<string, ConveyorPoint> PointsByID = new();
+    public static Dictionary<string, ConveyorPoint> PointsByID = [];
 
     public static implicit operator ConveyorPoint(string id) => PointsByID.TryGetValue(id, out var cp) ? cp : null;
 

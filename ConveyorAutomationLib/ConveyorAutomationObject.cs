@@ -7,6 +7,7 @@ using CoreLib;
 using GenerationLib;
 using ConveyorLib.TypeResolvers;
 using UILib;
+using System.Collections;
 
 namespace ConveyorAutomationLib;
 
@@ -59,15 +60,30 @@ public interface IGeneratedConveyorAutomationObject: IAutomationRoot, IAutomatio
 [Generate2<IGeneratedConveyorAutomationObject>]
 public partial class ConveyorAutomationObject : IAutomationRoot<ConveyorAppApplication>
 {
-    public List<IAppObject<ConveyorAppApplication>> AutomationObjects { get; } = new();
+    public List<IAppObject<ConveyorAppApplication>> AutomationObjects { get; } = [];
 
-    public HashSet<IAppObject<ConveyorAppApplication>> SelectedObjects { get; } = new();
+    public HashSet<IAppObject<ConveyorAppApplication>> SelectedObjects { get; } = [];
 
     [Generated]
     public void Init(object obj)
     {
-        Conveyors = new();
+        Conveyors = [];
         CanvasInfo = (IConveyorCanvasInfo)obj;
+
+        IList conv = Conveyors;
+
+
+        //...
+
+        
+        var convList = (List<Conveyor>)conv;
+
+        var convList2 = conv as List<Conveyor>;
+        if (convList2 is not null) { }
+
+        if (conv is List<Conveyor> convList3) { }
+
+
     }
 
     public partial Conveyor AddConveyor(IEnumerable<Point> points, bool isRunning, int lanes)
