@@ -93,7 +93,7 @@
                     Click="SelectB_Click"
                     Content="Select" />
                 <d:ItemsControl
-                    d:ItemsSource="{x:Static local:CreationCommandManager.CommandLabels}"
+                    d:ItemsSource="{x:Static local:WpfCreationCommandManager.CommandLabels}"
                     d:MinWidth="50">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
